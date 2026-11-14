@@ -179,6 +179,24 @@ footer{color:var(--muted);font-size:12px;margin-top:20px;text-align:center}
 .cx-why li:first-child{border-top:0}
 .cx-why li:before{content:"";position:absolute;left:4px;top:12px;width:8px;height:8px;border-radius:9px;background:var(--cxc)}
 .cx-box{display:flex;gap:10px;font-size:14px;line-height:1.45;padding:10px 12px;border-radius:12px;background:var(--card2);margin-top:8px}
+.cx-opts{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 2px}
+.cx-opts button{font-size:12.5px;font-weight:600;padding:5px 10px;border-radius:99px;background:var(--card);border:1px solid var(--line);color:var(--muted)}
+.cx-opts button.on{background:var(--cxc);color:#fff;border-color:transparent}
+.bench{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+@media (min-width:620px){.bench{grid-template-columns:repeat(3,1fr)}}
+.bt{background:var(--card2);border-radius:14px;padding:12px;min-width:0}.bt.wide{grid-column:1/-1}
+.bk{font-size:12px;font-weight:600;color:var(--muted)}.bv{font-size:22px;font-weight:700;margin-top:2px}.bs{font-size:12px;color:var(--muted)}
+.bd{display:block;font-size:12px;font-weight:600;margin-top:4px}.bsp{height:34px;margin-top:6px}.bsp svg{width:100%;height:34px}
+.brow{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:8px;margin-top:8px}.brow div{text-align:center}.brow b{display:block;font-size:18px}.brow span{font-size:11.5px;color:var(--muted)}
+.pg{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-top:1px solid var(--line)}.pg:first-child{border-top:0}
+.pg b{display:block;font-size:14.5px}.pg span{display:block;font-size:12px;color:var(--muted)}.pg .pv{color:var(--ink);opacity:.7;margin-top:2px}.pg .r{text-align:right;flex:none}
+.h3{font-size:15px;margin:18px 0 6px}
+.qa{background:var(--card2);border-radius:14px;padding:12px;margin-top:10px;font-size:14px;line-height:1.5}.qa b{display:block;margin-bottom:4px}
+.qchips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.qchips button{font-size:12.5px;padding:6px 10px;border-radius:99px;background:var(--card2);border:1px solid var(--line)}
+.cm{display:block;font-size:12px;color:var(--ink);opacity:.75;margin-top:2px}
+.shoe{display:flex;align-items:center;gap:8px;padding:10px 0;border-top:1px solid var(--line)}.shoe:first-child{border-top:0}.shoe .m{flex:1;min-width:0}.shoe b{display:block}.shoe span{font-size:12px;color:var(--muted)}
+.shoe .bar{height:6px;border-radius:9px;background:var(--line);margin-top:6px;overflow:hidden}.shoe .bar i{display:block;height:100%;border-radius:9px}
+.health .sportonly{display:none!important}
 .cx-box svg{width:18px;height:18px;flex:none;margin-top:1px;stroke:var(--muted);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 </style>
 </head>
@@ -198,6 +216,11 @@ footer{color:var(--muted);font-size:12px;margin-top:20px;text-align:center}
     <div class="grid">
       <div class="card" id="ampel"></div>
       <div class="card" id="coachCard" style="display:none"></div>
+      <div class="card" id="actCard" style="display:none"></div>
+      <div class="card" id="askCard" style="display:none"><h2>Frag deinen Coach</h2><div class="sub">Claude kennt deine aktuellen Daten</div>
+        <textarea id="askIn" rows="2" placeholder="z. B. Kann ich morgen statt Rad laufen?" style="margin-top:10px"></textarea>
+        <div class="qchips"><button data-q="Was soll ich morgen trainieren?">Morgen?</button><button data-q="Ich habe heute wenig Zeit. Was ist die beste kurze Einheit?">Wenig Zeit</button><button data-q="Ich fühle mich müde. Soll ich trotzdem trainieren?">Müde</button></div>
+        <button class="btn blue wide" id="askSend" style="margin-top:10px">Fragen</button><div class="err" id="askErr"></div><div id="askOut"></div></div>
       <div class="kpis" id="kpis"></div>
     </div>
   </section>
@@ -213,12 +236,24 @@ footer{color:var(--muted);font-size:12px;margin-top:20px;text-align:center}
         <button class="btn blue wide" id="btnAiPlan" style="margin-top:12px">Plan von Claude erstellen lassen (4 Wochen)</button>
         <div class="actions"><button class="btn" id="btnCopy"><svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></svg>Für Claude kopieren</button><button class="btn blue" id="btnImport">Plan übernehmen</button></div>
         <div class="hint" id="coachHint">Claude wertet deine Daten jeden Morgen aus. Die Auswertung steht dann unter Heute. Ziel hier eintragen, dann richtet Claude den Plan danach aus.</div></div>
+      <div class="card"><h2>Wochenrückblick</h2><div class="sub">Von Claude, jeden Sonntag</div><div id="weekOut"></div><button class="btn wide" id="btnWeek" style="margin-top:12px">Rückblick jetzt erstellen</button></div>
+      <div class="card sportonly"><h2>Fortschritt und Bestwerte</h2><div class="sub">Aus deinen Einheiten, Verlauf über 12 Monate</div><div class="bench" id="bench" style="margin-top:10px"></div>
+        <h3 class="h3">Prognosen von Claude</h3><div id="progList"></div><button class="btn wide" id="btnProg" style="margin-top:10px">Prognose jetzt aktualisieren</button><div class="hint" id="progHint"></div>
+        <details><summary>Wie wird geschätzt?</summary><p class="hint">Laufzeiten: Riegel-Formel (T2 = T1 × (D2/D1)^1,06) aus deinem schnellsten Lauf ab 3 km der letzten 90 Tage, Laufband ausgenommen. Die Formel geht von passendem Training für die längere Strecke aus und überschätzt Marathonzeiten ohne lange Läufe. Laufökonomie: Meter pro Herzschlag (Tempo geteilt durch Durchschnittspuls), höher ist besser. Rad: höchste gewichtete Durchschnittsleistung (NP) einer Fahrt ab 40 Minuten. Die Kurven zeigen den besten Wert je Monat. Prognosen von Claude sind Schätzungen, sie werden monatlich neu erstellt.</p></details></div>
       <div class="card"><h2>Wettkämpfe und Ziele</h2><div class="sub">Gespeichert im intervals.icu-Kalender</div><div class="list" id="raceList"></div><button class="btn wide" id="btnRace" style="margin-top:12px"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Wettkampf oder Ziel eintragen</button></div>
       <div class="card"><h2>Wochenstunden</h2><div class="sub">Ist je Sportart und Soll aus dem Plan</div><div class="chartwrap" id="chWeeks"></div></div>
       <div class="card"><h2 id="totTitle">Summen</h2><div class="sub" id="totSub"></div><div class="sports" id="totals"></div></div>
       <div class="card"><h2>Fitness, Ermüdung und Form</h2><div class="sub">Letzte 120 Tage</div><div class="chartwrap" id="chPmc"></div>
         <details><summary>Was bedeuten die Kurven?</summary><p class="hint">Fitness (CTL) ist der 42-Tage-Durchschnitt der Trainingslast, Ermüdung (ATL) der 7-Tage-Durchschnitt. Form (TSB) ist die Differenz. Werte unter −30 zeigen hohe Ermüdung, −30 bis −10 gilt bei intervals.icu als produktiver Bereich.</p></details></div>
       <div class="card"><h2>Letzte Einheiten</h2><div class="sub">Die 15 neuesten Aktivitäten</div><div class="list" id="recent"></div></div>
+      <div class="card sportonly"><h2>Verpflegung</h2><div class="sub">Richtwerte für lange Einheiten und Wettkämpfe</div>
+        <div class="row"><div><label class="f" for="fSport">Einheit</label><select id="fSport"><option value="einheit">Training oder Wettkampf</option><option value="ironman">Ironman-Renntag</option></select></div><div><label class="f" for="fDur">Dauer in Stunden</label><input type="number" id="fDur" min="0" max="17" step="0.25" value="2"></div></div>
+        <div class="row"><div><label class="f" for="fInt">Intensität</label><select id="fInt"><option value="locker">locker</option><option value="mittel" selected>mittel</option><option value="rennen">Wettkampf</option></select></div><div><label class="f" for="fHeat">Wetter</label><select id="fHeat"><option value="kuehl">kühl</option><option value="normal" selected>normal</option><option value="heiss">heiß</option></select></div></div>
+        <div id="fuelOut" style="margin-top:12px"></div></div>
+      <div class="card sportonly"><h2>Laufschuhe</h2><div class="sub">Kilometer pro Schuh, gespeichert auf diesem Gerät</div><div id="shoeList" style="margin-top:8px"></div>
+        <div class="row"><div><label class="f" for="sName">Schuh</label><input id="sName" placeholder="z. B. Pegasus 41"></div><div><label class="f" for="sSince">Benutzt ab</label><input type="date" id="sSince"></div></div>
+        <div class="row"><div><label class="f" for="sKm">Bisherige km</label><input type="number" id="sKm" min="0" placeholder="0"></div><div><label class="f" for="sLim">Wechseln bei km</label><input type="number" id="sLim" min="100" value="700"></div></div>
+        <button class="btn wide" id="shoeAdd" style="margin-top:12px">Schuh hinzufügen</button></div>
     </div>
   </section>
 
@@ -295,6 +330,7 @@ footer{color:var(--muted);font-size:12px;margin-top:20px;text-align:center}
   <label class="f" for="cAi">Claude-API-Schlüssel (für den Coach)</label>
   <input type="password" id="cAi" autocomplete="off" placeholder="Claude Console → API Keys">
   <div class="hint">Wird nur an die Claude-API gesendet. Damit wertet Claude deine Daten beim ersten Öffnen am Tag aus und erstellt Pläne.</div>
+  <label class="f" for="cMode">Schwerpunkt</label><select id="cMode"><option value="sport">Training und Wettkampf</option><option value="gesundheit">Gesundheit und Bewegung</option></select>
   <label class="f" for="cTitle">Name der App</label><input id="cTitle" placeholder="Mein Training">
   <div class="row">
     <div><label class="f" for="cStart">Trainingsplan ab</label><input type="date" id="cStart"></div>
@@ -318,7 +354,7 @@ let settings=Object.assign({},DEFAULTS,store.get("imSettings",{}));
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");
 const isLive=()=>!!settings.apiKey&&!settings.forceDemo;
-const VERSION="9";
+const VERSION="10";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -374,15 +410,16 @@ function sickFromEvent(e){
 async function loadLive(){
   const end=today(),start=addDays(end,-180);
   const [acts,well,evs]=await Promise.all([
-    api(`/activities?oldest=${start}&newest=${end}`),
+    api(`/activities?oldest=${addDays(end,-365)}&newest=${end}`),
     api(`/wellness?oldest=${start}&newest=${end}`),
     api(`/events?oldest=${addDays(end,-365)}&newest=${addDays(end,730)}`)
   ]);
   const activities=(acts||[]).filter(a=>a&&a.start_date_local).map(a=>({
     date:a.start_date_local.slice(0,10),sport:sportOf(a.type),name:a.name||a.type||"",
-    secs:a.moving_time||a.elapsed_time||0,km:(a.distance||0)/1000,load:a.icu_training_load||0,hr:a.average_heartrate||null}));
+    secs:a.moving_time||a.elapsed_time||0,km:(a.distance||0)/1000,load:a.icu_training_load||0,hr:a.average_heartrate||null,
+    id:a.id,type:a.type,np:a.icu_weighted_avg_watts||null,ftp:a.icu_ftp||null,elev:a.total_elevation_gain||0,dec:a.decoupling!=null?a.decoupling:null,if:a.icu_intensity!=null?a.icu_intensity/100:null,maxhr:a.max_heartrate||null}));
   const wellness=(well||[]).map(w=>({date:w.id,ctl:w.ctl,atl:w.atl,hrv:w.hrv||null,rhr:w.restingHR||null,
-    sleepH:w.sleepSecs?w.sleepSecs/3600:null}));
+    sleepH:w.sleepSecs?w.sleepSecs/3600:null,steps:w.steps||null,weight:w.weight||null}));
   const sick=[],planned=[],races=[],notes=[];
   (evs||[]).forEach(e=>{
     if(e.category==="NOTE"&&/^Coach/.test(e.name||"")){notes.push({id:e.id,date:String(e.start_date_local).slice(0,10),name:e.name,text:e.description||""});return}
@@ -414,7 +451,7 @@ function demoData(){
         const mins=Math.round(m*prog*(0.85+r()*0.3)),f={swim:0.75,bike:0.85,run:1.05}[s];
         const km=s==="run"?mins/5.1:s==="bike"?mins*0.5:mins/21;
         const l=Math.round(mins*f);load+=l;
-        activities.push({date:d,sport:s,name:{swim:"Schwimmen",bike:wd===5?"Lange Radausfahrt":"Rad",run:wd===6?"Langer Lauf":"Lauf"}[s],secs:mins*60,km,load:l,hr:Math.round({swim:128,bike:132,run:146}[s]+gauss()*4)});
+        activities.push({id:"d"+d+s,type:{swim:"Swim",bike:"Ride",run:"Run"}[s],np:s==="bike"?Math.round(175+gauss()*12+prog*20):null,date:d,sport:s,name:{swim:"Schwimmen",bike:wd===5?"Lange Radausfahrt":"Rad",run:wd===6?"Langer Lauf":"Lauf"}[s],secs:mins*60,km,load:l,hr:Math.round({swim:128,bike:132,run:146}[s]+gauss()*4)});
       });
     }
     if(i<0)continue;
@@ -603,7 +640,7 @@ function render(){
     <ul class="sig">${ev.S.map(s=>`<li><i style="background:${LV[s.l]}"></i><div>${esc(s.t)}${s.src?`<span class="src">${esc(s.src)}</span>`:""}</div></li>`).join("")}</ul>
     <button class="btn wide fab" id="btnSick1"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Krank oder verletzt melden</button>`;
   $("btnSick1").onclick=openSick;
-  {const ns=(D.notes||[]).filter(n=>n.date<=t&&n.date>=addDays(t,-2)).sort((a,b)=>b.date.localeCompare(a.date));const cc=$("coachCard");
+  {const ns=(D.notes||[]).filter(n=>/^Coach \d/.test(n.name||"")&&n.date<=t&&n.date>=addDays(t,-2)).sort((a,b)=>b.date.localeCompare(a.date));const cc=$("coachCard");
    const ai=hasAi()&&isLive(),btn=ai?`<button class="btn wide" id="btnAiRun" style="margin-top:12px">${aiBusy?"Claude wertet aus …":"Auswertung jetzt starten"}</button><div class="err" id="aiErr">${esc(aiErrMsg)}</div><div class="hint">Verbrauch dieses Monats auf diesem Gerät: ${spend().usd.toFixed(2).replace(".",",")} $ von ${AI_LIMIT} $</div>`:"";
    if(ns.length){const n=ns[0];cc.style.display="";cc.innerHTML=coachHTML(n,D,t)+btn}
    else if(ai){cc.style.display="";cc.innerHTML=`<h2>Coach-Auswertung</h2><div class="sub">Für heute noch keine Auswertung</div>${btn}`}else cc.style.display="none";
@@ -639,7 +676,7 @@ function render(){
   $("totals").innerHTML=["swim","bike","run"].map(k=>`<div class="sp"><div class="n" style="color:${SPORTS[k].c}">${svgI(k,SPORTS[k].c)}${SPORTS[k].n}</div><div class="h">${fH(tot[k].h)}</div><div class="k">${nf(tot[k].km,k==="swim"?1:0)} km · ${tot[k].n}×</div></div>`).join("");
   // Liste
   const rec=D.activities.slice().sort((a,b)=>b.date.localeCompare(a.date)).slice(0,15);
-  $("recent").innerHTML=rec.length?rec.map(a=>`<div class="act"><div class="ico" style="background:${SPORTS[a.sport].c}">${svgI(a.sport,"#fff")}</div><div class="m"><b>${esc(a.name)}</b><span>${fDL(a.date)}${a.hr?" · Ø "+Math.round(a.hr)+" bpm":""}${a.load?" · Last "+nf(a.load):""}</span></div><div class="r"><b>${fH(a.secs)} h</b><span>${nf(a.km,a.sport==="swim"?2:1)} km</span></div></div>`).join(""):'<div class="empty">Keine Einheiten</div>';
+  $("recent").innerHTML=rec.length?rec.map(a=>`<div class="act"><div class="ico" style="background:${SPORTS[a.sport].c}">${svgI(a.sport,"#fff")}</div><div class="m"><b>${esc(a.name)}</b><span>${fDL(a.date)}${a.hr?" · Ø "+Math.round(a.hr)+" bpm":""}${a.load?" · Last "+nf(a.load):""}</span>${a.id?`<div data-aid="${esc(String(a.id))}"></div>`:""}</div><div class="r"><b>${fH(a.secs)} h</b><span>${nf(a.km,a.sport==="swim"?2:1)} km</span></div></div>`).join(""):'<div class="empty">Keine Einheiten</div>';
   // Krankheit
   const TL={oberhalb:["oberhalb des Halses","var(--yellow)"],unterhalb:["unterhalb des Halses","var(--red)"],verletzung:["Verletzung","var(--hrv)"]};
   const sl=D.sick.slice().sort((a,b)=>b.start.localeCompare(a.start));
@@ -652,6 +689,7 @@ function render(){
 <p><b>Krankheit</b><span class="tag g">Erfahrungswert</span><br>Beschwerden nur oberhalb des Halses: kurz und locker. Beschwerden unterhalb des Halses oder Fieber: Pause. Danach 7 Tage Rückkehrphase mit Warnhinweis. Der IOC-Konsens zu akuten Atemwegsinfekten bei Sportlern (Snyders et al., Br J Sports Med) hält fest, dass es für diese Regel keine evidenzbasierte Grundlage gibt. Bei Fieber, Brustschmerz oder anhaltenden Beschwerden ärztlich abklären lassen.</p>
 <p class="hint">Die Ampel ersetzt keinen Trainer und keine ärztliche Beurteilung.</p>`;
   $("footer").textContent=`Version ${VERSION} · Datenquelle: ${D.source} · Stand ${new Date().toLocaleString("de-DE",{dateStyle:"short",timeStyle:"short"})}`;
+  renderExtra(D);fuel();
   renderCharts();
 }
 function renderCharts(){
@@ -682,7 +720,7 @@ async function load(){
     if(!isLive())DATA=prep(demoData());
     else{DATA=prep(await loadLive());store.set("imCache",{t:Date.now(),d:Object.assign({},DATA,{wm:undefined})})}
     render();
-    if(isLive()&&hasAi()&&new Date().getHours()>=5)setTimeout(()=>aiDaily(false),500);
+    setTimeout(aiAuto,500);
   }catch(e){
     const c=store.get("imCache",null);
     if(c&&c.d){DATA=prep(c.d);DATA.source="intervals.icu (Stand "+new Date(c.t).toLocaleString("de-DE",{dateStyle:"short",timeStyle:"short"})+")"}
@@ -786,10 +824,10 @@ $("impSave").onclick=async()=>{
   }catch(e){$("impErr").textContent="Fehler: "+e.message;$("impSave").textContent="Prüfen";pending=null}
 };
 loadGoal();
-async function writeNote(date,text){
-  const name="Coach "+date;
-  if(!isLive()){const l=store.get("imDemoNotes",[]).filter(n=>n.date!==date);l.push({id:"n"+date,date,name,text});store.set("imDemoNotes",l);await load();return 1}
-  for(const n of (DATA.notes||[]).filter(n=>n.date===date))await api("/events/"+encodeURIComponent(n.id),{method:"DELETE"});
+async function writeNote(date,text,name){
+  name=name||"Coach "+date;
+  if(!isLive()){const l=store.get("imDemoNotes",[]).filter(n=>n.name!==name);l.push({id:"n"+date,date,name,text});store.set("imDemoNotes",l);await load();return 1}
+  for(const n of (DATA.notes||[]).filter(n=>n.name===name))await api("/events/"+encodeURIComponent(n.id),{method:"DELETE"});
   await api("/events",{method:"POST",body:JSON.stringify({category:"NOTE",start_date_local:date+"T00:00:00",end_date_local:addDays(date,1)+"T00:00:00",name,description:text})});
   await load();return 1;
 }
@@ -797,7 +835,7 @@ window.coach={live:()=>isLive(),version:VERSION,writeNote,summary:()=>coachText(
 
 /* ---------- Coach-Karte ---------- */
 function parseNote(txt){
-  const o={status:"",head:"",plan:"",why:[],week:"",tip:""};
+  const o={status:"",head:"",plan:"",why:[],week:"",tip:"",opts:[]};
   String(txt||"").split(/\n+/).map(s=>s.trim()).filter(Boolean).forEach(l=>{
     let m;
     if(m=l.match(/^Status:\s*(.*)$/i))o.status=m[1].toLowerCase();
@@ -805,6 +843,7 @@ function parseNote(txt){
     else if(m=l.match(/^Plan:\s*(.*)$/i))o.plan=m[1];
     else if(m=l.match(/^Woche:\s*(.*)$/i))o.week=m[1];
     else if(m=l.match(/^Tipp:\s*(.*)$/i))o.tip=m[1];
+    else if(m=l.match(/^Option (Laufen|Rad|Schwimmen|Kombi):\s*(.*)$/i))o.opts.push([m[1],m[2]]);
     else o.why.push(l.replace(/^[-•*]\s*/,""));
   });
   return o;
@@ -816,8 +855,8 @@ function coachHTML(n,D,t){
   const lvH=h&&h.r?(h.r<h.lo?1:0):null,lvR=r&&r.now&&r.base?(r.now>=r.base+5?1:0):null,lvS=w.sleepH?(w.sleepH<6?1:0):null,lvF=tsb!=null?(tsb<-30?2:tsb<-20?1:0):null;
   const m=(v,lab,lv)=>`<div><b>${v}</b><span>${lv!=null?`<i style="background:${LV[lv]}"></i>`:""}${lab}</span></div>`;
   return `<div style="--cxc:${c}"><div class="cx-top"><div class="cx-dot" style="background:${c}"><svg viewBox="0 0 24 24">${ic}</svg></div><div><div class="cx-k">Coach · ${n.date===t?"heute":fD(n.date)}</div><div class="cx-h">${esc(o.head||"Auswertung")}</div></div></div>
-  ${o.plan?`<div class="cx-plan"><b>Training heute</b>${esc(o.plan)}</div>`:""}
-  <div class="cx-m">${m(h&&h.r?nf(h.r):"–","HRV ms",lvH)}${m(r&&r.now?r.now:"–","Ruhepuls",lvR)}${m(w.sleepH?nf(w.sleepH,1):"–","Schlaf h",lvS)}${m(tsb!=null?(tsb>0?"+":"")+nf(tsb):"–","Form",lvF)}</div>
+  ${o.plan?`<div class="cx-plan"><b>Training heute</b><span class="cx-ptxt">${esc(o.plan)}</span>${o.opts.length?`<div class="cx-opts"><button class="on" data-opt="0" data-txt="${esc(o.plan)}">Empfohlen</button>${o.opts.map(([k,v],i)=>`<button data-opt="${i+1}" data-txt="${esc(v)}">${esc(k)}</button>`).join("")}</div>`:""}</div>`:""}
+  <div class="cx-m">${m(h&&h.r?nf(h.r):"–","HRV ms",lvH)}${m(r&&r.now?r.now:"–","Ruhepuls",lvR)}${m(w.sleepH?nf(w.sleepH,1):"–","Schlaf h",lvS)}${isHealth()?m(w.steps?nf(w.steps):"–","Schritte",null):m(tsb!=null?(tsb>0?"+":"")+nf(tsb):"–","Form",lvF)}</div>
   ${o.why.length?`<ul class="cx-why">${o.why.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}
   ${o.week?`<div class="cx-box"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><div><b>Woche</b><br>${esc(o.week)}</div></div>`:""}
   ${o.tip?`<div class="cx-box"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.6.6 1 1.4 1 2.5h6c0-1.1.4-1.9 1-2.5A6 6 0 0 0 12 3z"/></svg><div><b>Tipp</b><br>${esc(o.tip)}</div></div>`:""}</div>`;
@@ -831,7 +870,7 @@ function spend(){const m=today().slice(0,7),u=store.get("imAiSpend",{m,usd:0});r
 async function claude(prompt,maxTokens){
   if(spend().usd>=AI_LIMIT)throw new Error(`Monatslimit dieses Geräts erreicht (${AI_LIMIT} $). Ab dem 1. geht es weiter.`);
   let res;try{res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"content-type":"application/json","x-api-key":settings.aiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
-    body:JSON.stringify({model:"claude-sonnet-5-5",max_tokens:maxTokens,system:COACH_SYS,messages:[{role:"user",content:prompt}]})})}
+    body:JSON.stringify({model:"claude-sonnet-5-5",max_tokens:maxTokens,system:isHealth()?HEALTH_SYS:COACH_SYS,messages:[{role:"user",content:prompt}]})})}
   catch(e){throw new Error("Claude-API nicht erreichbar.")}
   const j=await res.json().catch(()=>({}));
   if(!res.ok){const m=(j.error&&j.error.message)||("Status "+res.status);throw new Error(/credit|balance|billing/i.test(m)?"Das API-Guthaben ist aufgebraucht. Im nächsten Monat kommt neues Guthaben.":"Claude-API: "+m)}
@@ -839,19 +878,20 @@ async function claude(prompt,maxTokens){
   return (j.content||[]).filter(c=>c.type==="text").map(c=>c.text).join("");
 }
 const COACH_SYS="Du bist ein erfahrener, sachlicher Ausdauertrainer (Laufen, Rad, Schwimmen, Triathlon) und wertest Trainings- und Gesundheitsdaten aus. Schreibe Deutsch, kurz, konkret, ohne Füllwörter, ohne Gedankenstriche und ohne Semikolons. Erfinde keine Werte. Nenne fehlende Daten. Keine Diagnosen. Bei Krankheitszeichen Pause empfehlen, bei Fieber oder Beschwerden unterhalb des Halses kein Training und ggf. Arzt. Respektiere bestehende Planeinheiten (z. B. aus TrainingPeaks), empfiehl nur, ob sie wie geplant, gekürzt, ohne Intensität oder gar nicht gemacht werden sollen.";
+const HEALTH_SYS="Du bist ein freundlicher, sachlicher Gesundheits- und Bewegungscoach. Schreibe Deutsch in einfacher, verständlicher Sprache, ohne Fachbegriffe, ohne Gedankenstriche und ohne Semikolons. Schwerpunkt: Alltagsbewegung, Schritte, Spaziergänge, leichte Ausdauer, Kraft und Beweglichkeit, Schlaf und Ruhepuls. Erfinde keine Werte. Keine Diagnosen. Bei auffälligen Werten oder Beschwerden zum Arzt raten. Die Feldnamen im JSON bleiben gleich, Alternativen dürfen auch Spazierengehen, Radfahren, Schwimmen oder Gymnastik sein.";
 function jsonFrom(txt){const m=txt.match(/```json\s*([\s\S]*?)```/i);const s=m?m[1]:txt.slice(txt.indexOf("{"),txt.lastIndexOf("}")+1);return JSON.parse(s)}
 function planFmt(){return 'description im intervals.icu-Workout-Format, jede Zeile ein Schritt, z. B. "Warm-up\n- 15m Z2\nMain Set 4x\n- 4m Z4\n- 3m Z1\nCooldown\n- 10m Z1". sport ist Run, Ride, Swim oder WeightTraining.'}
 async function aiDaily(manual){
   if(aiBusy||!hasAi()||!isLive()||!DATA)return;const t=today();
-  if(!manual&&((DATA.notes||[]).some(n=>n.date===t)||store.get("imAiDay","")===t))return;
+  if(!manual&&(noteBy("Coach "+t)||store.get("imAiDay","")===t))return;
   aiBusy=true;aiErrMsg="";store.set("imAiDay",t);render();
   try{
     const up=DATA.planned.filter(p=>p.date>=t&&p.date<=addDays(t,6)),g=saveGoal(),fill=!up.length&&g.gSport&&g.gDate;
     const pr=coachText().replace(/\nANTWORTFORMAT[\s\S]*$/,"")+"\n\nGEPLANT NÄCHSTE 7 TAGE\n"+(up.length?up.map(p=>`${p.date} ${SPORTS[p.sport].n}: ${p.name}${p.secs?", "+fH(p.secs)+" h":""}`).join("\n"):"nichts")+
-      `\n\nAUFGABE\nTagesauswertung für heute (${t}). Antworte nur mit JSON in einem json-Codeblock: {"status":"gruen|gelb|rot","headline":"Kernaussage für heute, max. 60 Zeichen","plan":"konkrete Einheit für heute mit Sportart, Dauer und Intensität (Zone), oder Ruhetag. Gibt es eine geplante Einheit, sag ob wie geplant, gekürzt oder ohne Intensität","why":["3 bis 4 kurze Gründe, je max. 110 Zeichen, mit den konkreten Zahlen"],"week":"ein Satz zur Woche und zum Trend","tip":"ein kurzer praktischer Tipp (Erholung, Ernährung, Technik oder Planung)","workouts":[...]}.`+
+      `\n\nAUFGABE\nTagesauswertung für heute (${t}). Antworte nur mit JSON in einem json-Codeblock: {"status":"gruen|gelb|rot","headline":"Kernaussage für heute, max. 60 Zeichen","plan":"konkrete Einheit für heute mit Sportart, Dauer und Intensität (Zone), oder Ruhetag. Gibt es eine geplante Einheit, sag ob wie geplant, gekürzt oder ohne Intensität","why":["3 bis 4 kurze Gründe, je max. 110 Zeichen, mit den konkreten Zahlen"],"week":"ein Satz zur Woche und zum Trend","tip":"ein kurzer praktischer Tipp (Erholung, Ernährung, Technik oder Planung)","options":{"Laufen":"Alternative als Lauf mit Dauer und Zone","Rad":"Alternative auf dem Rad (draußen oder Rolle/Zwift)","Schwimmen":"Alternative im Becken mit Aufbau in Metern","Kombi":"Kombination zweier Sportarten, z. B. Koppeleinheit Rad und Lauf"},"workouts":[...]}. Alle Alternativen müssen zum heutigen Zustand passen (gleiche Belastungsstufe).`+
       (fill?` workouts: Einheiten für die nächsten 7 Tage ab heute passend zu Ziel, Stunden und Trainingstagen, je {"date","sport","name","minutes","description"}, ${planFmt()}`:` workouts: leere Liste.`);
-    const o=jsonFrom(await claude(pr,fill?6000:1500));
-    const txt=o.headline?[`Status: ${o.status||""}`,`Heute: ${o.headline}`,o.plan?`Plan: ${o.plan}`:"",...(o.why||[]).map(x=>"- "+x),o.week?`Woche: ${o.week}`:"",o.tip?`Tipp: ${o.tip}`:""].filter(Boolean).join("\n"):String(o.note||"");
+    const o=jsonFrom(await claude(pr,fill?6500:2200));
+    const txt=o.headline?[`Status: ${o.status||""}`,`Heute: ${o.headline}`,o.plan?`Plan: ${o.plan}`:"",...(o.why||[]).map(x=>"- "+x),o.week?`Woche: ${o.week}`:"",o.tip?`Tipp: ${o.tip}`:"",...Object.entries(o.options||{}).filter(([k,v])=>v).map(([k,v])=>`Option ${k}: ${v}`)].filter(Boolean).join("\n"):String(o.note||"");
     if(txt)await writeNote(t,txt.slice(0,2000));
     if(fill&&Array.isArray(o.workouts)&&o.workouts.length){await importPlan(parsePlan(JSON.stringify(o.workouts)));await load()}
   }catch(e){aiErrMsg=e.message;if(manual)store.set("imAiDay","")}
@@ -871,6 +911,173 @@ $("btnAiPlan").onclick=async()=>{
   }catch(e){$("coachHint").textContent="Fehler: "+e.message}
   finally{b.disabled=false;b.textContent="Plan von Claude erstellen lassen (4 Wochen)"}
 };
+
+/* ---------- v10: Fortschritt, Bestwerte, Prognosen ---------- */
+function fT(sec){if(sec==null||!isFinite(sec))return"–";sec=Math.round(sec);const h=Math.floor(sec/3600),m=Math.floor(sec%3600/60),s=sec%60;return h?`${h}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`:`${m}:${String(s).padStart(2,"0")}`}
+function isHealth(){return settings.mode==="gesundheit"}
+function bench(D){
+  const t=today(),A=D.activities;
+  const months=[];for(let i=11;i>=0;i--){const d=P(t);d.setDate(1);d.setMonth(d.getMonth()-i);months.push(ymd(d).slice(0,7))}
+  const byM=(arr,f,agg)=>months.map(m=>{const v=arr.filter(a=>a.date.slice(0,7)===m).map(f).filter(x=>x!=null&&isFinite(x));return v.length?agg(v):null});
+  const win=(arr,from,to)=>arr.filter(a=>a.date>addDays(t,-from)&&a.date<=addDays(t,-to));
+  const mn=v=>Math.min(...v),mx=v=>Math.max(...v);
+  const best=(arr,f,agg=mn)=>{const v=arr.map(f).filter(x=>x!=null&&isFinite(x));return v.length?agg(v):null};
+  const runs=A.filter(a=>a.sport==="run"&&a.type!=="VirtualRun"&&a.km>=3&&a.secs>0);
+  const eq5=a=>a.secs*Math.pow(5/a.km,1.06);
+  const r5=best(win(runs,90,0),eq5),r5o=best(win(runs,180,90),eq5);
+  const real5=best(A.filter(a=>a.sport==="run"&&a.km>=4.9&&a.km<=5.4),a=>a.secs*5/a.km);
+  const econ=a=>a.hr&&a.km>=3?(a.km*1000/(a.secs/60))/a.hr:null;
+  const avg=v=>mean(v);
+  const eN=best(win(runs,42,0),econ,avg),eO=best(win(runs,132,90),econ,avg);
+  const sw=A.filter(a=>a.sport==="swim"&&a.km>=0.4&&a.secs>0),p100=a=>a.secs/(a.km*10);
+  const sN=best(win(sw,90,0),p100),sO=best(win(sw,180,90),p100);
+  const rides=A.filter(a=>a.sport==="bike"&&a.np&&a.secs>=2400);
+  const bN=best(win(rides,90,0),a=>a.np,mx),bO=best(win(rides,180,90),a=>a.np,mx);
+  const ftp=(A.slice().reverse().find(a=>a.ftp)||{}).ftp||null;
+  const wt=(()=>{for(let i=0;i<30;i++){const w=D.wm[addDays(t,-i)];if(w&&w.weight)return w.weight}return null})();
+  const cN=(D.wm[t]||D.wm[addDays(t,-1)]||{}).ctl,cO=(D.wm[addDays(t,-90)]||{}).ctl;
+  const ctlM=months.map(m=>{const v=Object.values(D.wm).filter(w=>w.date&&w.date.slice(0,7)===m&&w.ctl!=null).map(w=>w.ctl);return v.length?mean(v):null});
+  return{months,t,r5,r5o,real5,eN,eO,sN,sO,bN,bO,ftp,wt,cN,cO,
+    s5:byM(runs,eq5,mn),sE:byM(runs,econ,avg),sS:byM(sw,p100,mn),sB:byM(rides,a=>a.np,mx),sC:ctlM};
+}
+function benchText(b){
+  const L=[];if(b.r5)L.push(`Laufen geschätzt (Riegel aus schnellstem Lauf 90 Tage): 5 km ${fT(b.r5)}, 10 km ${fT(b.r5*Math.pow(2,1.06))}, HM ${fT(b.r5*Math.pow(21.0975/5,1.06))}, M ${fT(b.r5*Math.pow(42.195/5,1.06))}`);
+  if(b.real5)L.push(`Schnellster 5-km-Lauf (12 Monate): ${fT(b.real5)}`);
+  if(b.sN)L.push(`Schwimmen bestes Tempo 90 Tage: ${fT(b.sN)} /100 m`);
+  if(b.bN)L.push(`Rad beste NP ≥ 40 min (90 Tage): ${Math.round(b.bN)} W`);
+  if(b.ftp)L.push(`FTP-Einstellung: ${b.ftp} W${b.wt?`, ${nf(b.ftp/b.wt,2)} W/kg bei ${nf(b.wt,1)} kg`:""}`);
+  return L.join("\n");
+}
+function renderBench(D){
+  const b=bench(D),el=$("bench");if(!el)return;
+  const dl=(now,old,fmt,lowGood,unit="")=>{if(now==null||old==null)return'<span class="bd">noch kein Vergleich</span>';const d=now-old,good=lowGood?d<0:d>0,z=Math.abs(d)<1e-9;
+    return`<span class="bd" style="color:${z?"var(--muted)":good?"var(--green)":"var(--red)"}">${z?"unverändert":(d>0?"+":"−")+fmt(Math.abs(d))+unit} ggü. 3 Monaten</span>`};
+  const tile=(k,v,sub,delta,series,c)=>`<div class="bt"><div class="bk">${k}</div><div class="bv">${v}</div><div class="bs">${sub}</div>${delta}<div class="bsp">${spark(series,c)}</div></div>`;
+  const T=[];
+  if(b.r5)T.push(`<div class="bt wide"><div class="bk">Laufen · geschätzte Zeiten</div><div class="brow"><div><b>${fT(b.r5)}</b><span>5 km</span></div><div><b>${fT(b.r5*Math.pow(2,1.06))}</b><span>10 km</span></div><div><b>${fT(b.r5*Math.pow(21.0975/5,1.06))}</b><span>Halbmarathon</span></div><div><b>${fT(b.r5*Math.pow(42.195/5,1.06))}</b><span>Marathon</span></div></div>${dl(b.r5,b.r5o,x=>fT(x),true," (5 km)")}<div class="bsp">${spark(b.s5.map(v=>v==null?null:-v),"var(--run)")}</div></div>`);
+  if(b.real5)T.push(tile("Schnellster 5-km-Lauf",fT(b.real5),"gelaufen, letzte 12 Monate","",[],"var(--run)"));
+  if(b.eN)T.push(tile("Laufökonomie",nf(b.eN,2)+" m","pro Herzschlag, 6 Wochen",dl(b.eN,b.eO,x=>nf(x,2),false," m"),b.sE,"var(--run)"));
+  if(b.sN)T.push(tile("Schwimmen",fT(b.sN)+" /100 m","bestes Tempo, 90 Tage",dl(b.sN,b.sO,x=>fT(x),true),b.sS.map(v=>v==null?null:-v),"var(--swim)"));
+  if(b.bN)T.push(tile("Rad",Math.round(b.bN)+" W","beste NP ≥ 40 min, 90 Tage",dl(b.bN,b.bO,x=>Math.round(x),false," W"),b.sB,"var(--bike)"));
+  if(b.ftp)T.push(tile("FTP",b.ftp+" W",b.wt?nf(b.ftp/b.wt,2)+" W/kg":"Gewicht fehlt","",[],"var(--bike)"));
+  if(b.cN!=null)T.push(tile("Fitness (CTL)",nf(b.cN),"Monatsmittel im Verlauf",dl(b.cN,b.cO,x=>nf(x),false),b.sC,"var(--ctl)"));
+  el.innerHTML=T.length?T.join(""):'<div class="empty">Noch zu wenige Einheiten</div>';
+  // Prognosen
+  const P_=(D.notes||[]).filter(n=>/^Coach Prognose/.test(n.name)).sort((a,b)=>b.date.localeCompare(a.date));
+  const parseP=n=>{const it=[],o={date:n.date,items:it,comment:""};n.text.split(/\n+/).forEach(l=>{let m;if(m=l.match(/^Prognose:\s*(.*)$/i)){const p=m[1].split("|").map(s=>s.trim());it.push({label:p[0],value:p[1]||"",range:p[2]||"",basis:p[3]||""})}else if(m=l.match(/^Kommentar:\s*(.*)$/i))o.comment=m[1]});return o};
+  const ps=P_.map(parseP);
+  $("progList").innerHTML=ps.length?ps[0].items.map(it=>{const prev=ps.slice(1).map(p=>({d:p.date,i:p.items.find(x=>x.label===it.label)})).filter(x=>x.i).slice(0,3);
+    return`<div class="pg"><div><b>${esc(it.label)}</b><span>${esc(it.basis)}</span>${prev.length?`<span class="pv">Verlauf: ${prev.map(p=>`${esc(p.i.value)} (${fD(p.d)})`).join(" · ")}</span>`:""}</div><div class="r"><b>${esc(it.value)}</b><span>${esc(it.range)}</span></div></div>`}).join("")+(ps[0].comment?`<div class="hint">${esc(ps[0].comment)} · Stand ${fD(ps[0].date)}</div>`:"")
+    :'<div class="hint">Noch keine Prognose. Claude schätzt deine Zeiten für deine Ziele und Wettkämpfe und wiederholt das jeden Monat, damit du den Verlauf siehst.</div>';
+}
+/* ---------- Coach: Notizen und Aufgaben ---------- */
+function noteBy(name){return(DATA&&DATA.notes||[]).find(n=>n.name===name)}
+function lockOnce(k){const v=store.get("imLock",{});if(v[k])return false;v[k]=Date.now();store.set("imLock",v);return true}
+function unlock(k){const v=store.get("imLock",{});delete v[k];store.set("imLock",v)}
+function actLine(a){return`${a.date} ${SPORTS[a.sport].n} (${a.type||""}): ${a.name}, ${fH(a.secs)} h, ${nf(a.km,2)} km${a.hr?", Ø HF "+Math.round(a.hr):""}${a.maxhr?", max HF "+Math.round(a.maxhr):""}${a.np?", NP "+Math.round(a.np)+" W":""}${a.if?", IF "+nf(a.if,2):""}${a.load?", Last "+nf(a.load):""}${a.dec!=null?", Entkopplung "+nf(a.dec,1)+" %":""}${a.elev?", "+Math.round(a.elev)+" Hm":""}${a.sport==="run"&&a.km>0?", Pace "+fT(a.secs/a.km)+" /km":""}${a.sport==="swim"&&a.km>0?", "+fT(a.secs/(a.km*10))+" /100 m":""}`}
+async function aiActivity(a,manual){
+  const k="act"+a.id;if(!manual&&!lockOnce(k))return;
+  try{
+    const pr=coachText().replace(/\nANTWORTFORMAT[\s\S]*$/,"")+`\n\nEINHEIT ZUM BEWERTEN\n${actLine(a)}\n\nAUFGABE\nBewerte diese Einheit kurz wie ein Trainer: War Intensität und Umfang passend zum aktuellen Zustand und Ziel? Was war gut, was beim nächsten Mal anders? Antworte nur mit JSON in einem json-Codeblock: {"headline":"max. 60 Zeichen","rating":"passend|zu hart|zu locker|gut","points":["2 bis 3 kurze Punkte mit Zahlen, je max. 110 Zeichen"]}`;
+    const o=jsonFrom(await claude(pr,900));
+    await writeNote(a.date,[`Titel: ${o.headline||""}`,`Bewertung: ${o.rating||""}`,...(o.points||[]).map(x=>"- "+x)].join("\n"),"Coach Einheit "+a.id);
+  }catch(e){unlock(k);if(manual)throw e}
+}
+async function aiWeekly(mon,manual){
+  const k="week"+mon;if(!manual&&!lockOnce(k))return;
+  try{
+    const D=DATA,end=addDays(mon,6),acts=D.activities.filter(a=>a.date>=mon&&a.date<=end),pl=D.planned.filter(p=>p.date>=mon&&p.date<=end);
+    const pr=coachText().replace(/\nANTWORTFORMAT[\s\S]*$/,"")+`\n\nWOCHE ${mon} bis ${end}\nGemacht:\n${acts.map(actLine).join("\n")||"nichts"}\nGeplant:\n${pl.map(p=>`${p.date} ${SPORTS[p.sport].n}: ${p.name}${p.secs?", "+fH(p.secs)+" h":""}`).join("\n")||"kein Plan"}\n\nAUFGABE\nWochenrückblick wie ein Trainer. Antworte nur mit JSON in einem json-Codeblock: {"headline":"max. 60 Zeichen","good":["2 bis 3 Punkte, was gut lief"],"improve":["1 bis 2 Punkte, was besser geht"],"next":"ein bis zwei Sätze, worauf es nächste Woche ankommt"}`;
+    const o=jsonFrom(await claude(pr,1200));
+    await writeNote(end,[`Titel: ${o.headline||""}`,...(o.good||[]).map(x=>"+ "+x),...(o.improve||[]).map(x=>"! "+x),`Nächste: ${o.next||""}`].join("\n"),"Coach Woche "+mon);
+  }catch(e){unlock(k);if(manual)throw e}
+}
+async function aiProg(manual){
+  const t=today(),k="prog"+t.slice(0,7);if(!manual&&!lockOnce(k))return;
+  try{
+    const b=bench(DATA),pr=coachText().replace(/\nANTWORTFORMAT[\s\S]*$/,"")+`\n\nBESTWERTE\n${benchText(b)||"keine"}\n\nAUFGABE\nSchätze realistische Zeiten für meine Ziele und Wettkämpfe zum jeweiligen Termin (bei Fortsetzung des Trainings) und für Standardstrecken passend zu meinen Sportarten (z. B. 5 km, 10 km, Halbmarathon, 1500 m Schwimmen, 40 km Rad, bei Triathlon auch Teilzeiten). Nenne eine Spanne und worauf die Schätzung beruht. Antworte nur mit JSON in einem json-Codeblock: {"items":[{"label":"z. B. Ironman Frankfurt (27.06.2027)","value":"12:45 h","range":"12:00 bis 13:30 h","basis":"max. 70 Zeichen"}],"comment":"ein Satz, wo das größte Potenzial liegt"}. Höchstens 8 Einträge.`;
+    const o=jsonFrom(await claude(pr,1800));
+    await writeNote(t,[...(o.items||[]).map(i=>`Prognose: ${i.label} | ${i.value} | ${i.range||""} | ${i.basis||""}`),`Kommentar: ${o.comment||""}`].join("\n"),"Coach Prognose "+t);
+  }catch(e){unlock(k);if(manual)throw e}
+}
+let autoRun=false;
+async function aiAuto(){
+  if(autoRun||!hasAi()||!isLive()||!DATA||new Date().getHours()<5)return;autoRun=true;
+  try{
+    await aiDaily(false);
+    const t=today(),D=DATA;
+    const a=D.activities.filter(a=>a.id&&a.date>=addDays(t,-2)&&!noteBy("Coach Einheit "+a.id)).sort((x,y)=>y.date.localeCompare(x.date))[0];
+    if(a)await aiActivity(a,false);
+    const wd=P(t).getDay();if(wd===0||wd===1){const mon=wd===0?monday(t):monday(addDays(t,-1));if(!noteBy("Coach Woche "+mon))await aiWeekly(mon,false)}
+    if(!isHealth()&&!(D.notes||[]).some(n=>/^Coach Prognose/.test(n.name)&&n.date>addDays(t,-30)))await aiProg(false);
+  }catch(e){}finally{autoRun=false;render()}
+}
+/* ---------- Karten: letzte Einheit, Wochenrückblick, Frage ---------- */
+function kv(txt){const o={title:"",rating:"",pts:[],good:[],imp:[],next:""};String(txt||"").split(/\n+/).forEach(l=>{l=l.trim();let m;if(!l)return;
+  if(m=l.match(/^Titel:\s*(.*)$/))o.title=m[1];else if(m=l.match(/^Bewertung:\s*(.*)$/))o.rating=m[1];else if(m=l.match(/^Nächste:\s*(.*)$/))o.next=m[1];
+  else if(l[0]==="+")o.good.push(l.slice(1).trim());else if(l[0]==="!")o.imp.push(l.slice(1).trim());else o.pts.push(l.replace(/^[-•*]\s*/,""))});return o}
+function renderExtra(D){
+  const t=today(),ai=hasAi()&&isLive();
+  // letzte Einheit
+  const last=D.activities.filter(a=>a.id).sort((x,y)=>y.date.localeCompare(x.date))[0],ac=$("actCard");
+  if(last&&last.date>=addDays(t,-3)){const n=noteBy("Coach Einheit "+last.id),o=n?kv(n.text):null;ac.style.display="";
+    ac.innerHTML=`<h2>Letzte Einheit</h2><div class="act" style="margin-top:8px"><div class="ico" style="background:${SPORTS[last.sport].c}">${svgI(last.sport,"#fff")}</div><div class="m"><b>${esc(last.name)}</b><span>${fDL(last.date)}${last.hr?" · Ø "+Math.round(last.hr)+" bpm":""}</span></div><div class="r"><b>${fH(last.secs)} h</b><span>${nf(last.km,last.sport==="swim"?2:1)} km</span></div></div>
+    ${o?`<div class="cx-h" style="font-size:16px;margin:12px 0 6px">${esc(o.title)}${o.rating?` <span class="tag">${esc(o.rating)}</span>`:""}</div><ul class="cx-why" style="--cxc:${SPORTS[last.sport].c}">${o.pts.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:ai?`<button class="btn wide" id="btnActAi" style="margin-top:10px">Einheit bewerten lassen</button>`:""}<div class="err" id="actErr"></div>`;
+    if($("btnActAi"))$("btnActAi").onclick=async()=>{const b=$("btnActAi");b.disabled=true;b.textContent="Claude bewertet …";try{await aiActivity(last,true)}catch(e){$("actErr").textContent=e.message;b.disabled=false;b.textContent="Einheit bewerten lassen"}};
+  }else ac.style.display="none";
+  // Frage
+  const q=$("askCard");q.style.display=ai?"":"none";
+  if(ai&&!q.dataset.init){q.dataset.init=1;const l=store.get("imAsk",null);if(l)$("askOut").innerHTML=`<div class="qa"><b>${esc(l.q)}</b><div>${esc(l.a).replace(/\n/g,"<br>")}</div></div>`}
+  // Wochenrückblick
+  const wn=(D.notes||[]).filter(n=>/^Coach Woche/.test(n.name)).sort((a,b)=>b.name.localeCompare(a.name))[0],wc=$("weekOut");
+  if(wn){const o=kv(wn.text),mon=wn.name.slice(12);wc.innerHTML=`<div class="cx-h" style="font-size:17px;margin:4px 0 10px">${esc(o.title)}</div><div class="sub" style="margin:-6px 0 10px">Woche ab ${fD(mon)}</div>
+    ${o.good.length?`<ul class="cx-why" style="--cxc:var(--green)">${o.good.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}${o.imp.length?`<ul class="cx-why" style="--cxc:var(--yellow)">${o.imp.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}${o.next?`<div class="cx-box"><div><b>Nächste Woche</b><br>${esc(o.next)}</div></div>`:""}`}
+  else wc.innerHTML='<div class="hint">Der Rückblick kommt automatisch sonntags oder montags.</div>';
+  $("btnWeek").style.display=ai?"":"none";
+  // Liste: Kommentare
+  document.querySelectorAll("#recent [data-aid]").forEach(el=>{const n=noteBy("Coach Einheit "+el.dataset.aid);if(n){const o=kv(n.text);el.innerHTML=`<span class="cm">Coach: ${esc(o.title)}${o.rating?" · "+esc(o.rating):""}</span>`}});
+  renderBench(D);renderShoes(D);
+  document.body.classList.toggle("health",isHealth());
+}
+$("askSend").onclick=async()=>{
+  const q=$("askIn").value.trim();if(!q)return;const b=$("askSend");b.disabled=true;b.textContent="Claude antwortet …";$("askErr").textContent="";
+  try{const pr=coachText().replace(/\nANTWORTFORMAT[\s\S]*$/,"")+"\n\nGEPLANT NÄCHSTE 7 TAGE\n"+(DATA.planned.filter(p=>p.date>=today()&&p.date<=addDays(today(),6)).map(p=>`${p.date} ${SPORTS[p.sport].n}: ${p.name}`).join("\n")||"nichts")+`\n\nFRAGE\n${q}\n\nAntworte direkt, konkret und kurz (max. 120 Wörter), als Fließtext ohne Markdown.`;
+    const a=(await claude(pr,700)).trim();store.set("imAsk",{q,a});$("askOut").innerHTML=`<div class="qa"><b>${esc(q)}</b><div>${esc(a).replace(/\n/g,"<br>")}</div></div>`;$("askIn").value="";
+  }catch(e){$("askErr").textContent=e.message}finally{b.disabled=false;b.textContent="Fragen"}
+};
+document.querySelectorAll("[data-q]").forEach(c=>c.onclick=()=>{$("askIn").value=c.dataset.q;$("askSend").click()});
+$("btnWeek").onclick=async()=>{const b=$("btnWeek"),t=today(),wd=P(t).getDay(),mon=wd===0||wd===1?(wd===0?monday(t):monday(addDays(t,-1))):monday(t);b.disabled=true;b.textContent="Claude schreibt …";
+  try{await aiWeekly(mon,true)}catch(e){$("weekOut").insertAdjacentHTML("beforeend",`<div class="err">${esc(e.message)}</div>`)}finally{b.disabled=false;b.textContent="Rückblick jetzt erstellen"}};
+$("btnProg").onclick=async()=>{const b=$("btnProg");if(!hasAi()||!isLive()){$("progHint").textContent="Dafür den Claude-API-Schlüssel in den Einstellungen eintragen.";return}
+  b.disabled=true;b.textContent="Claude schätzt …";try{await aiProg(true);$("progHint").textContent=""}catch(e){$("progHint").textContent="Fehler: "+e.message}finally{b.disabled=false;b.textContent="Prognose jetzt aktualisieren"}};
+/* ---------- Verpflegung ---------- */
+function fuel(){
+  const h=+$("fDur").value||0,int=$("fInt").value,heat=$("fHeat").value,wt=bench(DATA).wt||70;
+  let c=h<1?[0,0]:h<2?[30,45]:h<2.5?[30,60]:[60,90];if(int==="locker"&&h<2.5)c=[0,30];if(int==="rennen"&&h>=2.5)c=[75,90];
+  const fl=heat==="heiss"?[600,1000]:heat==="kuehl"?[300,500]:[400,750],na=heat==="heiss"?[500,1000]:[300,600];
+  const tot=[Math.round(c[0]*h),Math.round(c[1]*h)];
+  $("fuelOut").innerHTML=`<div class="brow"><div><b>${c[0]===c[1]?c[0]:c[0]+"–"+c[1]} g</b><span>Kohlenhydrate pro Stunde</span></div><div><b>${fl[0]}–${fl[1]} ml</b><span>Trinken pro Stunde</span></div><div><b>${na[0]}–${na[1]} mg</b><span>Natrium pro Stunde</span></div></div>
+  ${h>=1?`<p class="hint">Gesamt etwa ${tot[0]}–${tot[1]} g Kohlenhydrate. Beispiel pro Stunde: ${c[1]>=60?"1 Gel (ca. 25 g) + 500 ml Iso-Getränk (ca. 30 g) + ½ Riegel (ca. 20 g)":c[1]>=30?"500 ml Iso-Getränk (ca. 30 g) oder 1 Gel mit Wasser":"Wasser genügt, optional ein Gel"}. ${c[1]>60?"Mehr als 60 g pro Stunde nur mit Glukose-Fruktose-Mischungen und vorher im Training ausprobiert.":""}</p>`:'<p class="hint">Unter einer Stunde reicht in der Regel Wasser.</p>'}
+  ${$("fSport").value==="ironman"?`<p class="hint"><b>Ironman-Renntag:</b> Schwimmen ohne Verpflegung, davor 2 bis 3 Stunden vorher ein kohlenhydratreiches Frühstück. Rad: 80 bis 90 g Kohlenhydrate und ${fl[0]}–${fl[1]} ml pro Stunde, gleichmäßig in 15- bis 20-Minuten-Abständen. Laufen: 50 bis 70 g pro Stunde über Gels, Iso und Cola an den Verpflegungsstellen. Bei ${nf(wt)} kg Körpergewicht nach Durst trinken, nicht über das Durstgefühl hinaus.</p>`:""}
+  <p class="hint">Richtwerte nach Jeukendrup (2014, Sports Medicine) für Kohlenhydrate und nach der ACSM-Stellungnahme zu Flüssigkeit (Sawka et al., 2007). Den Plan im Training testen, besonders bei hohen Mengen.</p>`;
+}
+["fDur","fInt","fHeat","fSport"].forEach(k=>$(k).addEventListener("input",fuel));
+$("fSport").addEventListener("change",()=>{if($("fSport").value==="ironman"){$("fDur").value=12;$("fInt").value="rennen"}fuel()});
+/* ---------- Laufschuhe ---------- */
+function renderShoes(D){
+  const sh=store.get("imShoes",[]).sort((a,b)=>a.since.localeCompare(b.since)),runs=D.activities.filter(a=>a.sport==="run");
+  const act=sh.filter(s=>!s.ret);
+  const km=s=>s.startKm+runs.filter(r=>r.date>=s.since&&(!s.ret||r.date<=s.ret)&&act.filter(o=>o.since<=r.date).slice(-1)[0]===s).reduce((x,r)=>x+r.km,0);
+  $("shoeList").innerHTML=sh.length?sh.map(s=>{const k=km(s),p=Math.min(1,k/s.limit),c=p>=1?"var(--red)":p>=.85?"var(--yellow)":"var(--green)";
+    return`<div class="shoe"><div class="m"><b>${esc(s.name)}</b><span>${Math.round(k)} von ${s.limit} km · seit ${fD(s.since)}${s.ret?" · ausgemustert":""}${!s.ret&&p>=1?" · Wechsel fällig":!s.ret&&p>=.85?" · bald wechseln":""}</span><div class="bar"><i style="width:${(p*100).toFixed(0)}%;background:${c}"></i></div></div>${s.ret?"":`<button class="btn sm" data-sret="${s.id}">Ausmustern</button>`}<button class="btn sm" data-sdel="${s.id}">Löschen</button></div>`}).join(""):'<div class="hint">Noch kein Schuh eingetragen. Alle Läufe ab dem Startdatum werden dem neuesten aktiven Schuh zugerechnet.</div>';
+}
+$("shoeAdd").onclick=()=>{const name=$("sName").value.trim();if(!name)return;const sh=store.get("imShoes",[]);sh.push({id:"s"+Date.now(),name,since:$("sSince").value||today(),startKm:+$("sKm").value||0,limit:+$("sLim").value||700});store.set("imShoes",sh);$("sName").value="";$("sKm").value="";renderShoes(DATA)};
+$("shoeList").onclick=e=>{const b=e.target.closest("button");if(!b)return;let sh=store.get("imShoes",[]);
+  if(b.dataset.sdel){if(b.dataset.sure!=="1"){b.dataset.sure="1";b.textContent="Sicher?";return}sh=sh.filter(s=>s.id!==b.dataset.sdel)}
+  if(b.dataset.sret)sh.forEach(s=>{if(s.id===b.dataset.sret)s.ret=today()});store.set("imShoes",sh);renderShoes(DATA)};
+$("sSince").value=today();
+/* Optionen in der Coach-Karte */
+$("coachCard").addEventListener("click",e=>{const b=e.target.closest("[data-opt]");if(!b)return;const box=$("coachCard");box.querySelectorAll("[data-opt]").forEach(x=>x.classList.toggle("on",x===b));box.querySelector(".cx-ptxt").textContent=b.dataset.txt});
 
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
@@ -901,12 +1108,12 @@ $("raceList").onclick=async ev=>{
 
 /* ---------- Einstellungen ---------- */
 function openSettings(){
-  $("cKey").value=settings.apiKey;$("cAi").value=settings.aiKey||"";$("cTitle").value=settings.title||"";$("cStart").value=settings.planStart||"";
+  $("cKey").value=settings.apiKey;$("cMode").value=settings.mode||"sport";$("cAi").value=settings.aiKey||"";$("cTitle").value=settings.title||"";$("cStart").value=settings.planStart||"";
   $("cWeeks").value=settings.planWeeks||"";$("cDemo").checked=!!settings.forceDemo;$("cErr").textContent="";open("mSet")}
 $("btnSettings").onclick=openSettings;
 $("cCancel").onclick=()=>close("mSet");
 $("cSave").onclick=()=>{
-  settings=Object.assign(settings,{aiKey:$("cAi").value.trim(),apiKey:$("cKey").value.trim(),title:$("cTitle").value.trim()||"Mein Training",planStart:$("cStart").value||"",
+  settings=Object.assign(settings,{mode:$("cMode").value,aiKey:$("cAi").value.trim(),apiKey:$("cKey").value.trim(),title:$("cTitle").value.trim()||"Mein Training",planStart:$("cStart").value||"",
     planWeeks:+$("cWeeks").value||"",forceDemo:$("cDemo").checked});
   store.set("imSettings",settings);close("mSet");load();
 };
