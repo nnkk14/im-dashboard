@@ -192,6 +192,7 @@ footer{color:var(--muted);font-size:12px;margin-top:20px;text-align:center}
         <div class="row"><div><label class="f" for="gDist">Distanz</label><input id="gDist" placeholder="z. B. 10 km, Langdistanz"></div><div><label class="f" for="gTime">Zielzeit</label><input id="gTime" placeholder="z. B. 50:00 oder ankommen"></div></div>
         <div class="row"><div><label class="f" for="gHours">Stunden pro Woche</label><input type="number" id="gHours" min="1" max="30" step="0.5"></div><div><label class="f" for="gDays">Trainingstage pro Woche</label><input type="number" id="gDays" min="1" max="7"></div></div>
         <label class="f" for="gNote">Sonstiges</label><textarea id="gNote" rows="2" placeholder="z. B. keine Zeit am Mittwoch, Knie empfindlich, Schwimmbad nur samstags"></textarea>
+        <button class="btn blue wide" id="btnAiPlan" style="margin-top:12px">Plan von Claude erstellen lassen (4 Wochen)</button>
         <div class="actions"><button class="btn" id="btnCopy"><svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></svg>Für Claude kopieren</button><button class="btn blue" id="btnImport">Plan übernehmen</button></div>
         <div class="hint" id="coachHint">Claude wertet deine Daten jeden Morgen aus. Die Auswertung steht dann unter Heute. Ziel hier eintragen, dann richtet Claude den Plan danach aus.</div></div>
       <div class="card"><h2>Wettkämpfe und Ziele</h2><div class="sub">Gespeichert im intervals.icu-Kalender</div><div class="list" id="raceList"></div><button class="btn wide" id="btnRace" style="margin-top:12px"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Wettkampf oder Ziel eintragen</button></div>
@@ -273,6 +274,9 @@ footer{color:var(--muted);font-size:12px;margin-top:20px;text-align:center}
   <label class="f" for="cKey">intervals.icu API-Schlüssel</label>
   <input type="password" id="cKey" autocomplete="off" placeholder="intervals.icu → Settings → Developer Settings">
   <div class="hint">Der Schlüssel wird nur an intervals.icu gesendet. Ist ein Schlüssel eingetragen, zeigt die App deine echten Daten.</div>
+  <label class="f" for="cAi">Claude-API-Schlüssel (für den Coach)</label>
+  <input type="password" id="cAi" autocomplete="off" placeholder="Claude Console → API Keys">
+  <div class="hint">Wird nur an die Claude-API gesendet. Damit wertet Claude deine Daten beim ersten Öffnen am Tag aus und erstellt Pläne.</div>
   <label class="f" for="cTitle">Name der App</label><input id="cTitle" placeholder="Mein Training">
   <div class="row">
     <div><label class="f" for="cStart">Trainingsplan ab</label><input type="date" id="cStart"></div>
@@ -296,7 +300,7 @@ let settings=Object.assign({},DEFAULTS,store.get("imSettings",{}));
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");
 const isLive=()=>!!settings.apiKey&&!settings.forceDemo;
-const VERSION="6";
+const VERSION="7";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -582,7 +586,10 @@ function render(){
     <button class="btn wide fab" id="btnSick1"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Krank oder verletzt melden</button>`;
   $("btnSick1").onclick=openSick;
   {const ns=(D.notes||[]).filter(n=>n.date<=t&&n.date>=addDays(t,-2)).sort((a,b)=>b.date.localeCompare(a.date));const cc=$("coachCard");
-   if(ns.length){const n=ns[0];cc.style.display="";cc.innerHTML=`<h2>Coach-Auswertung</h2><div class="sub">${n.date===t?"Heute":fD(n.date)} · von Claude</div><div class="coachtxt">${esc(n.text).replace(/\n/g,"<br>")}</div>`}else cc.style.display="none"}
+   const ai=hasAi()&&isLive(),btn=ai?`<button class="btn wide" id="btnAiRun" style="margin-top:12px">${aiBusy?"Claude wertet aus …":"Auswertung jetzt starten"}</button><div class="err" id="aiErr">${esc(aiErrMsg)}</div>`:"";
+   if(ns.length){const n=ns[0];cc.style.display="";cc.innerHTML=`<h2>Coach-Auswertung</h2><div class="sub">${n.date===t?"Heute":fD(n.date)} · von Claude</div><div class="coachtxt">${esc(n.text).replace(/\n/g,"<br>")}</div>${btn}`}
+   else if(ai){cc.style.display="";cc.innerHTML=`<h2>Coach-Auswertung</h2><div class="sub">Für heute noch keine Auswertung</div>${btn}`}else cc.style.display="none";
+   if($("btnAiRun"))$("btnAiRun").onclick=()=>aiDaily(true)}
   // KPIs
   const mon=monday(t);let wk=0;D.activities.forEach(a=>{if(a.date>=mon&&a.date<=t)wk+=a.secs});
   let wkS=0,hasS=false,wkS2=0;D.planned.forEach(p=>{if(monday(p.date)===mon){wkS+=p.secs;hasS=true}if(p.date>=mon&&p.date<=t)wkS2+=p.secs});
@@ -657,6 +664,7 @@ async function load(){
     if(!isLive())DATA=prep(demoData());
     else{DATA=prep(await loadLive());store.set("imCache",{t:Date.now(),d:Object.assign({},DATA,{wm:undefined})})}
     render();
+    if(isLive()&&hasAi()&&new Date().getHours()>=5)setTimeout(()=>aiDaily(false),500);
   }catch(e){
     const c=store.get("imCache",null);
     if(c&&c.d){DATA=prep(c.d);DATA.source="intervals.icu (Stand "+new Date(c.t).toLocaleString("de-DE",{dateStyle:"short",timeStyle:"short"})+")"}
@@ -769,6 +777,50 @@ async function writeNote(date,text){
 }
 window.coach={live:()=>isLive(),version:VERSION,writeNote,summary:()=>coachText(),data:()=>DATA,importPlan:async items=>{const n=await importPlan(items);await load();return n},deletePlanned:async ids=>{for(const id of ids)await api("/events/"+encodeURIComponent(id),{method:"DELETE"});await load();return ids.length}};
 
+/* ---------- Claude-API ---------- */
+let aiBusy=false,aiErrMsg="";
+const hasAi=()=>!!settings.aiKey;
+async function claude(prompt,maxTokens){
+  let res;try{res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"content-type":"application/json","x-api-key":settings.aiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+    body:JSON.stringify({model:"claude-sonnet-5-5",max_tokens:maxTokens,system:COACH_SYS,messages:[{role:"user",content:prompt}]})})}
+  catch(e){throw new Error("Claude-API nicht erreichbar.")}
+  const j=await res.json().catch(()=>({}));
+  if(!res.ok)throw new Error("Claude-API: "+((j.error&&j.error.message)||("Status "+res.status)));
+  return (j.content||[]).filter(c=>c.type==="text").map(c=>c.text).join("");
+}
+const COACH_SYS="Du bist ein erfahrener, sachlicher Ausdauertrainer (Laufen, Rad, Schwimmen, Triathlon) und wertest Trainings- und Gesundheitsdaten aus. Schreibe Deutsch, kurz, konkret, ohne Füllwörter, ohne Gedankenstriche und ohne Semikolons. Erfinde keine Werte. Nenne fehlende Daten. Keine Diagnosen. Bei Krankheitszeichen Pause empfehlen, bei Fieber oder Beschwerden unterhalb des Halses kein Training und ggf. Arzt. Respektiere bestehende Planeinheiten (z. B. aus TrainingPeaks), empfiehl nur, ob sie wie geplant, gekürzt, ohne Intensität oder gar nicht gemacht werden sollen.";
+function jsonFrom(txt){const m=txt.match(/```json\s*([\s\S]*?)```/i);const s=m?m[1]:txt.slice(txt.indexOf("{"),txt.lastIndexOf("}")+1);return JSON.parse(s)}
+function planFmt(){return 'description im intervals.icu-Workout-Format, jede Zeile ein Schritt, z. B. "Warm-up\n- 15m Z2\nMain Set 4x\n- 4m Z4\n- 3m Z1\nCooldown\n- 10m Z1". sport ist Run, Ride, Swim oder WeightTraining.'}
+async function aiDaily(manual){
+  if(aiBusy||!hasAi()||!isLive()||!DATA)return;const t=today();
+  if(!manual&&((DATA.notes||[]).some(n=>n.date===t)||store.get("imAiDay","")===t))return;
+  aiBusy=true;aiErrMsg="";store.set("imAiDay",t);render();
+  try{
+    const up=DATA.planned.filter(p=>p.date>=t&&p.date<=addDays(t,6)),g=saveGoal(),fill=!up.length&&g.gSport&&g.gDate;
+    const pr=coachText().replace(/\nANTWORTFORMAT[\s\S]*$/,"")+"\n\nGEPLANT NÄCHSTE 7 TAGE\n"+(up.length?up.map(p=>`${p.date} ${SPORTS[p.sport].n}: ${p.name}${p.secs?", "+fH(p.secs)+" h":""}`).join("\n"):"nichts")+
+      `\n\nAUFGABE\nTagesauswertung für heute (${t}). Antworte nur mit JSON in einem json-Codeblock: {"note":"...","workouts":[...]}. note: max. 900 Zeichen, erste Zeile 'Heute: <klare Empfehlung>', dann 3 bis 5 kurze Zeilen Begründung mit den Zahlen, optional eine Zeile 'Woche: ...'.`+
+      (fill?` workouts: Einheiten für die nächsten 7 Tage ab heute passend zu Ziel, Stunden und Trainingstagen, je {"date","sport","name","minutes","description"}, ${planFmt()}`:` workouts: leere Liste.`);
+    const o=jsonFrom(await claude(pr,fill?6000:1500));
+    if(o.note)await writeNote(t,String(o.note).slice(0,1500));
+    if(fill&&Array.isArray(o.workouts)&&o.workouts.length){await importPlan(parsePlan(JSON.stringify(o.workouts)));await load()}
+  }catch(e){aiErrMsg=e.message;if(manual)store.set("imAiDay","")}
+  finally{aiBusy=false;render()}
+}
+$("btnAiPlan").onclick=async()=>{
+  const b=$("btnAiPlan"),g=saveGoal(),t=today();
+  if(!hasAi()||!isLive()){$("coachHint").textContent="Dafür in den Einstellungen den intervals.icu- und den Claude-API-Schlüssel eintragen.";return}
+  if(!g.gSport||!g.gDate){$("coachHint").textContent="Bitte zuerst Sportart und Zieldatum eintragen.";return}
+  if(DATA.planned.some(p=>p.date>=t)&&b.dataset.sure!=="1"){b.dataset.sure="1";b.textContent="Im Kalender sind schon Einheiten. Trotzdem ergänzen?";return}
+  b.dataset.sure="";b.disabled=true;b.textContent="Claude erstellt den Plan …";
+  try{
+    const pr=coachText().replace(/\nANTWORTFORMAT[\s\S]*$/,"")+`\n\nAUFGABE\nErstelle einen Trainingsplan für die nächsten 4 Wochen ab ${addDays(t,1)} zum Ziel, mit sinnvoller Steigerung und Entlastung, passend zu Stunden und Trainingstagen. Tage mit bestehenden Einheiten nicht doppelt belegen. Antworte nur mit JSON in einem json-Codeblock: {"note":"kurze Begründung, max. 600 Zeichen","workouts":[{"date","sport","name","minutes","description"}]}. ${planFmt()}`;
+    const o=jsonFrom(await claude(pr,16000));const items=parsePlan(JSON.stringify(o.workouts||[]));
+    if(!items.length)throw new Error("Claude hat keine Einheiten geliefert.");
+    const n=await importPlan(items);await load();$("coachHint").textContent=`${n} Einheiten eingetragen. ${o.note||""}`;
+  }catch(e){$("coachHint").textContent="Fehler: "+e.message}
+  finally{b.disabled=false;b.textContent="Plan von Claude erstellen lassen (4 Wochen)"}
+};
+
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
 $("btnRace").onclick=()=>openRace(null);
@@ -798,12 +850,12 @@ $("raceList").onclick=async ev=>{
 
 /* ---------- Einstellungen ---------- */
 function openSettings(){
-  $("cKey").value=settings.apiKey;$("cTitle").value=settings.title||"";$("cStart").value=settings.planStart||"";
+  $("cKey").value=settings.apiKey;$("cAi").value=settings.aiKey||"";$("cTitle").value=settings.title||"";$("cStart").value=settings.planStart||"";
   $("cWeeks").value=settings.planWeeks||"";$("cDemo").checked=!!settings.forceDemo;$("cErr").textContent="";open("mSet")}
 $("btnSettings").onclick=openSettings;
 $("cCancel").onclick=()=>close("mSet");
 $("cSave").onclick=()=>{
-  settings=Object.assign(settings,{apiKey:$("cKey").value.trim(),title:$("cTitle").value.trim()||"Mein Training",planStart:$("cStart").value||"",
+  settings=Object.assign(settings,{aiKey:$("cAi").value.trim(),apiKey:$("cKey").value.trim(),title:$("cTitle").value.trim()||"Mein Training",planStart:$("cStart").value||"",
     planWeeks:+$("cWeeks").value||"",forceDemo:$("cDemo").checked});
   store.set("imSettings",settings);close("mSet");load();
 };
