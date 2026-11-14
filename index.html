@@ -7,11 +7,11 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Training">
-<meta name="theme-color" content="#0b0e13">
+<meta name="theme-color" content="#000000">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="manifest" href="manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Semi+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
 <title>Trainings-Dashboard</title>
 <style>
 :root{
@@ -200,70 +200,91 @@ footer{color:var(--muted);font-size:12px;margin-top:20px;text-align:center}
 .shoe .bar{height:6px;border-radius:9px;background:var(--line);margin-top:6px;overflow:hidden}.shoe .bar i{display:block;height:100%;border-radius:9px}
 .health .sportonly{display:none!important}
 .cx-box svg{width:18px;height:18px;flex:none;margin-top:1px;stroke:var(--muted);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-/* ---------- v11: Startnummer-Design ---------- */
-:root{--bg:#E6E9E5;--card:#FAFBF8;--card2:#EEF1EC;--ink:#17201B;--muted:#626D67;--line:rgba(23,32,27,.11);--acc:#1F3FD1;--ctl:#1F3FD1;--paper:#FFFFFF;--shadow:none;--r:20px;--fd:"Archivo",-apple-system,system-ui,sans-serif}
-@media (prefers-color-scheme:dark){:root{--bg:#101412;--card:#191E1B;--card2:#222823;--ink:#E7ECE8;--muted:#929F97;--line:rgba(231,236,232,.09);--acc:#6A80FF;--ctl:#6A80FF;--paper:#F3F4EF}}
-html,body{font-family:var(--fd);font-size:15.5px;line-height:1.5}
-.wrap{max-width:1180px}
-.top{margin-bottom:18px}
-.top h1{font-size:24px;font-weight:800;font-stretch:72%;letter-spacing:0}
-.ib{box-shadow:none;background:var(--card);border-radius:12px}
-.chip{font-weight:700}
-.seg{display:none;background:none;border:0;border-bottom:1px solid var(--line);border-radius:0;box-shadow:none;padding:0;gap:26px;margin-bottom:20px}
+/* ---------- v13: Sportuhr-Design ---------- */
+:root,:root[data-theme="dark"]{--bg:#000;--card:#141414;--card2:#1f1f1f;--ink:#fff;--muted:#8c8c8c;--line:rgba(255,255,255,.08);--ringbg:#262626;--acc:#3db2ff;--ctl:#3db2ff;
+ --hrv:#ffcc33;--rhr:#ff4d5e;--sleep:#a674ff;--form:#00c27a;--green:#00c27a;--yellow:#ffcc33;--red:#ff4d5e;--swim:#3db2ff;--bike:#ff9f1a;--run:#00c27a;--shadow:none;--r:22px;--shade:rgba(255,77,94,.16)}
+:root[data-theme="light"]{--bg:#f2f2f2;--card:#fff;--card2:#f1f1f1;--ink:#0a0a0a;--muted:#6e6e6e;--line:rgba(0,0,0,.08);--ringbg:#e9e9e9;--acc:#0a84ff;--ctl:#0a84ff;
+ --hrv:#e6a800;--rhr:#e8384a;--sleep:#8a52f0;--form:#00a868;--green:#00a868;--yellow:#e6a800;--red:#e8384a;--swim:#0a84ff;--bike:#f08a00;--run:#00a868;--shade:rgba(232,56,74,.12)}
+html,body{background:var(--bg);color:var(--ink);font-family:"Barlow",-apple-system,system-ui,sans-serif;font-size:15.5px;line-height:1.45}
+.sc,.top h1,.card h2,.cx-h,.status .t2,.kpi .v,.dial .n,.cx-m b,.bv,.brow b,.pg .r b,.seg button,.tabbar button,.btn{font-family:"Barlow Semi Condensed","Barlow",sans-serif}
+.wrap{max-width:1100px}
+.top{margin-bottom:14px}.top h1{font-size:24px;font-weight:700;letter-spacing:0}
+.ib{background:var(--card);border:0;border-radius:50%;box-shadow:none}
+.chip{background:var(--card);color:var(--muted)}
+.chip.live{background:rgba(0,194,122,.16);color:var(--green)}
+.seg{display:none;background:var(--card);border:0;border-radius:99px;padding:4px;gap:4px;box-shadow:none;margin-bottom:18px;width:max-content}
 @media (min-width:820px){.seg{display:flex}}
-.seg button{flex:none;border-radius:0;padding:10px 0 12px;font-size:17px;font-weight:700;font-stretch:85%;color:var(--muted)}
-.seg button.on{background:none;color:var(--ink);box-shadow:inset 0 -3px 0 var(--acc)}
-.tabbar button.on{color:var(--acc)}
-.tabbar button{font-stretch:85%;font-size:11.5px}
-/* Startnummer */
-.hero{background:var(--paper);color:#17201B;border-radius:12px;padding:0 24px 22px;border:1px solid rgba(23,32,27,.10);box-shadow:0 22px 40px -28px rgba(23,32,27,.45)}
-.hero::after{content:"";position:absolute;inset:0;pointer-events:none;background:
- radial-gradient(circle at 16px 16px,var(--bg) 0 5px,rgba(23,32,27,.18) 5.5px 6.5px,transparent 7px),
- radial-gradient(circle at calc(100% - 16px) 16px,var(--bg) 0 5px,rgba(23,32,27,.18) 5.5px 6.5px,transparent 7px),
- radial-gradient(circle at 16px calc(100% - 16px),var(--bg) 0 5px,rgba(23,32,27,.18) 5.5px 6.5px,transparent 7px),
- radial-gradient(circle at calc(100% - 16px) calc(100% - 16px),var(--bg) 0 5px,rgba(23,32,27,.18) 5.5px 6.5px,transparent 7px)}
-.hero>.lbl:first-child{margin:0 -24px;padding:13px 44px;background:#1F3FD1;color:#fff;opacity:1;font-size:15px;font-weight:700;font-stretch:85%}
-.hero .lbl{color:#59645E;opacity:1;font-size:14px}
-.hero .big{font-size:clamp(104px,27vw,176px);font-weight:900;font-stretch:62%;letter-spacing:-.01em;line-height:.86;margin:18px 0 6px;color:#17201B;font-variant-numeric:tabular-nums}
-.hero .big small{font-size:24px;font-weight:700;font-stretch:80%;color:#59645E;opacity:1;margin-left:10px;letter-spacing:0}
-.hero .meta{opacity:1;color:#59645E;border-top:2px dashed rgba(23,32,27,.16);padding-top:14px;margin-top:18px;gap:28px}
-.hero .meta b{color:#17201B;font-size:24px;font-weight:800;font-stretch:72%}
-.hero .btn{background:var(--acc);color:#fff}
-.ring{top:68px;right:22px;width:92px;height:92px}.ring text{fill:#17201B}
-.hero .bar{background:rgba(23,32,27,.10);height:6px}.hero .bar i{background:var(--acc)}
-.races span{background:#EEF1EC;color:#17201B;font-weight:600}
+.seg button{flex:none;padding:8px 20px;border-radius:99px;font-size:16px;font-weight:600;color:var(--muted);box-shadow:none}
+.seg button.on{background:var(--ink);color:var(--bg);box-shadow:none}
+.tabbar{background:color-mix(in srgb,var(--bg) 86%,transparent);border-top:1px solid var(--line)}
+.tabbar button.on{color:var(--ink)}
+.banner{border-radius:18px}
+/* Zifferblatt */
+.hero{background:none;border:0;box-shadow:none;color:var(--ink);padding:4px 0 6px;border-radius:0;overflow:visible}
+.hero::after{display:none}
+.dhead{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.dhead b{font:700 22px "Barlow Semi Condensed",sans-serif;white-space:nowrap}
+.dhead span{color:var(--muted);font-size:14px;text-align:right}
+.dial{position:relative;width:min(260px,72vw);aspect-ratio:1;margin:10px auto 4px}
+.dial svg{width:100%;height:100%;transform:rotate(-90deg)}
+.dial .cc{position:absolute;inset:0;display:grid;place-items:center;text-align:center}
+.dial .n{font-weight:700;font-size:clamp(64px,20vw,84px);line-height:1;letter-spacing:-1px;font-variant-numeric:tabular-nums}
+.dial .u{color:var(--muted);font-size:14px;margin-top:2px}
+.dial .r{font:600 15px "Barlow Semi Condensed",sans-serif;color:var(--acc);margin-top:6px}
+.dmeta{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:6px 0 4px}
+.dmeta span{font-size:13px;color:var(--muted);background:var(--card);padding:5px 12px;border-radius:99px}
+.hero .lbl{color:var(--muted);opacity:1}.hero .big{color:var(--ink)}.hero .btn{background:var(--acc);color:#fff;border:0}
 /* Karten */
-.card{background:var(--card);border:1px solid var(--line);box-shadow:none;padding:20px}
-.card h2{font-size:20px;font-weight:800;font-stretch:75%;letter-spacing:0}
-.card .sub{font-size:13px}
-.status .ic{width:48px;height:48px;border-radius:14px}
-.status .t1,.cx-k{text-transform:none;letter-spacing:0;font-size:13.5px;font-weight:700}
-.status .t2,.cx-h{font-size:23px;font-weight:800;font-stretch:80%;line-height:1.15;letter-spacing:0}
-.plan b,.cx-plan b{text-transform:none;letter-spacing:0;font-size:13px;color:var(--muted)}
-.plan{border:0;background:var(--card2);border-radius:14px}
-.sig{gap:0;margin-top:12px}
+.card{background:var(--card);border:0;border-radius:var(--r);box-shadow:none;padding:18px}
+.card h2{font-size:20px;font-weight:700;letter-spacing:0}
+.card .sub{color:var(--muted)}
+.status .ic{width:44px;height:44px;border-radius:50%}
+.status .t1,.cx-k{font:600 14px "Barlow Semi Condensed",sans-serif;text-transform:none;letter-spacing:0}
+.status .t2,.cx-h{font-size:25px;font-weight:700;line-height:1.15;letter-spacing:0}
+.cx-dot{display:none}
+.cx-top{gap:8px;margin:0 0 10px;align-items:flex-start;flex-direction:column}
+.cx-top>div:last-child{width:100%}
+.cx-plan{background:none;border:0;padding:0;margin-bottom:14px;font-size:15.5px;color:var(--muted)}
+.cx-plan b{display:none}
+.cx-ptxt{display:block;color:var(--ink);font-size:16.5px}
+.cx-opts{gap:6px;margin-top:12px}
+.cx-opts button{flex:1 0 auto;background:var(--card2);border:0;color:var(--muted);font:600 14px "Barlow Semi Condensed",sans-serif;padding:8px 12px;border-radius:12px}
+.cx-opts button.on{background:var(--ink);color:var(--bg)}
+.cx-m{grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+.cx-m>div{background:var(--card2);border-radius:18px;padding:12px;display:flex;align-items:center;gap:12px;text-align:left;min-width:0}
+.cx-m>div>div{min-width:0}
+.cx-m svg{width:46px;height:46px;flex:none;transform:rotate(-90deg)}
+@media (max-width:420px){.cx-m>div{padding:10px;gap:10px}.cx-m svg{width:40px;height:40px}.cx-m b{font-size:23px}}
+.cx-m b{display:block;font-size:26px;font-weight:700;line-height:1}
+.cx-m span{display:block;font-size:12.5px;color:var(--muted);margin-top:3px}
+.cx-m i{display:none}
+.cx-why li{border-top:1px solid var(--line);font-size:14.5px}
+.cx-why li:before{top:13px}
+.cx-box{background:var(--card2);border-radius:16px}
+.plan{background:var(--card2);border:0;border-radius:16px}
+.plan b{text-transform:none;letter-spacing:0;font-size:13px}
 .sig li{background:none;border-radius:0;border-top:1px solid var(--line);padding:10px 2px}
-.cx-plan{font-size:16.5px;border-radius:14px;padding:14px 16px}
-.cx-m div,.bt{border-radius:14px}
-.cx-m b,.kpi .v,.bv,.brow b,.pg .r b{font-stretch:72%;font-weight:800;letter-spacing:0}
-.cx-m b{font-size:22px}
-.kpi{box-shadow:none;border-radius:18px}
-.kpi .v{font-size:32px}
-.bv{font-size:28px}
-.btn{border-radius:12px}
-.btn.blue{background:var(--acc)}
-.cx-opts button.on{background:var(--ink);color:var(--card)}
+.sig{gap:0}
+.kpi{background:var(--card);border:0;border-radius:var(--r);box-shadow:none}
+.kpi .v{font-size:32px;font-weight:700}
+.act{background:var(--card2);border-radius:18px}
+.act .ico{border-radius:50%}
+.btn{border:0;border-radius:14px;background:var(--card2);font-weight:600;font-size:16px}
+.btn.blue{background:var(--ink);color:var(--bg)}
+.bt{background:var(--card2);border-radius:18px}
+.bv,.brow b{font-weight:700}
+input,textarea,select{background:var(--card2);border:0;border-radius:12px}
+.sheet{background:var(--card)}
 .tag{border-radius:99px}
-details summary{font-weight:700}
-/* Layout breit */
+details summary{font-weight:600}
+/* breit */
 @media (min-width:980px){
- [data-tab].on .grid{display:block;columns:2;column-gap:18px}
- [data-tab].on .grid>*{break-inside:avoid;margin-bottom:18px}
- [data-tab="heute"].on{columns:2;column-gap:18px}
- [data-tab="heute"].on .grid{display:contents}
- [data-tab="heute"].on>*,[data-tab="heute"].on .grid>*{break-inside:avoid;margin-bottom:18px;display:block}
- [data-tab="heute"].on .kpis{display:grid;grid-template-columns:repeat(2,1fr)}
- [data-tab="heute"].on #coachCard[style*="none"],[data-tab="heute"].on #actCard[style*="none"],[data-tab="heute"].on #askCard[style*="none"]{display:none}
+ [data-tab].on .grid{display:block;columns:2;column-gap:16px}
+ [data-tab].on .grid>*{break-inside:avoid;margin-bottom:16px}
+ [data-tab="heute"].on{display:grid;grid-template-columns:340px minmax(0,1fr);gap:20px;align-items:start}
+ [data-tab="heute"].on .hero{position:sticky;top:16px}
+ [data-tab="heute"].on .grid{display:grid;columns:auto;grid-template-columns:1fr;gap:16px}
+ [data-tab="heute"].on .grid>*{margin:0}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -398,6 +419,7 @@ details summary{font-weight:700}
   <label class="f" for="cAi">Claude-API-Schlüssel (für den Coach)</label>
   <input type="password" id="cAi" autocomplete="off" placeholder="Claude Console → API Keys">
   <div class="hint">Wird nur an die Claude-API gesendet. Damit wertet Claude deine Daten beim ersten Öffnen am Tag aus und erstellt Pläne.</div>
+  <label class="f" for="cTheme">Darstellung</label><select id="cTheme"><option value="dark">Dunkel</option><option value="light">Hell</option><option value="auto">Wie iPhone oder Mac</option></select>
   <label class="f" for="cMode">Schwerpunkt</label><select id="cMode"><option value="sport">Training und Wettkampf</option><option value="gesundheit">Gesundheit und Bewegung</option></select>
   <label class="f" for="cTitle">Name der App</label><input id="cTitle" placeholder="Mein Training">
   <div class="row">
@@ -419,10 +441,12 @@ const store={
 };
 const DEFAULTS={apiKey:"",title:"Mein Training",planStart:"",planWeeks:"",forceDemo:false};
 let settings=Object.assign({},DEFAULTS,store.get("imSettings",{}));
+function applyTheme(){const m=settings.theme||"dark",d=m==="auto"?(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"):m;document.documentElement.dataset.theme=d;const tc=document.querySelector('meta[name="theme-color"]');if(tc)tc.content=d==="dark"?"#000000":"#f2f2f2"}
+applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("change",applyTheme)}catch(e){}
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");
 const isLive=()=>!!settings.apiKey&&!settings.forceDemo;
-const VERSION="12";
+const VERSION="13";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -694,13 +718,12 @@ function render(){
     <div class="meta"><div><b>${D.pmc?nf(D.pmc.ctl):"–"}</b>Fitness</div><div><b>${D.pmc?nf(D.pmc.tsb):"–"}</b>Form</div></div>`;
     $("heroRace").onclick=()=>openRace(settings.raceDate&&!D.races.length?{name:"Ironman Frankfurt",date:settings.raceDate,prio:"A",sport:"Triathlon"}:null);}
   else{const toRace=diffDays(t,main.date);
-  $("hero").innerHTML=`<div class="lbl">Bis ${esc(main.name)}</div>
-    <div class="big">${toRace}<small>${toRace===1?"Tag":"Tage"}</small></div>
-    <div class="lbl">${fDY(main.date)}${toRace>=7?" · "+Math.floor(toRace/7)+" Wochen"+(toRace%7?" und "+(toRace%7)+(toRace%7===1?" Tag":" Tage"):""):""}</div>
-    ${plan?`<svg class="ring" viewBox="0 0 86 86"><circle cx="43" cy="43" r="36" fill="none" stroke="rgba(23,32,27,.12)" stroke-width="8"/>${frac>0?`<circle cx="43" cy="43" r="36" fill="none" style="stroke:var(--acc)" stroke-width="8" stroke-linecap="round" stroke-dasharray="${C*frac} ${C}" transform="rotate(-90 43 43)"/>`:""}<text x="43" y="40" text-anchor="middle" font-size="17">${pw<1?0:Math.min(pw,settings.planWeeks)}</text><text x="43" y="56" text-anchor="middle" font-size="10" opacity=".75">von ${settings.planWeeks}</text></svg>
-    <div class="bar"><i style="width:${(frac*100).toFixed(1)}%"></i></div>`:""}
-    <div class="meta">${plan?`<div><b>${pw<1?"Start in "+diffDays(t,settings.planStart)+" T.":pw>settings.planWeeks?"Fertig":"Woche "+pw}</b>Trainingsplan</div>`:""}<div><b>${D.pmc?nf(D.pmc.ctl):"–"}</b>Fitness</div><div><b>${D.pmc?nf(D.pmc.tsb):"–"}</b>Form</div></div>
-    ${up.length>1?`<div class="races">${up.filter(r=>r!==main).slice(0,3).map(r=>`<span>${esc(r.name)} · in ${diffDays(t,r.date)} T.</span>`).join("")}</div>`:""}`;}
+  const wdt=P(t).toLocaleDateString("de-DE",{weekday:"long",day:"numeric",month:"short"});
+  const ff=plan?frac:Math.max(.03,1-toRace/365),rl=plan?(pw<1?"Plan startet in "+diffDays(t,settings.planStart)+(diffDays(t,settings.planStart)===1?" Tag":" Tagen"):pw>settings.planWeeks?"Plan abgeschlossen":"Planwoche "+pw+" von "+settings.planWeeks):fDY(main.date);
+  $("hero").innerHTML=`<div class="dhead"><b>${wdt}</b><span>${esc(main.name)}</span></div>
+    <div class="dial"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="none" stroke="var(--ringbg)" stroke-width="6"/><circle cx="50" cy="50" r="45" fill="none" stroke="var(--acc)" stroke-width="6" stroke-linecap="round" stroke-dasharray="${(ff*282.7).toFixed(1)} 282.7"/></svg>
+    <div class="cc"><div><div class="n">${toRace}</div><div class="u">${toRace===1?"Tag":"Tage"} bis zum Start</div><div class="r">${rl}</div></div></div></div>
+    ${up.length>1?`<div class="dmeta">${up.filter(r=>r!==main).slice(0,3).map(r=>`<span>${esc(r.name)} in ${diffDays(t,r.date)} Tagen</span>`).join("")}</div>`:""}`;}
   // Ampel
   const ev=evaluate(D),ic=['<path d="M5 12.5l4.5 4.5L19 7.5"/>','<path d="M12 7v6M12 17h.01"/>','<path d="M7 7l10 10M17 7L7 17"/>'][ev.L];
   $("ampel").innerHTML=`<div class="status"><div class="ic" style="background:${LV[ev.L]}"><svg viewBox="0 0 24 24">${ic}</svg></div><div><div class="t1" style="color:${LV[ev.L]}">Regel-Check: ${ev.t1}</div><div class="t2">${ev.t2}</div></div></div>
@@ -921,10 +944,10 @@ function coachHTML(n,D,t){
   const ic=['<path d="M5 12.5l4.5 4.5L19 7.5"/>','<path d="M12 7v6M12 17h.01"/>','<path d="M7 7l10 10M17 7L7 17"/>'][L];
   const h=D.hrvStat,r=D.rhrStat,w=D.wm[t]||D.wm[addDays(t,-1)]||{},tsb=D.pmc?D.pmc.tsb:null;
   const lvH=h&&h.r?(h.r<h.lo?1:0):null,lvR=r&&r.now&&r.base?(r.now>=r.base+5?1:0):null,lvS=w.sleepH?(w.sleepH<6?1:0):null,lvF=tsb!=null?(tsb<-30?2:tsb<-20?1:0):null;
-  const m=(v,lab,lv)=>`<div><b>${v}</b><span>${lv!=null?`<i style="background:${LV[lv]}"></i>`:""}${lab}</span></div>`;
-  return `<div style="--cxc:${c}"><div class="cx-top"><div class="cx-dot" style="background:${c}"><svg viewBox="0 0 24 24">${ic}</svg></div><div><div class="cx-k">${n.date===t?"Heute":"Am "+fD(n.date)} von deinem Coach</div><div class="cx-h">${esc(o.head||"Auswertung")}</div></div></div>
+  const cl=x=>Math.max(.04,Math.min(1,x||0)),m=(v,lab,lv,f,c)=>`<div><svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="15" fill="none" stroke="var(--ringbg)" stroke-width="5"/><circle cx="18" cy="18" r="15" fill="none" stroke="${c}" stroke-width="5" stroke-linecap="round" stroke-dasharray="${(cl(f)*94.2).toFixed(1)} 94.2"/></svg><div><b>${v}</b><span>${lab}</span></div></div>`;
+  return `<div style="--cxc:${c}"><div class="cx-top"><div class="cx-dot" style="background:${c}"><svg viewBox="0 0 24 24">${ic}</svg></div><div><div class="cx-k" style="color:${c}">${["Training wie geplant","Locker trainieren","Pause"][L]}${n.date===t?"":" · Stand "+fD(n.date)}</div><div class="cx-h">${esc(o.head||"Auswertung")}</div></div></div>
   ${o.plan?`<div class="cx-plan"><b>Training heute</b><span class="cx-ptxt">${esc(o.plan)}</span>${o.opts.length?`<div class="cx-opts"><button class="on" data-opt="0" data-txt="${esc(o.plan)}">Empfohlen</button>${o.opts.map(([k,v],i)=>`<button data-opt="${i+1}" data-txt="${esc(v)}">${esc(k)}</button>`).join("")}</div>`:""}</div>`:""}
-  <div class="cx-m">${m(h&&h.r?nf(h.r):"–","HRV ms",lvH)}${m(r&&r.now?r.now:"–","Ruhepuls",lvR)}${m(w.sleepH?nf(w.sleepH,1):"–","Schlaf h",lvS)}${isHealth()?m(w.steps?nf(w.steps):"–","Schritte",null):m(tsb!=null?(tsb>0?"+":"")+nf(tsb):"–","Form",lvF)}</div>
+  <div class="cx-m">${m(h&&h.r?nf(h.r):"–","HRV ms",lvH,h&&h.r&&h.hi?(h.r-h.lo*.75)/(h.hi*1.1-h.lo*.75):0,"var(--hrv)")}${m(r&&r.now?r.now:"–","Ruhepuls",lvR,r&&r.now?1-(r.now-38)/40:0,"var(--rhr)")}${m(w.sleepH?nf(w.sleepH,1):"–","Schlaf h",lvS,w.sleepH?w.sleepH/9:0,"var(--sleep)")}${isHealth()?m(w.steps?nf(w.steps):"–","Schritte",null,w.steps?w.steps/10000:0,"var(--form)"):m(tsb!=null?(tsb>0?"+":"")+nf(tsb):"–","Form",lvF,tsb!=null?(tsb+30)/55:0,"var(--form)")}</div>
   ${o.why.length?`<ul class="cx-why">${o.why.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}
   ${o.week?`<div class="cx-box"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><div><b>Woche</b><br>${esc(o.week)}</div></div>`:""}
   ${o.tip?`<div class="cx-box"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.6.6 1 1.4 1 2.5h6c0-1.1.4-1.9 1-2.5A6 6 0 0 0 12 3z"/></svg><div><b>Tipp</b><br>${esc(o.tip)}</div></div>`:""}</div>`;
@@ -1177,14 +1200,14 @@ $("raceList").onclick=async ev=>{
 
 /* ---------- Einstellungen ---------- */
 function openSettings(){
-  $("cKey").value=settings.apiKey;$("cMode").value=settings.mode||"sport";$("cAi").value=settings.aiKey||"";$("cTitle").value=settings.title||"";$("cStart").value=settings.planStart||"";
+  $("cKey").value=settings.apiKey;$("cMode").value=settings.mode||"sport";$("cTheme").value=settings.theme||"dark";$("cAi").value=settings.aiKey||"";$("cTitle").value=settings.title||"";$("cStart").value=settings.planStart||"";
   $("cWeeks").value=settings.planWeeks||"";$("cDemo").checked=!!settings.forceDemo;$("cErr").textContent="";open("mSet")}
 $("btnSettings").onclick=openSettings;
 $("cCancel").onclick=()=>close("mSet");
 $("cSave").onclick=()=>{
-  settings=Object.assign(settings,{mode:$("cMode").value,aiKey:$("cAi").value.trim(),apiKey:$("cKey").value.trim(),title:$("cTitle").value.trim()||"Mein Training",planStart:$("cStart").value||"",
+  settings=Object.assign(settings,{theme:$("cTheme").value,mode:$("cMode").value,aiKey:$("cAi").value.trim(),apiKey:$("cKey").value.trim(),title:$("cTitle").value.trim()||"Mein Training",planStart:$("cStart").value||"",
     planWeeks:+$("cWeeks").value||"",forceDemo:$("cDemo").checked});
-  store.set("imSettings",settings);close("mSet");load();
+  store.set("imSettings",settings);applyTheme();close("mSet");load();
 };
 $("btnRefresh").onclick=load;
 let rz;window.addEventListener("resize",()=>{clearTimeout(rz);rz=setTimeout(()=>{if(DATA)renderCharts()},200)});
