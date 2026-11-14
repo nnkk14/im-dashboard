@@ -287,6 +287,48 @@ details summary{font-weight:600}
  [data-tab="heute"].on .grid>*{margin:0}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+/* ---------- v14 ---------- */
+.tap{cursor:pointer}.kpi{cursor:pointer}.bt{cursor:pointer}
+.subseg{display:flex;gap:4px;background:var(--card);border-radius:99px;padding:4px;margin-bottom:14px;width:max-content;max-width:100%}
+.subseg button{padding:8px 18px;border-radius:99px;font:600 15px "Barlow Semi Condensed",sans-serif;color:var(--muted)}
+.subseg button.on{background:var(--ink);color:var(--bg)}
+[data-sub]{display:none!important}[data-sub].on{display:grid!important}
+.grid.two{grid-template-columns:1fr}
+@media (min-width:900px){.grid.two{grid-template-columns:1fr 1fr}.grid.two>.wide{grid-column:1/-1}
+ [data-tab].on .grid.two{display:grid;columns:auto}[data-tab].on .grid.two>*{margin:0}}
+.days{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.days button{background:var(--card2);border-radius:12px;padding:8px 0;font:700 15px "Barlow Semi Condensed",sans-serif;color:var(--muted);display:flex;flex-direction:column;align-items:center}
+.days button small{font:500 11px "Barlow",sans-serif;margin-top:2px}
+.days button.d1{background:var(--acc);color:#fff}.days button.d2{background:var(--ink);color:var(--bg)}
+.kv{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.kv div{background:var(--card2);border-radius:14px;padding:10px 12px}
+.kv span{display:block;font-size:12.5px;color:var(--muted)}.kv b{font:700 19px "Barlow Semi Condensed",sans-serif}
+.ibig{font:700 46px/1 "Barlow Semi Condensed",sans-serif;margin:6px 0}
+.sheet{position:relative}
+.sx{position:absolute;right:14px;top:14px;width:34px;height:34px;background:var(--card2)}
+.sheet h3{padding-right:44px}
+.gl{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.phases{display:flex;gap:3px;margin-top:14px}
+.phases div{background:var(--card2);border-radius:8px;padding:7px 8px;min-width:0;overflow:hidden}
+.phases div.on{background:var(--acc);color:#fff}
+.phases b{display:block;font:600 13px "Barlow Semi Condensed",sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.phases span{font-size:11px;opacity:.75}
+.wiki{max-width:760px}
+.wk{background:var(--card);border-radius:18px;padding:14px 16px;margin-bottom:8px}
+.wk summary{font:600 17px "Barlow Semi Condensed",sans-serif;cursor:pointer}
+.wk p{margin:8px 0 0;color:var(--ink);opacity:.85}
+pre.wo{white-space:pre-wrap;font:14px/1.5 "Barlow",sans-serif;background:var(--card2);border-radius:14px;padding:12px;margin:10px 0}
+.rrow{display:flex;align-items:center;gap:18px;margin:6px 0 12px}
+.rring{width:96px;height:96px;transform:rotate(-90deg)}
+.bcap{font-size:11px;color:var(--muted);margin-top:2px}
+.lnk{color:var(--acc);font:600 14px "Barlow Semi Condensed",sans-serif;margin-top:10px}
+#ampMore,.cmpnote{display:none}
+#ampel.compact #ampMore{display:inline-block}
+#ampel.compact .cmpnote{display:block}
+#ampel.compact:not(.open) .plan,#ampel.compact:not(.open) .sig{display:none}
+#ampel.compact .status .ic{width:34px;height:34px}#ampel.compact .status .ic svg{width:20px;height:20px}
+#ampel.compact .status .t2{font-size:18px}
+@media (min-width:980px){[data-tab="heute"].on{grid-template-columns:360px minmax(0,1fr)}}
 </style>
 </head>
 <body>
@@ -303,63 +345,59 @@ details summary{font-weight:600}
   <section data-tab="heute">
     <div class="hero" id="hero"></div>
     <div class="grid">
+      <div class="card" id="weekNew" style="display:none"></div>
       <div class="card" id="coachCard" style="display:none"></div>
       <div class="card" id="ampel"></div>
+      <div class="kpis" id="kpis"></div>
       <div class="card" id="actCard" style="display:none"></div>
       <div class="card" id="askCard" style="display:none"><h2>Frag deinen Coach</h2><div class="sub">Claude kennt deine aktuellen Daten</div>
         <textarea id="askIn" rows="2" placeholder="z. B. Kann ich morgen statt Rad laufen?" style="margin-top:10px"></textarea>
         <div class="qchips"><button data-q="Was soll ich morgen trainieren?">Morgen?</button><button data-q="Ich habe heute wenig Zeit. Was ist die beste kurze Einheit?">Wenig Zeit</button><button data-q="Ich fühle mich müde. Soll ich trotzdem trainieren?">Müde</button></div>
         <button class="btn blue wide" id="askSend" style="margin-top:10px">Fragen</button><div class="err" id="askErr"></div><div id="askOut"></div></div>
-      <div class="kpis" id="kpis"></div>
     </div>
   </section>
 
   <section data-tab="training">
-    <div class="grid">
-      <div class="card"><h2>Coach und Trainingsplan</h2><div class="sub">Ziel festlegen, Daten an Claude übergeben, Plan übernehmen</div>
-        <div class="row"><div><label class="f" for="gSport">Sportart</label><select id="gSport"><option>Laufen</option><option>Radfahren</option><option>Schwimmen</option><option>Triathlon</option><option>Allgemeine Fitness</option><option>Gesundheit</option></select></div>
-        <div><label class="f" for="gDate">Zieldatum</label><input type="date" id="gDate"></div></div>
-        <div class="row"><div><label class="f" for="gDist">Distanz</label><input id="gDist" placeholder="z. B. 10 km, Langdistanz"></div><div><label class="f" for="gTime">Zielzeit</label><input id="gTime" placeholder="z. B. 50:00 oder ankommen"></div></div>
-        <div class="row"><div><label class="f" for="gHours">Stunden pro Woche</label><input type="number" id="gHours" min="1" max="30" step="0.5"></div><div><label class="f" for="gDays">Trainingstage pro Woche</label><input type="number" id="gDays" min="1" max="7"></div></div>
-        <label class="f" for="gNote">Sonstiges</label><textarea id="gNote" rows="2" placeholder="z. B. keine Zeit am Mittwoch, Knie empfindlich, Schwimmbad nur samstags"></textarea>
-        <button class="btn blue wide" id="btnAiPlan" style="margin-top:12px">Plan von Claude erstellen lassen (4 Wochen)</button>
-        <div class="actions"><button class="btn" id="btnCopy"><svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></svg>Für Claude kopieren</button><button class="btn blue" id="btnImport">Plan übernehmen</button></div>
-        <div class="hint" id="coachHint">Claude wertet deine Daten jeden Morgen aus. Die Auswertung steht dann unter Heute. Ziel hier eintragen, dann richtet Claude den Plan danach aus.</div></div>
-      <div class="card"><h2>Wochenrückblick</h2><div class="sub">Von Claude, jeden Sonntag</div><div id="weekOut"></div><button class="btn wide" id="btnWeek" style="margin-top:12px">Rückblick jetzt erstellen</button></div>
-      <div class="card sportonly"><h2>Fortschritt und Bestwerte</h2><div class="sub">Aus deinen Einheiten, Verlauf über 12 Monate</div><div class="bench" id="bench" style="margin-top:10px"></div>
-        <h3 class="h3">Prognosen von Claude</h3><div id="progList"></div><button class="btn wide" id="btnProg" style="margin-top:10px">Prognose jetzt aktualisieren</button><div class="hint" id="progHint"></div>
-        <details><summary>Wie wird geschätzt?</summary><p class="hint">Laufzeiten: Riegel-Formel (T2 = T1 × (D2/D1)^1,06) aus deinem schnellsten Lauf ab 3 km der letzten 90 Tage, Laufband ausgenommen. Die Formel geht von passendem Training für die längere Strecke aus und überschätzt Marathonzeiten ohne lange Läufe. Laufökonomie: Meter pro Herzschlag (Tempo geteilt durch Durchschnittspuls), höher ist besser. Rad: höchste gewichtete Durchschnittsleistung (NP) einer Fahrt ab 40 Minuten. Die Kurven zeigen den besten Wert je Monat. Prognosen von Claude sind Schätzungen, sie werden monatlich neu erstellt.</p></details></div>
-      <div class="card"><h2>Wettkämpfe und Ziele</h2><div class="sub">Gespeichert im intervals.icu-Kalender</div><div class="list" id="raceList"></div><button class="btn wide" id="btnRace" style="margin-top:12px"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Wettkampf oder Ziel eintragen</button></div>
+    <div class="subseg" id="tseg"><button data-s="plan">Plan</button><button data-s="fort">Fortschritt</button><button data-s="verlauf">Verlauf</button></div>
+    <div class="grid two" data-sub="plan">
+      <div class="card wide" id="goalCard"></div>
+      <div class="card"><h2>Nächste 7 Tage</h2><div class="sub">Aus deinem Kalender. Tippen für Details.</div><div class="list" id="nextList"></div></div>
       <div class="card"><h2>Wochenstunden</h2><div class="sub">Ist je Sportart und Soll aus dem Plan</div><div class="chartwrap" id="chWeeks"></div></div>
+    </div>
+    <div class="grid two" data-sub="fort">
+      <div class="card wide sportonly"><h2>Bestwerte</h2><div class="sub">Aus deinen Einheiten. Jede Kurve zeigt den Verlauf über 12 Monate. Tippen für Details.</div><div class="bench" id="bench" style="margin-top:10px"></div></div>
+      <div class="card wide sportonly"><h2>Prognosen von Claude</h2><div class="sub">Geschätzte Zeiten für deine Ziele, monatlich neu</div><div id="progList"></div><button class="btn wide" id="btnProg" style="margin-top:10px">Prognose jetzt aktualisieren</button><div class="hint" id="progHint"></div></div>
+    </div>
+    <div class="grid two" data-sub="verlauf">
+      <div class="card"><h2>Wochenrückblick</h2><div class="sub">Von Claude, jeden Sonntag</div><div id="weekOut"></div><button class="btn wide" id="btnWeek" style="margin-top:12px">Rückblick jetzt erstellen</button></div>
       <div class="card"><h2 id="totTitle">Summen</h2><div class="sub" id="totSub"></div><div class="sports" id="totals"></div></div>
-      <div class="card"><h2>Fitness, Ermüdung und Form</h2><div class="sub">Letzte 120 Tage</div><div class="chartwrap" id="chPmc"></div>
-        <details><summary>Was bedeuten die Kurven?</summary><p class="hint">Fitness (CTL) ist der 42-Tage-Durchschnitt der Trainingslast, Ermüdung (ATL) der 7-Tage-Durchschnitt. Form (TSB) ist die Differenz. Werte unter −30 zeigen hohe Ermüdung, −30 bis −10 gilt bei intervals.icu als produktiver Bereich.</p></details></div>
-      <div class="card"><h2>Letzte Einheiten</h2><div class="sub">Die 15 neuesten Aktivitäten</div><div class="list" id="recent"></div></div>
-      <div class="card sportonly"><h2>Verpflegung</h2><div class="sub">Richtwerte für lange Einheiten und Wettkämpfe</div>
-        <div class="row"><div><label class="f" for="fSport">Einheit</label><select id="fSport"><option value="einheit">Training oder Wettkampf</option><option value="ironman">Ironman-Renntag</option></select></div><div><label class="f" for="fDur">Dauer in Stunden</label><input type="number" id="fDur" min="0" max="17" step="0.25" value="2"></div></div>
-        <div class="row"><div><label class="f" for="fInt">Intensität</label><select id="fInt"><option value="locker">locker</option><option value="mittel" selected>mittel</option><option value="rennen">Wettkampf</option></select></div><div><label class="f" for="fHeat">Wetter</label><select id="fHeat"><option value="kuehl">kühl</option><option value="normal" selected>normal</option><option value="heiss">heiß</option></select></div></div>
-        <div id="fuelOut" style="margin-top:12px"></div></div>
-      <div class="card sportonly"><h2>Laufschuhe</h2><div class="sub">Kilometer pro Schuh, gespeichert auf diesem Gerät</div><div id="shoeList" style="margin-top:8px"></div>
-        <div class="row"><div><label class="f" for="sName">Schuh</label><input id="sName" placeholder="z. B. Pegasus 41"></div><div><label class="f" for="sSince">Benutzt ab</label><input type="date" id="sSince"></div></div>
-        <div class="row"><div><label class="f" for="sKm">Bisherige km</label><input type="number" id="sKm" min="0" placeholder="0"></div><div><label class="f" for="sLim">Wechseln bei km</label><input type="number" id="sLim" min="100" value="700"></div></div>
-        <button class="btn wide" id="shoeAdd" style="margin-top:12px">Schuh hinzufügen</button></div>
+      <div class="card wide"><h2>Fitness, Ermüdung und Form</h2><div class="sub">Letzte 120 Tage. Erklärung im Wiki.</div><div class="chartwrap" id="chPmc"></div></div>
+      <div class="card wide"><h2>Letzte Einheiten</h2><div class="sub">Tippen für Details und Bewertung</div><div class="list" id="recent"></div></div>
     </div>
   </section>
 
   <section data-tab="erholung">
     <div class="grid two">
-      <div class="card" style="grid-column:1/-1"><h2>HRV in der Nacht</h2><div class="sub">60 Tage, grünes Band = dein Normalbereich</div><div class="chartwrap" id="chHrv"></div></div>
+      <div class="card" id="recCard"></div>
+      <div class="card" id="loadCard"></div>
+      <div class="card wide"><h2>HRV in der Nacht</h2><div class="sub">60 Tage, grünes Band = dein Normalbereich</div><div class="chartwrap" id="chHrv"></div></div>
       <div class="card"><h2>Ruhepuls</h2><div class="sub">60 Tage</div><div class="chartwrap" id="chRhr"></div></div>
-      <div class="card"><h2>Schlafdauer</h2><div class="sub">30 Tage</div><div class="chartwrap" id="chSleep"></div></div>
+      <div class="card"><h2>Schlafdauer</h2><div class="sub">60 Tage</div><div class="chartwrap" id="chSleep"></div></div>
+      <div class="card wide"><h2>Krankheit und Verletzung</h2><div class="sub">Einträge stehen im intervals.icu-Kalender, die Ampel berücksichtigt sie</div>
+        <button class="btn wide" id="btnSick2"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Krankheit oder Verletzung eintragen</button>
+        <div class="list" id="sickList" style="margin-top:14px"></div></div>
     </div>
   </section>
 
-  <section data-tab="gesundheit">
-    <div class="grid">
-      <div class="card"><h2>Krankheit und Verletzung</h2><div class="sub">Einträge werden im intervals.icu-Kalender gespeichert</div>
-        <button class="btn red wide" id="btnSick2"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Krankheit oder Verletzung eintragen</button>
-        <div class="list" id="sickList" style="margin-top:14px"></div></div>
-      <div class="card rules"><h2>Regeln der Ampel</h2><div id="rules"></div></div>
+  <section data-tab="wiki">
+    <div class="wiki">
+      <input id="wikiQ" placeholder="Begriff suchen, z. B. Form" style="margin-bottom:12px">
+      <div id="wikiList"></div>
+      <div class="card" id="wFuel" style="margin-top:16px"><h2>Verpflegung berechnen</h2><div class="sub">Richtwerte für lange Einheiten und Wettkämpfe</div>
+        <div class="row"><div><label class="f" for="fSport">Einheit</label><select id="fSport"><option value="einheit">Training oder Wettkampf</option><option value="ironman">Ironman-Renntag</option></select></div><div><label class="f" for="fDur">Dauer in Stunden</label><input type="number" id="fDur" min="0" max="17" step="0.25" value="2"></div></div>
+        <div class="row"><div><label class="f" for="fInt">Intensität</label><select id="fInt"><option value="locker">locker</option><option value="mittel" selected>mittel</option><option value="rennen">Wettkampf</option></select></div><div><label class="f" for="fHeat">Wetter</label><select id="fHeat"><option value="kuehl">kühl</option><option value="normal" selected>normal</option><option value="heiss">heiß</option></select></div></div>
+        <div id="fuelOut" style="margin-top:12px"></div></div>
+      <div class="card rules" style="margin-top:16px"><h2>Regeln der Ampel</h2><div id="rules"></div></div>
     </div>
   </section>
   <footer id="footer"></footer>
@@ -387,13 +425,30 @@ details summary{font-weight:600}
   <div class="actions"><button class="btn" id="sCancel">Abbrechen</button><button class="btn red" id="sSave">Speichern</button></div>
 </div></div>
 
-<div class="modal" id="mImp"><div class="sheet">
-  <h3>Plan übernehmen</h3>
-  <div class="sub">Füge hier die Antwort von Claude ein. Die Einheiten werden in deinen intervals.icu-Kalender eingetragen und gehen von dort auf die Uhr.</div>
-  <textarea id="impText" rows="8" placeholder="Antwort von Claude einfügen"></textarea>
-  <div class="hint" id="impInfo"></div>
-  <div class="err" id="impErr"></div>
-  <div class="actions"><button class="btn" id="impCancel">Abbrechen</button><button class="btn blue" id="impSave">Prüfen</button></div>
+<div class="modal" id="mInfo"><div class="sheet">
+  <button class="ib sx" id="iClose" title="Schließen"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  <div id="iBody"></div><div class="chartwrap" id="chInfo"></div><div id="iFoot"></div>
+</div></div>
+
+<div class="modal" id="mGoal"><div class="sheet">
+  <button class="ib sx" id="gClose" title="Schließen"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  <h3>Ziel und Trainingstage</h3>
+  <div class="sub">Einmal einstellen. Claude richtet Plan und Auswertung danach aus.</div>
+  <div class="row"><div><label class="f" for="gSport">Sportart</label><select id="gSport"><option>Laufen</option><option>Radfahren</option><option>Schwimmen</option><option>Triathlon</option><option>Allgemeine Fitness</option><option>Gesundheit</option></select></div>
+  <div><label class="f" for="gDate">Zieldatum (optional)</label><input type="date" id="gDate"></div></div>
+  <div class="hint" id="gDateHint">Leer lassen: Claude nimmt deinen A-Wettkampf oder schlägt ein realistisches Datum vor.</div>
+  <div class="row"><div><label class="f" for="gDist">Distanz</label><input id="gDist" placeholder="z. B. 10 km, Langdistanz"></div><div><label class="f" for="gTime">Zielzeit</label><input id="gTime" placeholder="z. B. 50:00 oder ankommen"></div></div>
+  <label class="f">Trainingstage</label>
+  <div class="days" id="dayPick"></div>
+  <div class="hint">Antippen wechselt: frei, Training, lange Einheit.</div>
+  <label class="f" for="gHours">Höchstens Stunden pro Woche (optional)</label><input type="number" id="gHours" min="1" max="30" step="0.5">
+  <div class="hint" id="gHoursHint"></div>
+  <input type="hidden" id="gDays">
+  <label class="f" for="gNote">Sonstiges</label><textarea id="gNote" rows="2" placeholder="z. B. Knie empfindlich, Schwimmbad nur samstags"></textarea>
+  <h3 style="margin-top:20px">Wettkämpfe</h3>
+  <div class="list" id="raceList"></div>
+  <button class="btn wide" id="btnRace" style="margin-top:10px"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Wettkampf eintragen</button>
+  <div class="actions"><button class="btn blue" id="gDone">Fertig</button></div>
 </div></div>
 
 <div class="modal" id="mRace"><div class="sheet">
@@ -421,12 +476,6 @@ details summary{font-weight:600}
   <div class="hint">Wird nur an die Claude-API gesendet. Damit wertet Claude deine Daten beim ersten Öffnen am Tag aus und erstellt Pläne.</div>
   <label class="f" for="cTheme">Darstellung</label><select id="cTheme"><option value="dark">Dunkel</option><option value="light">Hell</option><option value="auto">Wie iPhone oder Mac</option></select>
   <label class="f" for="cMode">Schwerpunkt</label><select id="cMode"><option value="sport">Training und Wettkampf</option><option value="gesundheit">Gesundheit und Bewegung</option></select>
-  <label class="f" for="cTitle">Name der App</label><input id="cTitle" placeholder="Mein Training">
-  <div class="row">
-    <div><label class="f" for="cStart">Trainingsplan ab</label><input type="date" id="cStart"></div>
-    <div><label class="f" for="cWeeks">Planwochen</label><input type="number" id="cWeeks" min="1" max="80"></div>
-  </div>
-  <div class="hint">Plan-Felder leer lassen, wenn du keinem festen Plan folgst.</div>
   <label class="switch">Beispieldaten statt echter Daten anzeigen<input type="checkbox" id="cDemo"></label>
   <div class="err" id="cErr"></div>
   <div class="actions"><button class="btn" id="cCancel">Abbrechen</button><button class="btn blue" id="cSave">Speichern</button></div>
@@ -444,9 +493,9 @@ let settings=Object.assign({},DEFAULTS,store.get("imSettings",{}));
 function applyTheme(){const m=settings.theme||"dark",d=m==="auto"?(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"):m;document.documentElement.dataset.theme=d;const tc=document.querySelector('meta[name="theme-color"]');if(tc)tc.content=d==="dark"?"#000000":"#f2f2f2"}
 applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("change",applyTheme)}catch(e){}
 delete settings.demo;
-let DATA=null,TAB=store.get("imTab","heute");
+let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>!!settings.apiKey&&!settings.forceDemo;
-const VERSION="13";
+const VERSION="14";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -517,7 +566,7 @@ async function loadLive(){
     if(e.category==="NOTE"&&/^Coach/.test(e.name||"")){notes.push({id:e.id,date:String(e.start_date_local).slice(0,10),name:e.name,text:e.description||""});return}
     if(String(e.category||"").startsWith("RACE"))races.push({id:e.id,date:String(e.start_date_local).slice(0,10),name:e.name||"Wettkampf",prio:String(e.category).slice(-1)});
     else if(e.category==="SICK"||e.category==="INJURED")sick.push(sickFromEvent(e));
-    else if(e.category==="WORKOUT"&&e.start_date_local)planned.push({id:e.id,date:e.start_date_local.slice(0,10),sport:sportOf(e.type),secs:e.moving_time||0,name:e.name||""});
+    else if(e.category==="WORKOUT"&&e.start_date_local)planned.push({id:e.id,date:e.start_date_local.slice(0,10),sport:sportOf(e.type),secs:e.moving_time||0,name:e.name||"",desc:e.description||"",coach:String(e.external_id||"").startsWith("coach-")});
   });
   return{activities,wellness,sick,planned,races,notes,source:"intervals.icu"};
 }
@@ -692,7 +741,7 @@ function weekChart(D){
 }
 
 /* ---------- Rendern ---------- */
-const TABS=[["heute","Heute",'<path d="M3 12l9-8 9 8"/><path d="M5 10v10h14V10"/>'],["training","Training",'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>'],["erholung","Erholung",'<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/>'],["gesundheit","Gesundheit",'<rect x="3" y="3" width="18" height="18" rx="5"/><path d="M12 8v8M8 12h8"/>']];
+const TABS=[["heute","Heute",'<path d="M3 12l9-8 9 8"/><path d="M5 10v10h14V10"/>'],["training","Training",'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>'],["erholung","Erholung",'<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/>'],["wiki","Wiki",'<path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v18H6.5A2.5 2.5 0 0 0 4 22.5z"/><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>']];
 function setTab(t){TAB=t;store.set("imTab",t);
   document.querySelectorAll("[data-tab]").forEach(s=>s.classList.toggle("on",s.dataset.tab===t));
   document.querySelectorAll("#seg button,#tabbar button").forEach(b=>b.classList.toggle("on",b.dataset.t===t));
@@ -702,7 +751,7 @@ $("tabbar").innerHTML=TABS.map(([k,n,ic])=>`<button data-t="${k}"><svg viewBox="
 document.querySelectorAll("#seg button,#tabbar button").forEach(b=>b.onclick=()=>setTab(b.dataset.t));
 
 function render(){
-  const D=DATA,t=today();
+  const D=DATA,t=today();{const pi=planInfo(D);settings.planStart=pi?pi.start:"";settings.planWeeks=pi?pi.weeks:""}
   const live=D.source.startsWith("intervals");
   $("chip").className="chip "+(live?"live":"demo");$("chip").textContent=live?"Live":"Beispiel";
   if(!live&&!$("banner").innerHTML)$("banner").innerHTML=`<div class="banner"><b>Beispieldaten.</b> Die Werte sind erfunden. ${settings.apiKey?"In den Einstellungen ist „Beispieldaten anzeigen“ aktiv.":'Trag in den <a href="#" id="bSet">Einstellungen</a> deinen intervals.icu-Schlüssel ein.'}</div>`;
@@ -726,11 +775,11 @@ function render(){
     ${up.length>1?`<div class="dmeta">${up.filter(r=>r!==main).slice(0,3).map(r=>`<span>${esc(r.name)} in ${diffDays(t,r.date)} Tagen</span>`).join("")}</div>`:""}`;}
   // Ampel
   const ev=evaluate(D),ic=['<path d="M5 12.5l4.5 4.5L19 7.5"/>','<path d="M12 7v6M12 17h.01"/>','<path d="M7 7l10 10M17 7L7 17"/>'][ev.L];
-  $("ampel").innerHTML=`<div class="status"><div class="ic" style="background:${LV[ev.L]}"><svg viewBox="0 0 24 24">${ic}</svg></div><div><div class="t1" style="color:${LV[ev.L]}">Regel-Check: ${ev.t1}</div><div class="t2">${ev.t2}</div></div></div>
+  $("ampel").innerHTML=`<div class="status"><div class="ic" style="background:${LV[ev.L]}"><svg viewBox="0 0 24 24">${ic}</svg></div><div><div class="t1" style="color:${LV[ev.L]}">Regel-Check: ${ev.t1}</div><div class="t2">${ev.t2}</div></div></div><div class="hint cmpnote">Feste Regeln ohne Claude. Die Coach-Auswertung oben berücksichtigt sie und hat Vorrang.</div><button class="lnk" id="ampMore">Details zum Regel-Check</button>
     ${(()=>{const pt=D.planned.filter(p=>p.date===t);if(!pt.length){const sg=suggest(D,ev);return`<div class="plan"><b>Vorschlag für heute</b>${sg}<div class="hint" style="margin-top:6px">Einfache Regel aus Ampel und Belastung, keine Trainerauswertung.</div></div>`}return pt.length?`<div class="plan"><b>Heute im Plan</b>${pt.map(p=>`${SPORTS[p.sport].n}${p.secs?" · "+fH(p.secs)+" h":""}${p.name?" · "+esc(p.name):""}`).join("<br>")}${ev.L===1?'<div class="hint" style="margin-top:6px">Ampel Gelb: harte Anteile weglassen oder die Einheit mit einer lockeren tauschen.</div>':ev.L===2?'<div class="hint" style="margin-top:6px">Ampel Rot: Einheit heute ausfallen lassen.</div>':""}</div>`:""})()}
     <ul class="sig">${ev.S.map(s=>`<li><i style="background:${LV[s.l]}"></i><div>${esc(s.t)}${s.src?`<span class="src">${esc(s.src)}</span>`:""}</div></li>`).join("")}</ul>
     <button class="btn wide fab" id="btnSick1"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Krank oder verletzt melden</button>`;
-  $("btnSick1").onclick=openSick;
+  $("btnSick1").onclick=openSick;$("ampel").classList.toggle("compact",!!(DATA.notes||[]).find(n=>n.name==="Coach "+t));$("ampMore").onclick=()=>$("ampel").classList.toggle("open");
   {const ns=(D.notes||[]).filter(n=>/^Coach \d/.test(n.name||"")&&n.date<=t&&n.date>=addDays(t,-2)).sort((a,b)=>b.date.localeCompare(a.date));const cc=$("coachCard");
    const ai=hasAi()&&isLive(),btn=ai?`<button class="btn wide" id="btnAiRun" style="margin-top:12px">${aiBusy?"Claude wertet aus …":"Auswertung jetzt starten"}</button><div class="err" id="aiErr">${esc(aiErrMsg)}</div><div class="hint">Verbrauch dieses Monats auf diesem Gerät: ${spend().usd.toFixed(2).replace(".",",")} $ von ${AI_LIMIT} $</div>`:"";
    if(ns.length){const n=ns[0];cc.style.display="";cc.innerHTML=coachHTML(n,D,t)+btn}
@@ -759,7 +808,6 @@ function render(){
   const PC={A:"var(--red)",B:"var(--bike)",C:"var(--ctl)"},allR=D.races.slice().sort((a,b)=>a.date.localeCompare(b.date));
   const fut=allR.filter(r=>r.date>=t),past=allR.filter(r=>r.date<t).reverse().slice(0,3);
   $("raceList").innerHTML=allR.length?[...fut,...past].map(r=>{const d=diffDays(t,r.date);return`<div class="sick" style="${r.date<t?"opacity:.55":""}"><div class="prio" style="background:${PC[r.prio]||PC.C}">${esc(r.prio)}</div><div class="m"><b>${esc(r.name)}</b><span>${fDY(r.date)} · ${d>0?"in "+d+" Tagen":d===0?"heute":"vor "+(-d)+" Tagen"}</span></div><button class="btn sm" data-rdel="${esc(r.id)}">Löschen</button></div>`}).join(""):'<div class="empty">Noch keine Termine</div>';
-  $("appTitle").textContent=settings.title||"Mein Training";document.title=settings.title||"Trainings-Dashboard";
   const tot={swim:{h:0,km:0,n:0},bike:{h:0,km:0,n:0},run:{h:0,km:0,n:0},other:{h:0,km:0,n:0}};
   D.activities.forEach(a=>{if(a.date>=from&&a.date<=t){tot[a.sport].h+=a.secs;tot[a.sport].km+=a.km;tot[a.sport].n++}});
   const sumH=Object.values(tot).reduce((s,v)=>s+v.h,0);
@@ -767,7 +815,7 @@ function render(){
   $("totals").innerHTML=["swim","bike","run"].map(k=>`<div class="sp"><div class="n" style="color:${SPORTS[k].c}">${svgI(k,SPORTS[k].c)}${SPORTS[k].n}</div><div class="h">${fH(tot[k].h)}</div><div class="k">${nf(tot[k].km,k==="swim"?1:0)} km · ${tot[k].n}×</div></div>`).join("");
   // Liste
   const rec=D.activities.slice().sort((a,b)=>b.date.localeCompare(a.date)).slice(0,15);
-  $("recent").innerHTML=rec.length?rec.map(a=>`<div class="act"><div class="ico" style="background:${SPORTS[a.sport].c}">${svgI(a.sport,"#fff")}</div><div class="m"><b>${esc(a.name)}</b><span>${fDL(a.date)}${a.hr?" · Ø "+Math.round(a.hr)+" bpm":""}${a.load?" · Last "+nf(a.load):""}</span>${a.id?`<div data-aid="${esc(String(a.id))}"></div>`:""}</div><div class="r"><b>${fH(a.secs)} h</b><span>${nf(a.km,a.sport==="swim"?2:1)} km</span></div></div>`).join(""):'<div class="empty">Keine Einheiten</div>';
+  $("recent").innerHTML=rec.length?rec.map(a=>`<div class="act tap" data-act="${esc(String(a.id||""))}"><div class="ico" style="background:${SPORTS[a.sport].c}">${svgI(a.sport,"#fff")}</div><div class="m"><b>${esc(a.name)}</b><span>${fDL(a.date)}${a.hr?" · Ø "+Math.round(a.hr)+" bpm":""}${a.load?" · Last "+nf(a.load):""}</span>${a.id?`<div data-aid="${esc(String(a.id))}"></div>`:""}</div><div class="r"><b>${fH(a.secs)} h</b><span>${nf(a.km,a.sport==="swim"?2:1)} km</span></div></div>`).join(""):'<div class="empty">Keine Einheiten</div>';
   // Krankheit
   const TL={oberhalb:["oberhalb des Halses","var(--yellow)"],unterhalb:["unterhalb des Halses","var(--red)"],verletzung:["Verletzung","var(--hrv)"]};
   const sl=D.sick.slice().sort((a,b)=>b.start.localeCompare(a.start));
@@ -786,11 +834,11 @@ function render(){
 function renderCharts(){
   const D=DATA,t=today();
   if(TAB==="training"){
-    weekChart(D);
-    const d120=[];for(let i=119;i>=0;i--)d120.push(addDays(t,-i));
+    if(TSUB==="plan")weekChart(D);
+    if(TSUB==="verlauf"){const d120=[];for(let i=119;i>=0;i--)d120.push(addDays(t,-i));
     const g=(ds,f)=>ds.map(d=>{const w=D.wm[d];return w?f(w):null});
     lineChart("chPmc",{dates:d120,zero:true,shade:D.sick,marks:D.races,series:[
-      {name:"Fitness",c:"var(--ctl)",area:true,v:g(d120,w=>w.ctl)},{name:"Ermüdung",c:"var(--atl)",w:1.6,v:g(d120,w=>w.atl)},{name:"Form",c:"var(--tsb)",v:g(d120,w=>w.ctl!=null?w.ctl-w.atl:null)}]});
+      {name:"Fitness",c:"var(--ctl)",area:true,v:g(d120,w=>w.ctl)},{name:"Ermüdung",c:"var(--atl)",w:1.6,v:g(d120,w=>w.atl)},{name:"Form",c:"var(--tsb)",v:g(d120,w=>w.ctl!=null?w.ctl-w.atl:null)}]});}
   }
   if(TAB==="erholung"){
     const d60=[];for(let i=59;i>=0;i--)d60.push(addDays(t,-i));
@@ -799,8 +847,7 @@ function renderCharts(){
     lineChart("chHrv",{dates:d60,shade:D.sick,band:D.hrvStat.r?[D.hrvStat.lo,D.hrvStat.hi]:null,h:220,series:[
       {name:"Nachtwert",c:"var(--hrv)",dots:true,unit:" ms",v:g(d60,w=>w.hrv)},{name:"7-Tage-Mittel",c:"var(--hrv)",w:2.6,unit:" ms",v:roll}]});
     lineChart("chRhr",{dates:d60,shade:D.sick,series:[{name:"Ruhepuls",c:"var(--rhr)",area:true,unit:" /min",v:g(d60,w=>w.rhr)}]});
-    const d30=d60.slice(30);
-    lineChart("chSleep",{dates:d30,series:[{name:"Schlaf",c:"var(--sleep)",area:true,dec:1,unit:" h",v:g(d30,w=>w.sleepH)}]});
+    lineChart("chSleep",{dates:d60,series:[{name:"Schlaf",c:"var(--sleep)",area:true,dec:1,unit:" h",v:g(d60,w=>w.sleepH)}]});
   }
 }
 
@@ -874,7 +921,7 @@ GK.forEach(k=>$(k).addEventListener("change",saveGoal));
 function coachText(){
   const D=DATA,t=today(),g=saveGoal(),L=[];
   L.push("Bitte werte meine Trainings- und Gesundheitsdaten aus wie ein erfahrener Trainer und erstelle mir einen Trainingsplan (oder beantworte meine Frage).");
-  L.push("","ZIEL",`Sportart: ${g.gSport||"-"}`,`Zieldatum: ${g.gDate||"-"}`,`Distanz: ${g.gDist||"-"}`,`Zielzeit: ${g.gTime||"-"}`,`Stunden pro Woche: ${g.gHours||"-"}`,`Trainingstage pro Woche: ${g.gDays||"-"}`,`Sonstiges: ${g.gNote||"-"}`);
+  L.push("","ZIEL",`Sportart: ${g.gSport||"-"}`,`Zieldatum: ${g.gDate||"-"}`,`Distanz: ${g.gDist||"-"}`,`Zielzeit: ${g.gTime||"-"}`,`Stunden pro Woche: ${g.gHours?"höchstens "+g.gHours:"offen, aus den Daten ableiten (zuletzt Ø "+nf(avgHours(D),1)+" h)"}`,`Trainingstage: ${weekText(g)}`,`Sonstiges: ${g.gNote||"-"}`);
   L.push("",`STAND (${t})`);
   if(D.pmc)L.push(`Fitness (CTL) ${nf(D.pmc.ctl)}, Ermüdung (ATL) ${nf(D.pmc.atl)}, Form (TSB) ${nf(D.pmc.tsb)}`);
   const w42=D.wm[addDays(t,-42)];if(w42&&w42.ctl!=null)L.push(`Fitness vor 6 Wochen: ${nf(w42.ctl)}`);
@@ -892,7 +939,6 @@ function coachText(){
   L.push("","ANTWORTFORMAT","Erst eine kurze Auswertung in Worten. Dann den Plan als JSON-Liste in einem Codeblock mit json, je Einheit:",'{"date":"JJJJ-MM-TT","sport":"Run|Ride|Swim|Workout","name":"kurzer Titel","minutes":60,"description":"Ablauf im intervals.icu-Workout-Format, z. B. - 15m Z1 / 4x - 4m Z4 - 3m Z1 / - 10m Z1"}');
   return L.join("\n");
 }
-$("btnCopy").onclick=async()=>{const txt=coachText();try{await navigator.clipboard.writeText(txt);$("coachHint").textContent="Kopiert. Jetzt in einen Claude-Chat einfügen und abschicken."}catch(e){$("impText").value=txt;open("mImp");$("impInfo").textContent="Kopieren wurde blockiert. Text hier markieren und kopieren."}};
 function parsePlan(txt){
   let m=txt.match(/```json\s*([\s\S]*?)```/i);let s=m?m[1]:txt.slice(txt.indexOf("["),txt.lastIndexOf("]")+1);
   const arr=JSON.parse(s);if(!Array.isArray(arr))throw new Error("Keine Liste gefunden.");
@@ -900,20 +946,10 @@ function parsePlan(txt){
 }
 async function importPlan(items){
   let n=0;for(const p of items){
-    const body={category:"WORKOUT",start_date_local:p.date+"T00:00:00",type:p.sport,name:p.name,description:p.description};if(p.minutes)body.moving_time=Math.round(p.minutes*60);
+    const body={category:"WORKOUT",start_date_local:p.date+"T00:00:00",type:p.sport,name:p.name,description:p.description,external_id:"coach-"+p.date+"-"+n+"-"+Date.now().toString(36)};if(p.minutes)body.moving_time=Math.round(p.minutes*60);
     if(!isLive()){const l=store.get("imDemoPlan",[]);l.push(p);store.set("imDemoPlan",l)}else await api("/events",{method:"POST",body:JSON.stringify(body)});n++}
   return n;
 }
-let pending=null;
-$("btnImport").onclick=()=>{$("impText").value="";$("impInfo").textContent="";$("impErr").textContent="";$("impSave").textContent="Prüfen";pending=null;open("mImp")};
-$("impCancel").onclick=()=>close("mImp");
-$("impSave").onclick=async()=>{
-  try{
-    if(!pending){pending=parsePlan($("impText").value);if(!pending.length)throw new Error("Keine Einheiten erkannt.");
-      $("impInfo").textContent=`${pending.length} Einheiten erkannt, von ${pending[0].date} bis ${pending[pending.length-1].date}. Nochmal tippen zum Eintragen.`;$("impSave").textContent="Eintragen";return}
-    $("impSave").textContent="Trägt ein …";const n=await importPlan(pending);pending=null;close("mImp");$("coachHint").textContent=`${n} Einheiten eingetragen.`;load();
-  }catch(e){$("impErr").textContent="Fehler: "+e.message;$("impSave").textContent="Prüfen";pending=null}
-};
 loadGoal();
 async function writeNote(date,text,name){
   name=name||"Coach "+date;
@@ -934,6 +970,7 @@ function parseNote(txt){
     else if(m=l.match(/^Plan:\s*(.*)$/i))o.plan=m[1];
     else if(m=l.match(/^Woche:\s*(.*)$/i))o.week=m[1];
     else if(m=l.match(/^Tipp:\s*(.*)$/i))o.tip=m[1];
+    else if(m=l.match(/^Verpflegung:\s*(.*)$/i))o.fuel=m[1];
     else if(m=l.match(/^Option (Laufen|Rad|Schwimmen|Kombi):\s*(.*)$/i))o.opts.push([m[1],m[2]]);
     else o.why.push(l.replace(/^[-•*]\s*/,""));
   });
@@ -949,6 +986,7 @@ function coachHTML(n,D,t){
   ${o.plan?`<div class="cx-plan"><b>Training heute</b><span class="cx-ptxt">${esc(o.plan)}</span>${o.opts.length?`<div class="cx-opts"><button class="on" data-opt="0" data-txt="${esc(o.plan)}">Empfohlen</button>${o.opts.map(([k,v],i)=>`<button data-opt="${i+1}" data-txt="${esc(v)}">${esc(k)}</button>`).join("")}</div>`:""}</div>`:""}
   <div class="cx-m">${m(h&&h.r?nf(h.r):"–","HRV ms",lvH,h&&h.r&&h.hi?(h.r-h.lo*.75)/(h.hi*1.1-h.lo*.75):0,"var(--hrv)")}${m(r&&r.now?r.now:"–","Ruhepuls",lvR,r&&r.now?1-(r.now-38)/40:0,"var(--rhr)")}${m(w.sleepH?nf(w.sleepH,1):"–","Schlaf h",lvS,w.sleepH?w.sleepH/9:0,"var(--sleep)")}${isHealth()?m(w.steps?nf(w.steps):"–","Schritte",null,w.steps?w.steps/10000:0,"var(--form)"):m(tsb!=null?(tsb>0?"+":"")+nf(tsb):"–","Form",lvF,tsb!=null?(tsb+30)/55:0,"var(--form)")}</div>
   ${o.why.length?`<ul class="cx-why">${o.why.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}
+  ${o.fuel?`<div class="cx-box"><svg viewBox="0 0 24 24"><path d="M7 2v9a3 3 0 0 0 3 3v8M7 2v6M10 2v6M17 2c-1.7 0-3 2-3 5s1.3 4 3 4v11"/></svg><div><b>Verpflegung</b><br>${esc(o.fuel)}</div></div>`:""}
   ${o.week?`<div class="cx-box"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><div><b>Woche</b><br>${esc(o.week)}</div></div>`:""}
   ${o.tip?`<div class="cx-box"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.6.6 1 1.4 1 2.5h6c0-1.1.4-1.9 1-2.5A6 6 0 0 0 12 3z"/></svg><div><b>Tipp</b><br>${esc(o.tip)}</div></div>`:""}</div>`;
 }
@@ -978,32 +1016,17 @@ async function aiDaily(manual){
   if(!manual&&(noteBy("Coach "+t)||store.get("imAiDay","")===t))return;
   aiBusy=true;aiErrMsg="";store.set("imAiDay",t);render();
   try{
-    const up=DATA.planned.filter(p=>p.date>=t&&p.date<=addDays(t,6)),g=saveGoal(),fill=!up.length&&g.gSport&&g.gDate;
+    const up=DATA.planned.filter(p=>p.date>=t&&p.date<=addDays(t,6)),g=saveGoal(),fill=false;
     const pr=coachText().replace(/\nANTWORTFORMAT[\s\S]*$/,"")+"\n\nGEPLANT NÄCHSTE 7 TAGE\n"+(up.length?up.map(p=>`${p.date} ${SPORTS[p.sport].n}: ${p.name}${p.secs?", "+fH(p.secs)+" h":""}`).join("\n"):"nichts")+
-      `\n\nAUFGABE\nTagesauswertung für heute (${t}). Antworte nur mit JSON in einem json-Codeblock: {"status":"gruen|gelb|rot","headline":"Kernaussage für heute, max. 60 Zeichen","plan":"konkrete Einheit für heute mit Sportart, Dauer und Intensität (Zone), oder Ruhetag. Gibt es eine geplante Einheit, sag ob wie geplant, gekürzt oder ohne Intensität","why":["3 bis 4 kurze Gründe, je max. 110 Zeichen, mit den konkreten Zahlen"],"week":"ein Satz zur Woche und zum Trend","tip":"ein kurzer praktischer Tipp (Erholung, Ernährung, Technik oder Planung)","options":{"Laufen":"Alternative als Lauf mit Dauer und Zone","Rad":"Alternative auf dem Rad (draußen oder Rolle/Zwift)","Schwimmen":"Alternative im Becken mit Aufbau in Metern","Kombi":"Kombination zweier Sportarten, z. B. Koppeleinheit Rad und Lauf"},"workouts":[...]}. Alle Alternativen müssen zum heutigen Zustand passen (gleiche Belastungsstufe).`+
+      `\n\nAUFGABE\nTagesauswertung für heute (${t}). Antworte nur mit JSON in einem json-Codeblock: {"status":"gruen|gelb|rot","headline":"Kernaussage für heute, max. 60 Zeichen","plan":"konkrete Einheit für heute mit Sportart, Dauer und Intensität (Zone), oder Ruhetag. Gibt es eine geplante Einheit, sag ob wie geplant, gekürzt oder ohne Intensität","why":["3 bis 4 kurze Gründe, je max. 110 Zeichen, mit den konkreten Zahlen"],"week":"ein Satz zur Woche und zum Trend","fuel":"Verpflegung für die heutige Einheit in einem Satz (Kohlenhydrate und Trinken pro Stunde), nur wenn sie länger als 75 Minuten ist, sonst leer","tip":"ein kurzer praktischer Tipp (Erholung, Ernährung, Technik oder Planung)","options":{"Laufen":"Alternative als Lauf mit Dauer und Zone","Rad":"Alternative auf dem Rad (draußen oder Rolle/Zwift)","Schwimmen":"Alternative im Becken mit Aufbau in Metern","Kombi":"Kombination zweier Sportarten, z. B. Koppeleinheit Rad und Lauf"},"workouts":[...]}. Alle Alternativen müssen zum heutigen Zustand passen (gleiche Belastungsstufe).`+
       (fill?` workouts: Einheiten für die nächsten 7 Tage ab heute passend zu Ziel, Stunden und Trainingstagen, je {"date","sport","name","minutes","description"}, ${planFmt()}`:` workouts: leere Liste.`);
     const o=jsonFrom(await claude(pr,fill?8000:4000));
-    const txt=o.headline?[`Status: ${o.status||""}`,`Heute: ${o.headline}`,o.plan?`Plan: ${o.plan}`:"",...(o.why||[]).map(x=>"- "+x),o.week?`Woche: ${o.week}`:"",o.tip?`Tipp: ${o.tip}`:"",...Object.entries(o.options||{}).filter(([k,v])=>v).map(([k,v])=>`Option ${k}: ${v}`)].filter(Boolean).join("\n"):String(o.note||"");
+    const txt=o.headline?[`Status: ${o.status||""}`,`Heute: ${o.headline}`,o.plan?`Plan: ${o.plan}`:"",...(o.why||[]).map(x=>"- "+x),o.week?`Woche: ${o.week}`:"",o.tip?`Tipp: ${o.tip}`:"",o.fuel?`Verpflegung: ${o.fuel}`:"",...Object.entries(o.options||{}).filter(([k,v])=>v).map(([k,v])=>`Option ${k}: ${v}`)].filter(Boolean).join("\n"):String(o.note||"");
     if(txt)await writeNote(t,txt.slice(0,2000));
     if(fill&&Array.isArray(o.workouts)&&o.workouts.length){await importPlan(parsePlan(JSON.stringify(o.workouts)));await load()}
   }catch(e){aiErrMsg=e.message;if(manual)store.set("imAiDay","")}
   finally{aiBusy=false;render()}
 }
-$("btnAiPlan").onclick=async()=>{
-  const b=$("btnAiPlan"),g=saveGoal(),t=today();
-  if(!hasAi()||!isLive()){$("coachHint").textContent="Dafür in den Einstellungen den intervals.icu- und den Claude-API-Schlüssel eintragen.";return}
-  if(!g.gSport||!g.gDate){$("coachHint").textContent="Bitte zuerst Sportart und Zieldatum eintragen.";return}
-  if(DATA.planned.some(p=>p.date>=t)&&b.dataset.sure!=="1"){b.dataset.sure="1";b.textContent="Im Kalender sind schon Einheiten. Trotzdem ergänzen?";return}
-  b.dataset.sure="";b.disabled=true;b.textContent="Claude erstellt den Plan …";
-  try{
-    const pr=coachText().replace(/\nANTWORTFORMAT[\s\S]*$/,"")+`\n\nAUFGABE\nErstelle einen Trainingsplan für die nächsten 4 Wochen ab ${addDays(t,1)} zum Ziel, mit sinnvoller Steigerung und Entlastung, passend zu Stunden und Trainingstagen. Tage mit bestehenden Einheiten nicht doppelt belegen. Antworte nur mit JSON in einem json-Codeblock: {"note":"kurze Begründung, max. 600 Zeichen","workouts":[{"date","sport","name","minutes","description"}]}. ${planFmt()}`;
-    const o=jsonFrom(await claude(pr,16000));const items=parsePlan(JSON.stringify(o.workouts||[]));
-    if(!items.length)throw new Error("Claude hat keine Einheiten geliefert.");
-    const n=await importPlan(items);await load();$("coachHint").textContent=`${n} Einheiten eingetragen. ${o.note||""}`;
-  }catch(e){$("coachHint").textContent="Fehler: "+e.message}
-  finally{b.disabled=false;b.textContent="Plan von Claude erstellen lassen (4 Wochen)"}
-};
-
 /* ---------- v10: Fortschritt, Bestwerte, Prognosen ---------- */
 function fT(sec){if(sec==null||!isFinite(sec))return"–";sec=Math.round(sec);const h=Math.floor(sec/3600),m=Math.floor(sec%3600/60),s=sec%60;return h?`${h}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`:`${m}:${String(s).padStart(2,"0")}`}
 function isHealth(){return settings.mode==="gesundheit"}
@@ -1044,15 +1067,15 @@ function renderBench(D){
   const b=bench(D),el=$("bench");if(!el)return;
   const dl=(now,old,fmt,lowGood,unit="")=>{if(now==null||old==null)return'<span class="bd">noch kein Vergleich</span>';const d=now-old,good=lowGood?d<0:d>0,z=Math.abs(d)<1e-9;
     return`<span class="bd" style="color:${z?"var(--muted)":good?"var(--green)":"var(--red)"}">${z?"unverändert":(d>0?"+":"−")+fmt(Math.abs(d))+unit} ggü. 3 Monaten</span>`};
-  const tile=(k,v,sub,delta,series,c)=>`<div class="bt"><div class="bk">${k}</div><div class="bv">${v}</div><div class="bs">${sub}</div>${delta}<div class="bsp">${spark(series,c)}</div></div>`;
+  const tile=(k,v,sub,delta,series,c,ix)=>`<div class="bt" data-b="${ix}"><div class="bk">${k}</div><div class="bv">${v}</div><div class="bs">${sub}</div>${delta}${series&&series.filter(x=>x!=null).length>1?`<div class="bsp">${spark(series,c)}</div><div class="bcap">Verlauf 12 Monate</div>`:""}</div>`;
   const T=[];
-  if(b.r5)T.push(`<div class="bt wide"><div class="bk">Laufen · geschätzte Zeiten</div><div class="brow"><div><b>${fT(b.r5)}</b><span>5 km</span></div><div><b>${fT(b.r5*Math.pow(2,1.06))}</b><span>10 km</span></div><div><b>${fT(b.r5*Math.pow(21.0975/5,1.06))}</b><span>Halbmarathon</span></div><div><b>${fT(b.r5*Math.pow(42.195/5,1.06))}</b><span>Marathon</span></div></div>${dl(b.r5,b.r5o,x=>fT(x),true," (5 km)")}<div class="bsp">${spark(b.s5.map(v=>v==null?null:-v),"var(--run)")}</div></div>`);
-  if(b.real5)T.push(tile("Schnellster 5-km-Lauf",fT(b.real5),"gelaufen, letzte 12 Monate","",[],"var(--run)"));
-  if(b.eN)T.push(tile("Laufökonomie",nf(b.eN,2)+" m","pro Herzschlag, 6 Wochen",dl(b.eN,b.eO,x=>nf(x,2),false," m"),b.sE,"var(--run)"));
-  if(b.sN)T.push(tile("Schwimmen",fT(b.sN)+" /100 m","bestes Tempo, 90 Tage",dl(b.sN,b.sO,x=>fT(x),true),b.sS.map(v=>v==null?null:-v),"var(--swim)"));
-  if(b.bN)T.push(tile("Rad",Math.round(b.bN)+" W","beste NP ≥ 40 min, 90 Tage",dl(b.bN,b.bO,x=>Math.round(x),false," W"),b.sB,"var(--bike)"));
-  if(b.ftp)T.push(tile("FTP",b.ftp+" W",b.wt?nf(b.ftp/b.wt,2)+" W/kg":"Gewicht fehlt","",[],"var(--bike)"));
-  if(b.cN!=null)T.push(tile("Fitness (CTL)",nf(b.cN),"Monatsmittel im Verlauf",dl(b.cN,b.cO,x=>nf(x),false),b.sC,"var(--ctl)"));
+  if(b.r5)T.push(`<div class="bt wide" data-b="0"><div class="bk">Laufen, geschätzte Zeiten</div><div class="brow"><div><b>${fT(b.r5)}</b><span>5 km</span></div><div><b>${fT(b.r5*Math.pow(2,1.06))}</b><span>10 km</span></div><div><b>${fT(b.r5*Math.pow(21.0975/5,1.06))}</b><span>Halbmarathon</span></div><div><b>${fT(b.r5*Math.pow(42.195/5,1.06))}</b><span>Marathon</span></div></div>${dl(b.r5,b.r5o,x=>fT(x),true," (5 km)")}<div class="bsp">${spark(b.s5.map(v=>v==null?null:-v),"var(--run)")}</div><div class="bcap">Verlauf der geschätzten 5-km-Zeit, 12 Monate (höher ist schneller)</div></div>`);
+  if(b.real5)T.push(tile("Schnellster 5-km-Lauf",fT(b.real5),"gelaufen, letzte 12 Monate","",[],"var(--run)",1));
+  if(b.eN)T.push(tile("Laufökonomie",nf(b.eN,2)+" m","pro Herzschlag, 6 Wochen",dl(b.eN,b.eO,x=>nf(x,2),false," m"),b.sE,"var(--run)",2));
+  if(b.sN)T.push(tile("Schwimmen",fT(b.sN)+" /100 m","bestes Tempo, 90 Tage",dl(b.sN,b.sO,x=>fT(x),true),b.sS.map(v=>v==null?null:-v),"var(--swim)",3));
+  if(b.bN)T.push(tile("Rad",Math.round(b.bN)+" W","beste NP ≥ 40 min, 90 Tage",dl(b.bN,b.bO,x=>Math.round(x),false," W"),b.sB,"var(--bike)",4));
+  if(b.ftp)T.push(tile("FTP",b.ftp+" W",b.wt?nf(b.ftp/b.wt,2)+" W/kg":"Gewicht fehlt","",[],"var(--bike)",5));
+  if(b.cN!=null)T.push(tile("Fitness (CTL)",nf(b.cN),"Monatsmittel im Verlauf",dl(b.cN,b.cO,x=>nf(x),false),b.sC,"var(--ctl)",6));
   el.innerHTML=T.length?T.join(""):'<div class="empty">Noch zu wenige Einheiten</div>';
   // Prognosen
   const P_=(D.notes||[]).filter(n=>/^Coach Prognose/.test(n.name)).sort((a,b)=>b.date.localeCompare(a.date));
@@ -1096,7 +1119,7 @@ let autoRun=false;
 async function aiAuto(){
   if(autoRun||!hasAi()||!isLive()||!DATA||new Date().getHours()<5)return;autoRun=true;
   try{
-    await aiDaily(false);
+    await aiDaily(false);await planAuto();
     const t=today(),D=DATA;
     const a=D.activities.filter(a=>a.id&&a.date>=addDays(t,-2)&&!noteBy("Coach Einheit "+a.id)).sort((x,y)=>y.date.localeCompare(x.date))[0];
     if(a)await aiActivity(a,false);
@@ -1113,7 +1136,7 @@ function renderExtra(D){
   // letzte Einheit
   const last=D.activities.filter(a=>a.id).sort((x,y)=>y.date.localeCompare(x.date))[0],ac=$("actCard");
   if(last&&last.date>=addDays(t,-3)){const n=noteBy("Coach Einheit "+last.id),o=n?kv(n.text):null;ac.style.display="";
-    ac.innerHTML=`<h2>Letzte Einheit</h2><div class="act" style="margin-top:8px"><div class="ico" style="background:${SPORTS[last.sport].c}">${svgI(last.sport,"#fff")}</div><div class="m"><b>${esc(last.name)}</b><span>${fDL(last.date)}${last.hr?" · Ø "+Math.round(last.hr)+" bpm":""}</span></div><div class="r"><b>${fH(last.secs)} h</b><span>${nf(last.km,last.sport==="swim"?2:1)} km</span></div></div>
+    ac.innerHTML=`<h2>Letzte Einheit</h2><div class="act tap" data-act="${esc(String(last.id))}" style="margin-top:8px"><div class="ico" style="background:${SPORTS[last.sport].c}">${svgI(last.sport,"#fff")}</div><div class="m"><b>${esc(last.name)}</b><span>${fDL(last.date)}${last.hr?" · Ø "+Math.round(last.hr)+" bpm":""}</span></div><div class="r"><b>${fH(last.secs)} h</b><span>${nf(last.km,last.sport==="swim"?2:1)} km</span></div></div>
     ${o?`<div class="cx-h" style="font-size:16px;margin:12px 0 6px">${esc(o.title)}${o.rating?` <span class="tag">${esc(o.rating)}</span>`:""}</div><ul class="cx-why" style="--cxc:${SPORTS[last.sport].c}">${o.pts.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:ai?`<button class="btn wide" id="btnActAi" style="margin-top:10px">Einheit bewerten lassen</button>`:""}<div class="err" id="actErr"></div>`;
     if($("btnActAi"))$("btnActAi").onclick=async()=>{const b=$("btnActAi");b.disabled=true;b.textContent="Claude bewertet …";try{await aiActivity(last,true)}catch(e){$("actErr").textContent=e.message;b.disabled=false;b.textContent="Einheit bewerten lassen"}};
   }else ac.style.display="none";
@@ -1128,7 +1151,7 @@ function renderExtra(D){
   $("btnWeek").style.display=ai?"":"none";
   // Liste: Kommentare
   document.querySelectorAll("#recent [data-aid]").forEach(el=>{const n=noteBy("Coach Einheit "+el.dataset.aid);if(n){const o=kv(n.text);el.innerHTML=`<span class="cm">Coach: ${esc(o.title)}${o.rating?" · "+esc(o.rating):""}</span>`}});
-  renderBench(D);renderShoes(D);
+  renderBench(D);renderV14(D);
   document.body.classList.toggle("health",isHealth());
 }
 $("askSend").onclick=async()=>{
@@ -1155,21 +1178,149 @@ function fuel(){
 }
 ["fDur","fInt","fHeat","fSport"].forEach(k=>$(k).addEventListener("input",fuel));
 $("fSport").addEventListener("change",()=>{if($("fSport").value==="ironman"){$("fDur").value=12;$("fInt").value="rennen"}fuel()});
-/* ---------- Laufschuhe ---------- */
-function renderShoes(D){
-  const sh=store.get("imShoes",[]).sort((a,b)=>a.since.localeCompare(b.since)),runs=D.activities.filter(a=>a.sport==="run");
-  const act=sh.filter(s=>!s.ret);
-  const km=s=>s.startKm+runs.filter(r=>r.date>=s.since&&(!s.ret||r.date<=s.ret)&&act.filter(o=>o.since<=r.date).slice(-1)[0]===s).reduce((x,r)=>x+r.km,0);
-  $("shoeList").innerHTML=sh.length?sh.map(s=>{const k=km(s),p=Math.min(1,k/s.limit),c=p>=1?"var(--red)":p>=.85?"var(--yellow)":"var(--green)";
-    return`<div class="shoe"><div class="m"><b>${esc(s.name)}</b><span>${Math.round(k)} von ${s.limit} km · seit ${fD(s.since)}${s.ret?" · ausgemustert":""}${!s.ret&&p>=1?" · Wechsel fällig":!s.ret&&p>=.85?" · bald wechseln":""}</span><div class="bar"><i style="width:${(p*100).toFixed(0)}%;background:${c}"></i></div></div>${s.ret?"":`<button class="btn sm" data-sret="${s.id}">Ausmustern</button>`}<button class="btn sm" data-sdel="${s.id}">Löschen</button></div>`}).join(""):'<div class="hint">Noch kein Schuh eingetragen. Alle Läufe ab dem Startdatum werden dem neuesten aktiven Schuh zugerechnet.</div>';
-}
-$("shoeAdd").onclick=()=>{const name=$("sName").value.trim();if(!name)return;const sh=store.get("imShoes",[]);sh.push({id:"s"+Date.now(),name,since:$("sSince").value||today(),startKm:+$("sKm").value||0,limit:+$("sLim").value||700});store.set("imShoes",sh);$("sName").value="";$("sKm").value="";renderShoes(DATA)};
-$("shoeList").onclick=e=>{const b=e.target.closest("button");if(!b)return;let sh=store.get("imShoes",[]);
-  if(b.dataset.sdel){if(b.dataset.sure!=="1"){b.dataset.sure="1";b.textContent="Sicher?";return}sh=sh.filter(s=>s.id!==b.dataset.sdel)}
-  if(b.dataset.sret)sh.forEach(s=>{if(s.id===b.dataset.sret)s.ret=today()});store.set("imShoes",sh);renderShoes(DATA)};
-$("sSince").value=today();
 /* Optionen in der Coach-Karte */
 $("coachCard").addEventListener("click",e=>{const b=e.target.closest("[data-opt]");if(!b)return;const box=$("coachCard");box.querySelectorAll("[data-opt]").forEach(x=>x.classList.toggle("on",x===b));box.querySelector(".cx-ptxt").textContent=b.dataset.txt});
+
+/* ---------- v14: Struktur, Wiki, Details ---------- */
+function planInfo(D){
+  const t=today(),pl=D.planned.filter(p=>p.date>=addDays(t,-300)).map(p=>p.date).sort();
+  if(pl.length<10)return null;const s=pl[0],e=pl[pl.length-1];if(diffDays(s,e)<21)return null;
+  return{start:s,end:e,weeks:Math.ceil((diffDays(s,e)+1)/7)};
+}
+const DAYN=["Mo","Di","Mi","Do","Fr","Sa","So"];
+function weekArr(g){const a=String(g.gDays||"").split(",").map(Number);return a.length===7&&a.every(x=>x>=0&&x<=2)?a:[1,0,1,0,1,2,2]}
+function weekText(g){const a=weekArr(g);const d=DAYN.filter((_,i)=>a[i]>0).map((n,_,__)=>n);return DAYN.map((n,i)=>a[i]===2?n+" (lang)":a[i]===1?n:null).filter(Boolean).join(", ")||"keine Angabe"}
+function avgHours(D,w=6){const t=today(),mon=monday(t);let s=0;D.activities.forEach(a=>{if(a.date>=addDays(mon,-7*w)&&a.date<addDays(mon,0))s+=a.secs});return s/3600/w}
+function renderDays(){const g=store.get("imGoal",{}),a=weekArr(g);$("dayPick").innerHTML=a.map((v,i)=>`<button data-i="${i}" class="d${v}">${DAYN[i]}<small>${["frei","Training","lang"][v]}</small></button>`).join("")}
+$("dayPick").onclick=e=>{const b=e.target.closest("button");if(!b)return;const g=store.get("imGoal",{}),a=weekArr(g);a[+b.dataset.i]=(a[+b.dataset.i]+1)%3;$("gDays").value=a.join(",");saveGoal();renderDays()};
+function openGoal(){loadGoal();if(!$("gDays").value)$("gDays").value=weekArr({}).join(",");renderDays();
+  const h=DATA?avgHours(DATA):0;$("gHoursHint").textContent=`Leer lassen: Claude leitet den Umfang aus deinen Daten ab (zuletzt im Schnitt ${nf(h,1)} h pro Woche) und steigert ihn passend.`;open("mGoal")}
+$("gClose").onclick=$("gDone").onclick=()=>{saveGoal();close("mGoal");if(DATA)render()};
+/* Unterbereiche Training */
+let TSUB=store.get("imTsub","plan");
+function setSub(s){TSUB=s;store.set("imTsub",s);document.querySelectorAll("[data-sub]").forEach(x=>x.classList.toggle("on",x.dataset.sub===s));document.querySelectorAll("#tseg button").forEach(b=>b.classList.toggle("on",b.dataset.s===s));if(DATA)renderCharts()}
+document.querySelectorAll("#tseg button").forEach(b=>b.onclick=()=>setSub(b.dataset.s));setSub(TSUB);
+/* Info-Fenster */
+function info(html,chart,foot){$("iBody").innerHTML=html;$("iFoot").innerHTML=foot||"";$("chInfo").innerHTML="";$("chInfo").style.display=chart?"":"none";open("mInfo");if(chart)setTimeout(()=>lineChart("chInfo",chart),30)}
+$("iClose").onclick=()=>close("mInfo");
+function series90(f){const t=today(),d=[];for(let i=89;i>=0;i--)d.push(addDays(t,-i));return{dates:d,v:d.map(x=>{const w=DATA.wm[x];return w?f(w):null})}}
+const WIKI=[
+ ["Fitness (CTL)","Der Durchschnitt deiner Trainingslast der letzten 42 Tage. Steigt langsam, wenn du regelmäßig trainierst, und sinkt langsam in Pausen. Zeigt, wie viel Training dein Körper zurzeit gewohnt ist. Höher heißt: mehr Grundlage, nicht automatisch schneller am Wettkampftag."],
+ ["Ermüdung (ATL)","Der Durchschnitt deiner Trainingslast der letzten 7 Tage. Reagiert schnell: nach harten Tagen steigt sie, nach ein paar ruhigen Tagen fällt sie wieder."],
+ ["Form (TSB)","Fitness minus Ermüdung. Negativ heißt: du trainierst gerade mehr, als du gewohnt bist (normal im Aufbau, etwa −10 bis −30). Unter −30 wird es riskant. Positiv heißt: du bist ausgeruht, zum Beispiel vor einem Wettkampf oder nach einer Pause. Kurz: Fitness ist, was du aufgebaut hast. Form ist, wie frisch du heute bist."],
+ ["Trainingslast (Last)","Eine Zahl für die Belastung einer Einheit, berechnet von intervals.icu aus Dauer und Intensität (Leistung, Puls oder Tempo). Eine Stunde an der Schwelle ergibt etwa 100."],
+ ["HRV","Herzratenvariabilität: wie stark der Abstand zwischen Herzschlägen schwankt, gemessen nachts von deiner Uhr (rMSSD in ms). Höher als dein eigener Normalbereich heißt meist: gut erholt. Darunter: Stress, Krankheit, Schlafmangel oder viel Training. Wichtig ist der Vergleich mit dir selbst, nicht mit anderen."],
+ ["Ruhepuls","Puls in Ruhe, nachts gemessen. Liegt er mehrere Tage 5 oder mehr Schläge über deinem Mittel, kann das auf Ermüdung oder eine beginnende Krankheit hinweisen."],
+ ["Normalbereich","Dein persönlicher Bereich für die HRV, berechnet aus den Nächten 8 bis 60 vor heute (Mittelwert plus und minus eine halbe Standardabweichung)."],
+ ["Zonen (Z1 bis Z5)","Intensitätsbereiche nach Puls, Leistung oder Tempo. Z1 sehr locker, Z2 Grundlage (du kannst dich unterhalten), Z3 zügig, Z4 Schwelle (ca. 1 Stunde durchhaltbar), Z5 sehr hart (wenige Minuten). Die Grenzen stehen in intervals.icu unter Einstellungen."],
+ ["Grundlage","Lockeres, langes Training in Z1 und Z2. Baut die Ausdauer auf, auf der alles andere aufsetzt. Beim Ironman der größte Teil des Trainings."],
+ ["Koppeltraining (Kombi)","Zwei Sportarten direkt hintereinander, meist Rad und danach Laufen. Gewöhnt die Beine an den Wechsel im Triathlon."],
+ ["FTP","Functional Threshold Power: die Leistung in Watt, die du auf dem Rad etwa eine Stunde halten kannst. Grundlage für die Radzonen. W/kg ist FTP geteilt durch dein Gewicht."],
+ ["NP","Normalized Power: gewichtete Durchschnittsleistung einer Radeinheit. Berücksichtigt, dass Spitzen mehr ermüden als gleichmäßiges Fahren."],
+ ["IF","Intensity Factor: NP geteilt durch FTP. 0,65 bis 0,75 ist locker, um 1,0 entspricht einer Stunde Vollgas."],
+ ["Entkopplung","Wie stark der Puls im Verlauf einer gleichmäßigen Einheit im Verhältnis zu Tempo oder Leistung steigt. Unter 5 % gilt als gute Grundlagenausdauer für diese Dauer."],
+ ["Laufökonomie","Hier: Meter pro Herzschlag (Tempo geteilt durch Durchschnittspuls). Steigt der Wert bei ähnlichen Läufen, läufst du effizienter."],
+ ["Riegel-Formel","Schätzt Zeiten über andere Distanzen: T2 = T1 × (D2/D1)^1,06. Funktioniert gut zwischen ähnlichen Strecken. Für den Marathon passt sie nur, wenn du auch lange Läufe trainiert hast."],
+ ["Erholungswert","Eigene Kennzahl dieser App von 0 bis 100 aus HRV, Ruhepuls und Schlaf im Vergleich zu deinem Normalbereich. Kein wissenschaftlich geprüfter Wert, sondern eine Zusammenfassung zur Orientierung."],
+ ["Belastungsverhältnis","Trainingslast der letzten 7 Tage geteilt durch den Wochenschnitt der letzten 28 Tage. Um 0,8 bis 1,3 gilt als gleichmäßige Steigerung. Ob ein hoher Wert das Verletzungsrisiko vorhersagt, ist in der Forschung umstritten (z. B. Impellizzeri et al., 2020). Hier nur als Hinweis auf sprunghafte Wochen."],
+ ["Regel-Check (Ampel)","Feste Regeln aus HRV, Ruhepuls, Form, Schlaf und Krankheitseinträgen. Läuft ohne Claude. Die Coach-Auswertung von Claude berücksichtigt den Regel-Check und hat Vorrang."],
+ ["intervals.icu","Kostenlose Trainingsplattform, die deine Garmin- und Zwift-Daten sammelt und berechnet. Die App liest von dort und schreibt geplante Einheiten und Notizen zurück. Von intervals.icu gehen geplante Einheiten auf deine Uhr."]
+];
+function wikiDesc(k){const e=WIKI.find(x=>x[0].toLowerCase().startsWith(k.toLowerCase()));return e?e[1]:""}
+function renderWiki(){const q=($("wikiQ").value||"").toLowerCase();$("wikiList").innerHTML=WIKI.filter(e=>!q||(e[0]+" "+e[1]).toLowerCase().includes(q)).map(e=>`<details class="wk"><summary>${esc(e[0])}</summary><p>${esc(e[1])}</p></details>`).join("")||'<div class="empty">Nichts gefunden</div>'}
+$("wikiQ").addEventListener("input",renderWiki);renderWiki();
+/* Details: Einheit */
+function actInfo(a){
+  const n=a.id?noteBy("Coach Einheit "+a.id):null,o=n?kv(n.text):null,ai=hasAi()&&isLive();
+  const rows=[["Datum",fDL(a.date)],["Dauer",fH(a.secs)+" h"],["Distanz",nf(a.km,a.sport==="swim"?2:1)+" km"],a.sport==="run"&&a.km>0?["Pace",fT(a.secs/a.km)+" /km"]:null,a.sport==="swim"&&a.km>0?["Tempo",fT(a.secs/(a.km*10))+" /100 m"]:null,a.sport==="bike"&&a.km>0?["Tempo",nf(a.km/(a.secs/3600),1)+" km/h"]:null,
+    a.hr?["Ø Puls",Math.round(a.hr)+" /min"]:null,a.maxhr?["Max. Puls",Math.round(a.maxhr)+" /min"]:null,a.np?["NP",Math.round(a.np)+" W"]:null,a.if?["IF",nf(a.if,2)]:null,a.load?["Trainingslast",nf(a.load)]:null,a.dec!=null?["Entkopplung",nf(a.dec,1)+" %"]:null,a.elev?["Höhenmeter",Math.round(a.elev)+" m"]:null].filter(Boolean);
+  info(`<div class="act" style="margin:0 0 14px"><div class="ico" style="background:${SPORTS[a.sport].c}">${svgI(a.sport,"#fff")}</div><div class="m"><b>${esc(a.name)}</b><span>${SPORTS[a.sport].n}</span></div></div>
+   <div class="kv">${rows.map(r=>`<div><span>${r[0]}</span><b>${r[1]}</b></div>`).join("")}</div>
+   ${o?`<h3 style="margin:16px 0 4px">${esc(o.title)}${o.rating?` <span class="tag">${esc(o.rating)}</span>`:""}</h3><ul class="cx-why" style="--cxc:${SPORTS[a.sport].c}">${o.pts.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}`,null,
+   ai&&a.id?`<button class="btn wide" id="iAct" style="margin-top:12px">${o?"Neu bewerten lassen":"Von Claude bewerten lassen"}</button><div class="err" id="iErr"></div>`:"");
+  if($("iAct"))$("iAct").onclick=async()=>{const b=$("iAct");b.disabled=true;b.textContent="Claude bewertet …";try{await aiActivity(a,true);actInfo(DATA.activities.find(x=>x.id===a.id)||a)}catch(e){$("iErr").textContent=e.message;b.disabled=false}};
+}
+document.addEventListener("click",e=>{const el=e.target.closest("[data-act]");if(!el||!DATA)return;const a=DATA.activities.find(x=>String(x.id)===el.dataset.act);if(a)actInfo(a)});
+/* Details: Kennzahlen */
+function kpiInfo(i){
+  const D=DATA,t=today(),K=[
+   ["Fitness (CTL)","var(--ctl)",w=>w.ctl,D.pmc?nf(D.pmc.ctl):"–"],["Ermüdung (ATL)","var(--atl)",w=>w.atl,D.pmc?nf(D.pmc.atl):"–"],["Form (TSB)","var(--tsb)",w=>w.ctl!=null?w.ctl-w.atl:null,D.pmc?nf(D.pmc.tsb):"–"],
+   ["HRV","var(--hrv)",w=>w.hrv,D.hrvStat.r?nf(D.hrvStat.r)+" ms":"–"],["Ruhepuls","var(--rhr)",w=>w.rhr,D.rhrStat.now?D.rhrStat.now+" /min":"–"],["Schlaf","var(--sleep)",w=>w.sleepH,D.sleepNow!=null?nf(D.sleepNow,1)+" h":"–"]];
+  if(i>=K.length){const mon=monday(t),wk=[];for(let k=11;k>=0;k--){const m=addDays(mon,-7*k);let s=0;D.activities.forEach(a=>{if(monday(a.date)===m)s+=a.secs});wk.push([m,s/3600])}
+    info(`<h3>Wochenstunden</h3><div class="ibig">${fH(wk[11][1]*3600)} h</div><p class="hint">diese Woche bis heute</p><div class="kv">${wk.slice().reverse().slice(0,8).map(w=>`<div><span>Woche ab ${fD(w[0])}</span><b>${nf(w[1],1)} h</b></div>`).join("")}</div>`);return}
+  const k=K[i],s=series90(k[2]);
+  info(`<h3>${k[0]}</h3><div class="ibig" style="color:${k[1]}">${k[3]}</div><p>${esc(wikiDesc(k[0].split(" ")[0]))}</p>`,{dates:s.dates,zero:i<3,band:i===3&&D.hrvStat.r?[D.hrvStat.lo,D.hrvStat.hi]:null,series:[{name:k[0],c:k[1],area:true,dec:i===5?1:0,v:s.v}]},'<p class="hint">Letzte 90 Tage</p>');
+}
+document.addEventListener("click",e=>{const el=e.target.closest("#kpis .kpi");if(!el)return;kpiInfo([...$("kpis").children].indexOf(el))});
+/* Details: Bestwerte */
+document.addEventListener("click",e=>{const el=e.target.closest("#bench .bt");if(!el||!DATA)return;const b=bench(DATA),i=+el.dataset.b;
+  const M=[["Geschätzte 5-km-Zeit (Monatsbestwert)",b.s5.map(v=>v==null?null:v/60),"var(--run)","min",true,"Riegel-Formel"],["Schnellster 5-km-Lauf",null],["Laufökonomie",b.sE,"var(--run)","m","","Laufökonomie"],["Schwimmen, bestes Tempo pro 100 m",b.sS.map(v=>v==null?null:v),"var(--swim)","s",true,""],["Rad, beste NP ab 40 min",b.sB,"var(--bike)","W","","NP"],["FTP",null,"","","","FTP"],["Fitness (Monatsmittel)",b.sC,"var(--ctl)","","","Fitness"]][i];
+  if(!M)return;const dates=b.months.map(m=>m+"-15");
+  info(`<h3>${M[0]}</h3>${M[4]?'<p class="hint">Niedriger ist besser.</p>':""}<p>${esc(M[5]?wikiDesc(M[5]):"")}</p>`,M[1]?{dates,series:[{name:M[0],c:M[2],area:true,dots:false,dec:M[3]==="m"?2:1,unit:" "+M[3],v:M[1]}]}:null,'<p class="hint">Je Monat ein Wert, letzte 12 Monate</p>')});
+/* Details: geplante Einheit */
+function fuelHint(min,int){const h=min/60;if(h<1.25)return"";const c=h<2?"30 bis 45":h<2.5?"30 bis 60":"60 bis 90";return`Verpflegung: ${c} g Kohlenhydrate und 400 bis 750 ml pro Stunde.`}
+document.addEventListener("click",e=>{const el=e.target.closest("[data-pl]");if(!el||!DATA)return;const p=DATA.planned.find(x=>String(x.id)===el.dataset.pl);if(!p)return;
+  info(`<h3>${esc(p.name||SPORTS[p.sport].n)}</h3><p class="hint">${fDL(p.date)} · ${SPORTS[p.sport].n}${p.secs?" · "+fH(p.secs)+" h":""}</p>${p.desc?`<pre class="wo">${esc(p.desc)}</pre>`:""}${fuelHint(p.secs/60)?`<div class="cx-box"><div>${fuelHint(p.secs/60)}</div></div>`:""}`)});
+/* Erholungswert und Belastung */
+function recovery(D){const t=today(),h=D.hrvStat,r=D.rhrStat,s=D.sleepNow;if(!h.r)return null;
+  const z=(h.rln-h.m)/(h.s||1);let v=60+z*20;const parts=[["HRV",Math.round(z*20)]];
+  if(r&&r.now&&r.base){const d=-(r.now-r.base)*4;v+=d;parts.push(["Ruhepuls",Math.round(d)])}
+  if(s!=null){const d=Math.max(-25,Math.min(10,(s-7.5)*8));v+=d;parts.push(["Schlaf",Math.round(d)])}
+  return{v:Math.max(0,Math.min(100,Math.round(v))),parts}}
+function renderErholung(D){
+  const R=recovery(D),c=R?(R.v>=60?"var(--green)":R.v>=40?"var(--yellow)":"var(--red)"):"var(--muted)";
+  $("recCard").innerHTML=`<h2>Erholungswert</h2><div class="sub">Heute aus HRV, Ruhepuls und Schlaf</div>${R?`<div class="rrow"><svg class="rring" viewBox="0 0 36 36"><circle cx="18" cy="18" r="15" fill="none" stroke="var(--ringbg)" stroke-width="4"/><circle cx="18" cy="18" r="15" fill="none" stroke="${c}" stroke-width="4" stroke-linecap="round" stroke-dasharray="${(R.v/100*94.2).toFixed(1)} 94.2"/></svg><div><div class="ibig">${R.v}</div><div class="hint">von 100</div></div></div>
+   <div class="kv">${R.parts.map(p=>`<div><span>${p[0]}</span><b style="color:${p[1]>=0?"var(--green)":"var(--red)"}">${p[1]>0?"+":""}${p[1]}</b></div>`).join("")}</div><p class="hint">Eigene Kennzahl der App, kein Studienwert. Erklärung im Wiki.</p>`:'<div class="empty">Zu wenige HRV-Nächte</div>'}`;
+  const t=today();let l7=0,l28=0,rest=0;const days={};D.activities.forEach(a=>{if(a.date>addDays(t,-7))l7+=a.load;if(a.date>addDays(t,-28))l28+=a.load;days[a.date]=1});
+  for(let i=1;i<=14;i++)if(!days[addDays(t,-i)])rest++;
+  const ratio=l28>0?l7/(l28/4):null,rc=ratio==null?"var(--muted)":ratio>1.5?"var(--red)":ratio>1.3||ratio<.6?"var(--yellow)":"var(--green)";
+  $("loadCard").innerHTML=`<h2>Belastung</h2><div class="sub">Letzte 7 Tage im Vergleich zu den letzten 4 Wochen</div>
+   <div class="kv"><div><span>Last 7 Tage</span><b>${nf(l7)}</b></div><div><span>Wochenschnitt 28 Tage</span><b>${nf(l28/4)}</b></div><div><span>Verhältnis</span><b style="color:${rc}">${ratio==null?"–":nf(ratio,2)}</b></div><div><span>Ruhetage (14 Tage)</span><b>${rest}</b></div></div>
+   <p class="hint">${ratio==null?"Noch keine Daten.":ratio>1.5?"Diese Woche deutlich mehr als gewohnt. Achte auf Erholung.":ratio<.6?"Diese Woche deutlich weniger als gewohnt, zum Beispiel Pause oder Entlastung.":"Gleichmäßige Belastung."} Erklärung im Wiki unter Belastungsverhältnis.</p>`;
+}
+/* Ziel-Karte und nächste Tage */
+function renderPlanTab(D){
+  const t=today(),g=store.get("imGoal",{}),up=(D.races||[]).filter(r=>r.date>=t).sort((a,b)=>a.date.localeCompare(b.date)),main=up.find(r=>r.prio==="A")||up[0];
+  const ov=noteBy("Coach Plan Übersicht"),ph=[];let td="";if(ov)ov.text.split(/\n+/).forEach(l=>{let m;if(m=l.match(/^Phase:\s*(.*)$/)){const p=m[1].split("|").map(s=>s.trim());ph.push(p)}else if(m=l.match(/^Zieldatum:\s*(.*)$/))td=m[1]});
+  const goalDate=g.gDate||(main?main.date:td)||"",ai=hasAi()&&isLive();
+  $("goalCard").innerHTML=`<div class="gl"><div><div class="cx-k" style="color:var(--acc)">Dein Ziel</div><div class="cx-h">${esc(g.gSport?(g.gDist?g.gDist+" ":"")+g.gSport:main?main.name:"Noch kein Ziel")}</div>
+   <div class="hint">${goalDate?"bis "+fDY(goalDate):"Datum offen"}${g.gTime?" · Zielzeit "+esc(g.gTime):""} · ${esc(weekText(g))}</div></div><button class="btn sm" id="gEdit">Ändern</button></div>
+   ${ph.length?`<div class="phases">${ph.map(p=>{const on=t>=p[0]&&t<=p[1];return`<div class="${on?"on":""}" style="flex:${Math.max(1,diffDays(p[0],p[1]))}"><b>${esc(p[2]||"")}</b><span>${p[0]?fD(p[0]):""}</span></div>`}).join("")}</div>${(()=>{const c=ph.find(p=>t>=p[0]&&t<=p[1]);return c?`<p class="hint">Jetzt: ${esc(c[2])}. ${esc(c[3]||"")}</p>`:""})()}`:""}
+   ${ai?`<button class="btn blue wide" id="btnAiPlan" style="margin-top:12px">${ov?"Plan neu erstellen":"Plan bis zum Ziel erstellen"}</button>`:""}<div class="hint" id="coachHint">${ai?"Claude plant den Weg bis zum Zieldatum in Phasen und trägt immer die nächsten 4 Wochen konkret ein. Der Rest wird automatisch nachgeplant, solange kein anderer Plan (z. B. TrainingPeaks) im Kalender steht.":"Für Pläne von Claude den Claude-API-Schlüssel in den Einstellungen eintragen."}</div>`;
+  $("gEdit").onclick=openGoal;if($("btnAiPlan"))$("btnAiPlan").onclick=()=>aiPlan(true);
+  const nx=D.planned.filter(p=>p.date>=t&&p.date<=addDays(t,6)).sort((a,b)=>a.date.localeCompare(b.date));
+  $("nextList").innerHTML=nx.length?nx.map(p=>`<div class="act tap" data-pl="${esc(String(p.id))}"><div class="ico" style="background:${SPORTS[p.sport].c}">${svgI(p.sport,"#fff")}</div><div class="m"><b>${esc(p.name||SPORTS[p.sport].n)}</b><span>${p.date===t?"Heute":fDL(p.date)}${p.secs>=4500?" · Verpflegung mitnehmen":""}</span></div><div class="r"><b>${p.secs?fH(p.secs)+" h":""}</b></div></div>`).join(""):'<div class="empty">Nichts geplant</div>';
+}
+/* Plan bis zum Ziel */
+async function aiPlan(manual){
+  const t=today(),g=saveGoal(),D=DATA,b=$("btnAiPlan");
+  const up=(D.races||[]).filter(r=>r.date>=t).sort((a,b)=>a.date.localeCompare(b.date)),main=up.find(r=>r.prio==="A")||up[0];
+  const fut=D.planned.filter(p=>p.date>t);const lastCoach=fut.filter(p=>p.coach).map(p=>p.date).sort().pop();
+  if(manual&&fut.some(p=>!p.coach)&&b&&b.dataset.sure!=="1"){b.dataset.sure="1";b.textContent="Im Kalender steht schon ein anderer Plan. Trotzdem ergänzen?";return}
+  const from=manual?addDays(t,1):addDays(lastCoach||t,1);
+  if(b){b.disabled=true;b.textContent="Claude plant …"}
+  try{
+    const ov=noteBy("Coach Plan Übersicht");
+    const pr=coachText().replace(/\nANTWORTFORMAT[\s\S]*$/,"")+`\n\nZIELDATUM: ${g.gDate||(main?main.date+" ("+main.name+")":"offen, bitte realistisch vorschlagen")}\nDURCHSCHNITT LETZTE 6 WOCHEN: ${nf(avgHours(D),1)} h pro Woche\n${ov&&!manual?"BESTEHENDE PHASEN:\n"+ov.text+"\n":""}\nAUFGABE\n${manual?"Plane den Weg bis zum Zieldatum in Phasen (Grundlage, Aufbau, Spitze, Tapering usw.) und ":"Setze den bestehenden Plan fort und "}erstelle konkrete Einheiten für 28 Tage ab ${from}. Leite den Wochenumfang aus meinen bisherigen Stunden ab und steigere ihn höchstens um etwa 10 Prozent pro Woche, mit Entlastungswochen. Halte die Trainingstage ein, lange Einheiten an den markierten Tagen. Antworte nur mit JSON in einem json-Codeblock: {"target_date":"JJJJ-MM-TT","phases":[{"from":"JJJJ-MM-TT","to":"JJJJ-MM-TT","name":"kurz","focus":"ein Satz"}],"note":"max. 400 Zeichen","workouts":[{"date","sport","name","minutes","description"}]}. ${planFmt()}`;
+    const o=jsonFrom(await claude(pr,16000));const items=parsePlan(JSON.stringify(o.workouts||[])).filter(x=>x.date>=from);
+    if(!items.length)throw new Error("Claude hat keine Einheiten geliefert.");
+    if(o.phases&&o.phases.length)await writeNote(t,[...o.phases.map(p=>`Phase: ${p.from} | ${p.to} | ${p.name} | ${p.focus||""}`),`Zieldatum: ${o.target_date||g.gDate||""}`].join("\n"),"Coach Plan Übersicht");
+    const n=await importPlan(items);await load();if($("coachHint"))$("coachHint").textContent=`${n} Einheiten eingetragen. ${o.note||""}`;
+  }catch(e){if($("coachHint"))$("coachHint").textContent="Fehler: "+e.message;if(manual)throw e}
+  finally{const bb=$("btnAiPlan");if(bb){bb.disabled=false;bb.dataset.sure=""}}
+}
+async function planAuto(){const D=DATA,t=today();if(!noteBy("Coach Plan Übersicht"))return;const fut=D.planned.filter(p=>p.date>t);if(fut.some(p=>!p.coach))return;
+  const last=fut.map(p=>p.date).sort().pop();if(last&&last>addDays(t,13))return;if(!lockOnce("plan"+t))return;try{await aiPlan(false)}catch(e){}}
+/* Wochenrückblick auf Heute */
+function renderWeekNew(D){const t=today(),wn=(D.notes||[]).filter(n=>/^Coach Woche/.test(n.name)).sort((a,b)=>b.name.localeCompare(a.name))[0],el=$("weekNew");
+  if(!wn||wn.date<addDays(t,-2)||store.get("imWeekSeen","")===wn.name){el.style.display="none";return}
+  const o=kv(wn.text);el.style.display="";el.innerHTML=`<div class="cx-k" style="color:var(--acc)">Neuer Wochenrückblick</div><div class="cx-h">${esc(o.title)}</div>${o.good.length?`<ul class="cx-why" style="--cxc:var(--green)">${o.good.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}${o.imp.length?`<ul class="cx-why" style="--cxc:var(--yellow)">${o.imp.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}${o.next?`<div class="cx-box"><div><b>Nächste Woche</b><br>${esc(o.next)}</div></div>`:""}<button class="btn wide" id="wkSeen" style="margin-top:12px">Gelesen, ausblenden</button>`;
+  $("wkSeen").onclick=()=>{store.set("imWeekSeen",wn.name);el.style.display="none"}}
+function renderV14(D){
+  renderPlanTab(D);renderErholung(D);renderWeekNew(D);
+  [...$("bench").children].forEach((el,i)=>{});
+  document.querySelectorAll("#recent .act").forEach((el,i)=>{});
+}
 
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
@@ -1200,13 +1351,11 @@ $("raceList").onclick=async ev=>{
 
 /* ---------- Einstellungen ---------- */
 function openSettings(){
-  $("cKey").value=settings.apiKey;$("cMode").value=settings.mode||"sport";$("cTheme").value=settings.theme||"dark";$("cAi").value=settings.aiKey||"";$("cTitle").value=settings.title||"";$("cStart").value=settings.planStart||"";
-  $("cWeeks").value=settings.planWeeks||"";$("cDemo").checked=!!settings.forceDemo;$("cErr").textContent="";open("mSet")}
+  $("cKey").value=settings.apiKey;$("cMode").value=settings.mode||"sport";$("cTheme").value=settings.theme||"dark";$("cAi").value=settings.aiKey||"";$("cDemo").checked=!!settings.forceDemo;$("cErr").textContent="";open("mSet")}
 $("btnSettings").onclick=openSettings;
 $("cCancel").onclick=()=>close("mSet");
 $("cSave").onclick=()=>{
-  settings=Object.assign(settings,{theme:$("cTheme").value,mode:$("cMode").value,aiKey:$("cAi").value.trim(),apiKey:$("cKey").value.trim(),title:$("cTitle").value.trim()||"Mein Training",planStart:$("cStart").value||"",
-    planWeeks:+$("cWeeks").value||"",forceDemo:$("cDemo").checked});
+  settings=Object.assign(settings,{theme:$("cTheme").value,mode:$("cMode").value,aiKey:$("cAi").value.trim(),apiKey:$("cKey").value.trim(),forceDemo:$("cDemo").checked});
   store.set("imSettings",settings);applyTheme();close("mSet");load();
 };
 $("btnRefresh").onclick=load;
