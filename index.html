@@ -972,7 +972,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="24";
+const VERSION="25";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -3754,7 +3754,7 @@ $("cSave").onclick=()=>{
 $("btnRefresh").onclick=load;
 let rz;window.addEventListener("resize",()=>{clearTimeout(rz);rz=setTimeout(()=>{if(DATA)renderCharts()},200)});
 document.querySelectorAll(".modal").forEach(m=>m.addEventListener("click",e=>{if(e.target===m)close(m.id)}));
-setTab(TABS.some(x=>x[0]===TAB)?TAB:"heute");
+setTab("heute");window.scrollTo(0,0);
 load();
 async function checkUpdate(){try{const r=await fetch(location.pathname+"?c="+Date.now(),{cache:"no-store"});const m=(await r.text()).match(/const VERSION="(\d+)"/);if(m&&m[1]!==VERSION)location.replace(location.pathname+"?v="+m[1])}catch(e){}}
 document.addEventListener("visibilitychange",()=>{if(document.hidden)return;checkUpdate();if(Date.now()-lastLoad>5*6e4)load()});
