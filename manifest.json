@@ -1,1 +1,1 @@
-{"name":"Trainings-Dashboard","short_name":"Training","start_url":"./","display":"standalone","background_color":"#0b0e13","theme_color":"#0b0e13","lang":"de","icons":[{"src":"icon.png","sizes":"512x512","type":"image/png"}]}
+{"name":"Mein Training","short_name":"Mein Training","start_url":"./","display":"standalone","background_color":"#101318","theme_color":"#101318","lang":"de","icons":[{"src":"icon-v2.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}]}
