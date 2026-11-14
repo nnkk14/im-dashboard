@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="IM Frankfurt">
+<meta name="theme-color" content="#101318">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="manifest" href="manifest.json">
+<title>IM Frankfurt Dashboard</title>
+<style>
+:root{
+  --bg:#f4f5f7;--card:#fff;--ink:#14171c;--muted:#6b7280;--line:#e5e7eb;
+  --swim:#2f7de1;--bike:#e08a12;--run:#1a9e6e;--other:#9aa1ab;
+  --ctl:#2f7de1;--atl:#d9466f;--tsb:#e08a12;
+  --green:#1a9e6e;--yellow:#e0a800;--red:#d93f3f;--shade:rgba(217,63,63,.12);
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#101318;--card:#1a1e25;--ink:#eef0f3;--muted:#9aa1ab;--line:#2a2f38;--shade:rgba(217,63,63,.22);
+}}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 -apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Arial,sans-serif}
+.wrap{max-width:1100px;margin:0 auto;padding:calc(env(safe-area-inset-top) + 14px) 14px calc(env(safe-area-inset-bottom) + 30px)}
+header{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+header h1{font-size:20px;margin:0;flex:1;min-width:180px}
+header .sub{display:block;font-size:13px;font-weight:400;color:var(--muted)}
+button{font:inherit;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:8px 12px;cursor:pointer}
+button.primary{background:var(--red);border-color:var(--red);color:#fff;font-weight:600}
+button.small{padding:4px 8px;font-size:13px}
+.banner{background:var(--card);border:1px dashed var(--yellow);border-radius:12px;padding:10px 12px;margin-bottom:12px;font-size:14px}
+.grid{display:grid;gap:12px;grid-template-columns:1fr}
+@media (min-width:760px){.grid{grid-template-columns:1fr 1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
+.card h2{font-size:15px;margin:0 0 8px}
+.card .hint{font-size:12px;color:var(--muted);margin-top:6px}
+.wide{grid-column:1/-1}
+.ampel{display:flex;gap:14px;align-items:flex-start}
+.dot{width:46px;height:46px;border-radius:50%;flex:none}
+.ampel .head{font-size:17px;font-weight:600;margin-bottom:4px}
+.sig{margin:6px 0 0;padding:0;list-style:none}
+.sig li{padding:6px 0;border-top:1px solid var(--line);font-size:14px}
+.sig li b{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px}
+.sig .src{display:block;font-size:12px;color:var(--muted)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.kpi .l{font-size:12px;color:var(--muted)}
+.kpi .v{font-size:22px;font-weight:600;margin-top:2px}
+.kpi .s{font-size:12px;color:var(--muted)}
+svg.chart{width:100%;height:auto;display:block}
+svg.chart text{fill:var(--muted);font-size:11px}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:4px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:6px 4px;border-top:1px solid var(--line)}
+th{color:var(--muted);font-weight:500;font-size:12px;border-top:none}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+.empty{color:var(--muted);font-size:14px;padding:20px 0;text-align:center}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:flex-end;justify-content:center;z-index:10}
+.modal.open{display:flex}
+.sheet{background:var(--card);color:var(--ink);width:100%;max-width:520px;border-radius:16px 16px 0 0;padding:18px 16px calc(env(safe-area-inset-bottom) + 18px);max-height:92vh;overflow:auto}
+@media (min-width:700px){.modal{align-items:center}.sheet{border-radius:16px}}
+.sheet h3{margin:0 0 10px}
+label{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px}
+input,textarea,select{font:inherit;width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink)}
+.radio label{display:flex;gap:8px;align-items:flex-start;color:var(--ink);font-size:14px;margin:6px 0}
+.radio input{width:auto;margin-top:3px}
+.row{display:flex;gap:10px}.row>div{flex:1}
+.actions{display:flex;gap:10px;justify-content:flex-end;margin-top:16px}
+.err{color:var(--red);font-size:14px;margin-top:8px}
+.rules p{margin:6px 0;font-size:14px}
+.tag{font-size:11px;border:1px solid var(--line);border-radius:6px;padding:1px 5px;color:var(--muted);margin-left:4px}
+@media (max-width:520px){.hs{display:none}}
+footer{color:var(--muted);font-size:12px;margin-top:16px;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Ironman Frankfurt 2027<span class="sub" id="countdown"></span></h1>
+    <button class="primary" id="btnSick">Krank melden</button>
+    <button id="btnRefresh" title="Neu laden">Aktualisieren</button>
+    <button id="btnSettings" title="Einstellungen">Einstellungen</button>
+  </header>
+  <div id="banner"></div>
+  <div class="grid">
+    <div class="card wide" id="ampel"></div>
+    <div class="wide kpis" id="kpis"></div>
+    <div class="card wide"><h2>Wochenstunden: Ist je Sportart und Soll aus dem Plan</h2><div id="chWeeks"></div></div>
+    <div class="card wide"><h2>Fitness, Ermüdung und Form (120 Tage)</h2><div id="chPmc"></div></div>
+    <div class="card"><h2>HRV in der Nacht (60 Tage)</h2><div id="chHrv"></div></div>
+    <div class="card"><h2>Ruhepuls (60 Tage)</h2><div id="chRhr"></div></div>
+    <div class="card"><h2>Schlafdauer (30 Tage)</h2><div id="chSleep"></div></div>
+    <div class="card"><h2>Summen seit Planstart</h2><div id="totals"></div></div>
+    <div class="card wide"><h2>Letzte Einheiten</h2><div id="recent"></div></div>
+    <div class="card wide"><h2>Krankheits- und Verletzungsphasen</h2><div id="sickList"></div></div>
+    <div class="card wide rules"><h2>Regeln der Ampel</h2><div id="rules"></div></div>
+  </div>
+  <footer id="footer"></footer>
+</div>
+
+<div class="modal" id="mSick"><div class="sheet">
+  <h3>Krankheit oder Verletzung eintragen</h3>
+  <div class="row">
+    <div><label for="sStart">Beginn</label><input type="date" id="sStart"></div>
+    <div><label for="sEnd">Ende (bei laufender Krankheit: heute, später anpassen)</label><input type="date" id="sEnd"></div>
+  </div>
+  <label>Art der Beschwerden</label>
+  <div class="radio">
+    <label><input type="radio" name="sType" value="oberhalb" checked> Nur oberhalb des Halses (Schnupfen, verstopfte Nase, leichte Halsschmerzen)</label>
+    <label><input type="radio" name="sType" value="unterhalb"> Auch unterhalb des Halses (Fieber, Husten, Gliederschmerzen, Magen-Darm)</label>
+    <label><input type="radio" name="sType" value="verletzung"> Verletzung</label>
+  </div>
+  <label for="sNote">Notiz</label>
+  <textarea id="sNote" rows="2" placeholder="z. B. Erkältung, Arzt war ..."></textarea>
+  <div class="err" id="sErr"></div>
+  <div class="actions"><button id="sCancel">Abbrechen</button><button class="primary" id="sSave">Speichern</button></div>
+</div></div>
+
+<div class="modal" id="mSet"><div class="sheet">
+  <h3>Einstellungen</h3>
+  <label for="cKey">intervals.icu API-Schlüssel</label>
+  <input type="password" id="cKey" autocomplete="off" placeholder="aus intervals.icu: Settings, Developer Settings">
+  <div class="hint" style="font-size:12px;color:var(--muted);margin-top:4px">Der Schlüssel wird nur auf diesem Gerät gespeichert und nur an intervals.icu gesendet.</div>
+  <div class="row">
+    <div><label for="cRace">Wettkampftag</label><input type="date" id="cRace"></div>
+    <div><label for="cStart">Planstart</label><input type="date" id="cStart"></div>
+  </div>
+  <div class="row">
+    <div><label for="cWeeks">Planwochen</label><input type="number" id="cWeeks" min="1" max="60"></div>
+    <div><label for="cDemo">Datenquelle</label><select id="cDemo"><option value="live">intervals.icu</option><option value="demo">Beispieldaten</option></select></div>
+  </div>
+  <div class="err" id="cErr"></div>
+  <div class="actions"><button id="cCancel">Abbrechen</button><button class="primary" id="cSave" style="background:var(--ctl);border-color:var(--ctl)">Speichern und laden</button></div>
+</div></div>
+
+<script>
+"use strict";
+/* ---------- Speicher ---------- */
+const store={
+  get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},
+  set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+};
+const DEFAULTS={apiKey:"",raceDate:"2027-06-27",planStart:"2026-11-16",planWeeks:32,demo:true};
+let settings=Object.assign({},DEFAULTS,store.get("imSettings",{}));
+let DATA=null;
+
+/* ---------- Datum ---------- */
+const ymd=d=>{const z=new Date(d.getTime()-d.getTimezoneOffset()*6e4);return z.toISOString().slice(0,10)};
+const P=s=>new Date(s+"T12:00:00");
+const addDays=(s,n)=>{const d=P(s);d.setDate(d.getDate()+n);return ymd(d)};
+const diffDays=(a,b)=>Math.round((P(b)-P(a))/864e5);
+const today=()=>ymd(new Date());
+const monday=s=>{const d=P(s);d.setDate(d.getDate()-((d.getDay()+6)%7));return ymd(d)};
+const fD=s=>P(s).toLocaleDateString("de-DE",{day:"2-digit",month:"2-digit"});
+const fDL=s=>P(s).toLocaleDateString("de-DE",{weekday:"short",day:"2-digit",month:"2-digit",year:"2-digit"});
+const fH=secs=>{const t=Math.round(secs/60);return Math.floor(t/60)+":"+String(t%60).padStart(2,"0")};
+const nf=(v,d=0)=>v==null||!isFinite(v)?"–":v.toLocaleString("de-DE",{minimumFractionDigits:d,maximumFractionDigits:d});
+const mean=a=>a.reduce((s,v)=>s+v,0)/a.length;
+const sd=a=>{const m=mean(a);return Math.sqrt(a.reduce((s,v)=>s+(v-m)*(v-m),0)/Math.max(1,a.length-1))};
+const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+const SPORTS={swim:{n:"Schwimmen",c:"var(--swim)"},bike:{n:"Rad",c:"var(--bike)"},run:{n:"Laufen",c:"var(--run)"},other:{n:"Sonstiges",c:"var(--other)"}};
+function sportOf(t){t=String(t||"").toLowerCase();
+  if(t.includes("swim"))return"swim";
+  if(t.includes("ride")||t.includes("bike")||t.includes("cycl"))return"bike";
+  if(t.includes("run"))return"run";
+  return"other";}
+
+/* ---------- intervals.icu ---------- */
+async function api(path,opts={}){
+  const headers={"Authorization":"Basic "+btoa("API_KEY:"+settings.apiKey)};
+  if(opts.body)headers["Content-Type"]="application/json";
+  let res;
+  try{res=await fetch("https://intervals.icu/api/v1/athlete/0"+path,Object.assign({},opts,{headers}));}
+  catch(e){throw new Error("intervals.icu ist nicht erreichbar (Netz oder Browser blockiert die Anfrage).")}
+  if(res.status===401||res.status===403)throw new Error("intervals.icu lehnt den API-Schlüssel ab (Status "+res.status+").");
+  if(!res.ok)throw new Error("intervals.icu antwortet mit Status "+res.status+".");
+  const t=await res.text();return t?JSON.parse(t):null;
+}
+function sickFromEvent(e){
+  const start=String(e.start_date_local||"").slice(0,10);
+  let end=e.end_date_local?addDays(String(e.end_date_local).slice(0,10),-1):start;
+  if(end<start)end=start;
+  const d=e.description||"";
+  const type=e.category==="INJURED"?"verletzung":(d.includes("[unterhalb]")?"unterhalb":"oberhalb");
+  return{id:e.id,start,end,type,note:d.replace(/\[(oberhalb|unterhalb)\]\s*/,""),name:e.name||""};
+}
+async function loadLive(){
+  const end=today(),start=addDays(end,-180);
+  const [acts,well,evs]=await Promise.all([
+    api(`/activities?oldest=${start}&newest=${end}`),
+    api(`/wellness?oldest=${start}&newest=${end}`),
+    api(`/events?oldest=${addDays(end,-365)}&newest=${settings.raceDate}`)
+  ]);
+  const activities=(acts||[]).filter(a=>a&&a.start_date_local).map(a=>({
+    date:a.start_date_local.slice(0,10),sport:sportOf(a.type),name:a.name||a.type||"",
+    secs:a.moving_time||a.elapsed_time||0,km:(a.distance||0)/1000,load:a.icu_training_load||0,hr:a.average_heartrate||null}));
+  const wellness=(well||[]).map(w=>({date:w.id,ctl:w.ctl,atl:w.atl,hrv:w.hrv||null,rhr:w.restingHR||null,
+    sleepH:w.sleepSecs?w.sleepSecs/3600:null}));
+  const sick=[],planned=[];
+  (evs||[]).forEach(e=>{
+    if(e.category==="SICK"||e.category==="INJURED")sick.push(sickFromEvent(e));
+    else if(e.category==="WORKOUT"&&e.start_date_local)planned.push({date:e.start_date_local.slice(0,10),sport:sportOf(e.type),secs:e.moving_time||0,name:e.name||""});
+  });
+  return{activities,wellness,sick,planned,source:"intervals.icu"};
+}
+
+/* ---------- Beispieldaten ---------- */
+function rng(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function demoData(){
+  const r=rng(11),end=today(),N=180;
+  const gauss=()=>{let u=0,v=0;while(!u)u=r();while(!v)v=r();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)};
+  let sick=store.get("imDemoSick",null);
+  if(!sick){sick=[{id:"d1",start:addDays(end,-38),end:addDays(end,-35),type:"unterhalb",note:"Erkältung mit Fieber (Beispiel)"}];store.set("imDemoSick",sick)}
+  const isSick=d=>sick.some(s=>d>=s.start&&d<=s.end);
+  const week=[[["swim",45]],[["run",50]],[["swim",55],["bike",60]],[["run",45]],[],[["bike",150]],[["run",85]]];
+  const activities=[],wellness=[],planned=[];
+  let ctl=38,atl=38;
+  for(let i=N-1;i>=-60;i--){
+    const d=addDays(end,-i),wd=(P(d).getDay()+6)%7,prog=1+(N-i)/N*0.35;
+    week[wd].forEach(([s,m])=>{
+      const mins=Math.round(m*prog*(0.9+r()*0.2));
+      planned.push({date:d,sport:s,secs:mins*60,name:"Plan "+SPORTS[s].n});
+    });
+    let load=0;
+    if(i>=0&&!isSick(d)){
+      week[wd].forEach(([s,m])=>{
+        if(r()<0.12)return;
+        const mins=Math.round(m*prog*(0.85+r()*0.3)),f={swim:0.75,bike:0.85,run:1.05}[s];
+        const km=s==="run"?mins/5.1:s==="bike"?mins*0.5:mins/21;
+        const l=Math.round(mins*f);load+=l;
+        activities.push({date:d,sport:s,name:{swim:"Schwimmen",bike:wd===5?"Lange Radausfahrt":"Rad",run:wd===6?"Langer Lauf":"Lauf"}[s],secs:mins*60,km,load:l,hr:Math.round({swim:128,bike:132,run:146}[s]+gauss()*4)});
+      });
+    }
+    if(i<0)continue;
+    ctl+=(load-ctl)/42;atl+=(load-atl)/7;
+    const after=sick.some(s=>d>s.end&&diffDays(s.end,d)<=4);
+    const hrv=Math.round(64+gauss()*5-(isSick(d)?16:0)-(after?8:0)-(load>110?4:0));
+    const rhr=Math.round(47+gauss()*1.4+(isSick(d)?7:0)+(after?3:0));
+    wellness.push({date:d,ctl,atl,hrv,rhr,sleepH:Math.max(4.5,7.3+gauss()*0.7)});
+  }
+  return{activities,wellness,sick,planned,source:"Beispieldaten"};
+}
+
+/* ---------- Kennzahlen ---------- */
+function prep(D){
+  const wm={};D.wellness.forEach(w=>wm[w.date]=w);
+  if(!D.wellness.some(w=>w.ctl!=null)){ // Fallback: selbst rechnen
+    const lm={};D.activities.forEach(a=>lm[a.date]=(lm[a.date]||0)+a.load);
+    let c=0,a=0;for(let i=180;i>=0;i--){const d=addDays(today(),-i);const l=lm[d]||0;c+=(l-c)/42;a+=(l-a)/7;(wm[d]=wm[d]||{date:d});wm[d].ctl=c;wm[d].atl=a;}
+  }
+  D.wm=wm;
+  const t=today();
+  const ln=(f,to)=>{const o=[];for(let i=f;i<=to;i++){const w=wm[addDays(t,-i)];if(w&&w.hrv>0)o.push(Math.log(w.hrv))}return o};
+  const rec=ln(0,6),base=ln(7,60);
+  D.hrvStat=(rec.length>=4&&base.length>=14)?{r:Math.exp(mean(rec)),m:mean(base),s:sd(base),lo:Math.exp(mean(base)-0.5*sd(base)),hi:Math.exp(mean(base)+0.5*sd(base)),rln:mean(rec),n:base.length}:{n:base.length,nr:rec.length};
+  const rb=[];for(let i=7;i<=60;i++){const w=wm[addDays(t,-i)];if(w&&w.rhr)rb.push(w.rhr)}
+  let rNow=null;for(let i=0;i<=1&&rNow==null;i++){const w=wm[addDays(t,-i)];if(w&&w.rhr)rNow=w.rhr}
+  D.rhrStat={now:rNow,base:rb.length>=14?mean(rb):null};
+  let last=null;for(let i=0;i<=3&&!last;i++){const w=wm[addDays(t,-i)];if(w&&w.ctl!=null)last=w}
+  D.pmc=last?{ctl:last.ctl,atl:last.atl,tsb:last.ctl-last.atl}:null;
+  const sw=wm[t];D.sleepNow=sw&&sw.sleepH?sw.sleepH:null;
+  return D;
+}
+
+/* ---------- Ampel ---------- */
+const LV=["var(--green)","var(--yellow)","var(--red)"];
+function evaluate(D){
+  const t=today(),S=[];
+  const act=D.sick.find(s=>t>=s.start&&t<=s.end);
+  const recent=D.sick.filter(s=>s.end<t&&diffDays(s.end,t)<=7).sort((a,b)=>b.end.localeCompare(a.end))[0];
+  if(act){
+    if(act.type==="unterhalb")S.push({l:2,t:"Krank mit Beschwerden unterhalb des Halses: kein Training, bis die Beschwerden abgeklungen sind.",src:"Erfahrungsregel (Neck Check). Laut IOC-Konsens zu akuten Atemwegsinfekten (Snyders et al., Br J Sports Med) gibt es dafür keine evidenzbasierte Leitlinie."});
+    else if(act.type==="verletzung")S.push({l:2,t:"Verletzung eingetragen: Training nur nach ärztlicher oder physiotherapeutischer Freigabe.",src:"Erfahrungsregel"});
+    else S.push({l:1,t:"Nur Beschwerden oberhalb des Halses: wenn überhaupt, kurz und locker trainieren. Keine Intervalle.",src:"Erfahrungsregel (Neck Check), keine evidenzbasierte Leitlinie (IOC-Konsens, Snyders et al.)"});
+  }else if(recent){
+    const d=diffDays(recent.end,t);
+    S.push({l:1,t:`Rückkehrphase (Tag ${d} nach Krankheitsende): erst lockere Einheiten. Intensität erst steigern, wenn diese problemlos laufen und Ruhepuls und HRV wieder im Normalbereich sind.`,src:"Erfahrungsregel, keine evidenzbasierte Leitlinie"});
+  }
+  const h=D.hrvStat;
+  if(h.r){
+    if(h.rln<h.m-0.5*h.s)S.push({l:1,t:`HRV-Wochenmittel ${nf(h.r)} ms liegt unter deinem Normalbereich (${nf(h.lo)} bis ${nf(h.hi)} ms): harte Einheit heute durch eine lockere ersetzen oder tauschen.`,src:"Regel nach HRV-gesteuertem Training (7-Tage-Mittel des ln rMSSD gegen Basis ± 0,5 SD)"});
+    else if(h.rln>h.m+0.5*h.s)S.push({l:0,t:`HRV-Wochenmittel ${nf(h.r)} ms liegt über deinem Normalbereich. Kein Handlungsbedarf, im Blick behalten.`,src:"Regel nach HRV-gesteuertem Training"});
+    else S.push({l:0,t:`HRV-Wochenmittel ${nf(h.r)} ms im Normalbereich (${nf(h.lo)} bis ${nf(h.hi)} ms).`,src:"Regel nach HRV-gesteuertem Training"});
+  }else S.push({l:0,t:`Für die HRV-Regel fehlen noch Daten (Basis ${h.n} von 14 Nächten).`,src:""});
+  const r=D.rhrStat;
+  if(r.now&&r.base){
+    if(r.now>=r.base+5)S.push({l:1,t:`Ruhepuls ${r.now} liegt 5 oder mehr Schläge über deinem Mittel (${nf(r.base)}). Mögliches Zeichen für Infekt oder Ermüdung.`,src:"Erfahrungswert, nicht studienbasiert"});
+    else S.push({l:0,t:`Ruhepuls ${r.now} (Mittel ${nf(r.base)}).`,src:""});
+  }
+  if(D.pmc){
+    if(D.pmc.tsb<-30)S.push({l:1,t:`Form ${nf(D.pmc.tsb)}: hohe Ermüdung. Nach der nächsten Belastungsspitze bewusst erholen.`,src:"Formbereiche wie bei intervals.icu (unter −30 hohes Risiko)"});
+    else S.push({l:0,t:`Form ${nf(D.pmc.tsb)}.`,src:""});
+  }
+  if(D.sleepNow!=null&&D.sleepNow<6)S.push({l:1,t:`Nur ${nf(D.sleepNow,1)} h Schlaf letzte Nacht: keine neue Höchstbelastung.`,src:"Erfahrungswert"});
+  const L=Math.max(...S.map(s=>s.l));
+  const head=["Training wie geplant","Heute vorsichtig: harte Einheit tauschen oder locker trainieren","Heute kein Training"][L];
+  return{L,head,S};
+}
+
+/* ---------- Diagramme ---------- */
+function ticks(mn,mx,n){const raw=(mx-mn)/n,p=Math.pow(10,Math.floor(Math.log10(raw))),f=raw/p,st=(f<1.5?1:f<3?2:f<7?5:10)*p;const o=[];for(let v=Math.ceil(mn/st)*st;v<=mx+1e-9;v+=st)o.push(+v.toFixed(6));return o}
+function lineChart(o){
+  const W=o.W||640,H=o.h||210,pl=38,pr=8,pt=8,pb=22,dates=o.dates,n=dates.length;
+  const vals=[];o.series.forEach(s=>s.v.forEach(v=>{if(v!=null&&isFinite(v))vals.push(v)}));
+  if(o.band)vals.push(o.band[0],o.band[1]);
+  if(!vals.length)return'<div class="empty">Noch keine Daten</div>';
+  let mn=Math.min(...vals),mx=Math.max(...vals);if(o.zero){mn=Math.min(mn,0);mx=Math.max(mx,0)}
+  if(mn===mx){mn-=1;mx+=1}const pad=(mx-mn)*.08;mn-=pad;mx+=pad;
+  const x=i=>pl+(n<=1?0:i*(W-pl-pr)/(n-1)),y=v=>pt+(mx-v)*(H-pt-pb)/(mx-mn);
+  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img">`;
+  (o.shade||[]).forEach(p=>{let a=diffDays(dates[0],p.start),b=diffDays(dates[0],p.end);if(b<0||a>n-1)return;a=Math.max(0,a);b=Math.min(n-1,b);
+    s+=`<rect x="${x(a)-2}" y="${pt}" width="${Math.max(4,x(b)-x(a)+4)}" height="${H-pt-pb}" fill="var(--shade)"><title>Krank/verletzt ${fD(p.start)} bis ${fD(p.end)}</title></rect>`});
+  ticks(mn,mx,4).forEach(v=>{s+=`<line x1="${pl}" x2="${W-pr}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="${pl-5}" y="${y(v)+4}" text-anchor="end">${nf(v,Math.abs(v)<10&&v%1?1:0)}</text>`});
+  if(o.band)s+=`<rect x="${pl}" y="${y(o.band[1])}" width="${W-pl-pr}" height="${Math.max(1,y(o.band[0])-y(o.band[1]))}" fill="var(--green)" opacity=".13"/>`;
+  if(o.zero)s+=`<line x1="${pl}" x2="${W-pr}" y1="${y(0)}" y2="${y(0)}" stroke="var(--muted)" stroke-dasharray="3 3"/>`;
+  o.series.forEach(se=>{let d="",pen=false;se.v.forEach((v,i)=>{if(v==null||!isFinite(v)){pen=false;return}d+=(pen?"L":"M")+x(i).toFixed(1)+" "+y(v).toFixed(1);pen=true});
+    if(se.dots)se.v.forEach((v,i)=>{if(v!=null)s+=`<circle cx="${x(i)}" cy="${y(v)}" r="2" fill="${se.c}" opacity=".55"><title>${fD(dates[i])}: ${nf(v,se.dec||0)}</title></circle>`});
+    else s+=`<path d="${d}" fill="none" stroke="${se.c}" stroke-width="${se.w||2}" stroke-linejoin="round"/>`;
+    if(se.dots&&se.line)s+=`<path d="${d}" fill="none" stroke="${se.c}" stroke-width="2"/>`});
+  const step=Math.max(1,Math.ceil(n/Math.max(3,Math.floor(W/90))));for(let i=0;i<n;i+=step)s+=`<text x="${x(i)}" y="${H-6}" text-anchor="middle">${fD(dates[i])}</text>`;
+  s+="</svg>";
+  s+='<div class="legend">'+o.series.filter(x=>x.name).map(x=>`<span><i style="background:${x.c}"></i>${x.name}</span>`).join("")+(o.band?'<span><i style="background:var(--green);opacity:.35"></i>Normalbereich</span>':"")+((o.shade||[]).length?'<span><i style="background:var(--shade)"></i>krank/verletzt</span>':"")+"</div>";
+  return s;
+}
+function weekChart(D){
+  const W=cw("chWeeks"),H=230,pl=34,pr=8,pt=8,pb=22,t=today(),mon=monday(t),N=16,weeks=[];
+  for(let i=N-1;i>=-1;i--)weeks.push(addDays(mon,-7*i));
+  const ist=weeks.map(w=>{const o={swim:0,bike:0,run:0,other:0};D.activities.forEach(a=>{if(monday(a.date)===w)o[a.sport]+=a.secs/3600});return o});
+  const soll=weeks.map(w=>{let s=0,any=false;D.planned.forEach(p=>{if(monday(p.date)===w){s+=p.secs/3600;any=true}});return any?s:null});
+  const mx=Math.max(1,...ist.map(o=>o.swim+o.bike+o.run+o.other),...soll.filter(v=>v!=null))*1.1;
+  const bw=(W-pl-pr)/weeks.length,y=v=>pt+(mx-v)*(H-pt-pb)/mx;
+  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}">`;
+  ticks(0,mx,4).forEach(v=>{s+=`<line x1="${pl}" x2="${W-pr}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="${pl-5}" y="${y(v)+4}" text-anchor="end">${nf(v)}</text>`});
+  weeks.forEach((w,i)=>{let base=0;const x0=pl+i*bw+bw*.18,ww=bw*.64;
+    ["swim","bike","run","other"].forEach(k=>{const v=ist[i][k];if(v<=0)return;s+=`<rect x="${x0}" y="${y(base+v)}" width="${ww}" height="${y(base)-y(base+v)}" fill="${SPORTS[k].c}"><title>Woche ab ${fD(w)}: ${SPORTS[k].n} ${fH(v*3600)} h</title></rect>`;base+=v});
+    if(soll[i]!=null)s+=`<line x1="${pl+i*bw+2}" x2="${pl+(i+1)*bw-2}" y1="${y(soll[i])}" y2="${y(soll[i])}" stroke="var(--ink)" stroke-width="2.5"><title>Soll ${fH(soll[i]*3600)} h</title></line>`;
+    if(w===mon)s+=`<rect x="${pl+i*bw}" y="${pt}" width="${bw}" height="${H-pt-pb}" fill="none" stroke="var(--muted)" stroke-dasharray="3 3"/>`;
+    if(i%Math.max(1,Math.ceil(weeks.length/Math.floor(W/60)))===0)s+=`<text x="${pl+i*bw+bw/2}" y="${H-6}" text-anchor="middle">${fD(w)}</text>`});
+  s+="</svg>";
+  s+='<div class="legend">'+["swim","bike","run","other"].map(k=>`<span><i style="background:${SPORTS[k].c}"></i>${SPORTS[k].n}</span>`).join("")+'<span><i style="background:var(--ink);height:3px"></i>Soll aus Plan</span><span>gestrichelt: aktuelle Woche</span></div>';
+  if(!D.planned.length)s+='<div class="hint">Keine geplanten Workouts im intervals.icu-Kalender gefunden. Ohne Plan im Kalender gibt es keine Soll-Linie.</div>';
+  return s;
+}
+
+/* ---------- Rendern ---------- */
+const cw=id=>Math.max(300,Math.round(document.getElementById(id).clientWidth||640));
+function render(){
+  const D=DATA,t=today();
+  const toRace=diffDays(t,settings.raceDate),pw=Math.floor(diffDays(settings.planStart,t)/7)+1;
+  document.getElementById("countdown").textContent=`Noch ${toRace} Tage (${Math.ceil(toRace/7)} Wochen) · `+(pw<1?`Planstart in ${diffDays(t,settings.planStart)} Tagen`:pw>settings.planWeeks?"Plan abgeschlossen":`Planwoche ${pw} von ${settings.planWeeks}`);
+  document.getElementById("banner").innerHTML=D.source==="Beispieldaten"?'<div class="banner"><b>Beispieldaten.</b> Alle Werte sind erfunden und zeigen nur das Layout. In den Einstellungen den intervals.icu-Schlüssel eintragen und „intervals.icu“ wählen.</div>':"";
+  const ev=evaluate(D);
+  document.getElementById("ampel").innerHTML=`<div class="ampel"><div class="dot" style="background:${LV[ev.L]}"></div><div style="flex:1"><div class="head">${ev.head}</div><ul class="sig">${ev.S.map(s=>`<li><b style="background:${LV[s.l]}"></b>${esc(s.t)}${s.src?`<span class="src">${esc(s.src)}</span>`:""}</li>`).join("")}</ul></div></div>`;
+  // KPIs
+  const mon=monday(t);let wk=0;D.activities.forEach(a=>{if(a.date>=mon&&a.date<=t)wk+=a.secs});
+  let wkS=0,hasS=false;D.planned.forEach(p=>{if(monday(p.date)===mon){wkS+=p.secs;hasS=true}});
+  let wkS2=0;D.planned.forEach(p=>{if(p.date>=mon&&p.date<=t)wkS2+=p.secs});
+  const k=[
+    ["Fitness (CTL)",D.pmc?nf(D.pmc.ctl):"–","42-Tage-Belastung"],
+    ["Ermüdung (ATL)",D.pmc?nf(D.pmc.atl):"–","7-Tage-Belastung"],
+    ["Form (TSB)",D.pmc?nf(D.pmc.tsb):"–","Fitness minus Ermüdung"],
+    ["HRV 7 Tage",D.hrvStat.r?nf(D.hrvStat.r)+" ms":"–",D.hrvStat.r?`Normal ${nf(D.hrvStat.lo)}–${nf(D.hrvStat.hi)}`:"zu wenig Daten"],
+    ["Ruhepuls",D.rhrStat.now?D.rhrStat.now+" /min":"–",D.rhrStat.base?"Mittel "+nf(D.rhrStat.base):""],
+    ["Schlaf letzte Nacht",D.sleepNow!=null?nf(D.sleepNow,1)+" h":"–",""],
+    ["Diese Woche",fH(wk)+" h",hasS?`Soll bis heute ${fH(wkS2)} h, Woche ${fH(wkS)} h`:"kein Soll im Kalender"]
+  ];
+  document.getElementById("kpis").innerHTML=k.map(x=>`<div class="kpi"><div class="l">${x[0]}</div><div class="v">${x[1]}</div><div class="s">${x[2]}</div></div>`).join("");
+  document.getElementById("chWeeks").innerHTML=weekChart(D);
+  const days=n=>{const o=[];for(let i=n-1;i>=0;i--)o.push(addDays(t,-i));return o};
+  const shade=D.sick.map(s=>({start:s.start,end:s.end}));
+  const d120=days(120),g=(ds,f)=>ds.map(d=>{const w=D.wm[d];return w?f(w):null});
+  document.getElementById("chPmc").innerHTML=lineChart({W:cw("chPmc"),dates:d120,zero:true,shade,series:[
+    {name:"Fitness (CTL)",c:"var(--ctl)",v:g(d120,w=>w.ctl)},{name:"Ermüdung (ATL)",c:"var(--atl)",v:g(d120,w=>w.atl)},{name:"Form (TSB)",c:"var(--tsb)",v:g(d120,w=>w.ctl!=null?w.ctl-w.atl:null)}]})+'<div class="hint">Werte von intervals.icu. Form unter −30: hohe Ermüdung, zwischen −30 und −10: produktiver Trainingsbereich (Einteilung wie bei intervals.icu).</div>';
+  const d60=days(60);
+  const roll=d60.map((d,i)=>{const a=[];for(let j=0;j<7;j++){const w=D.wm[addDays(d,-j)];if(w&&w.hrv>0)a.push(Math.log(w.hrv))}return a.length>=4?Math.exp(mean(a)):null});
+  document.getElementById("chHrv").innerHTML=lineChart({W:cw("chHrv"),dates:d60,shade,band:D.hrvStat.r?[D.hrvStat.lo,D.hrvStat.hi]:null,series:[
+    {name:"Nachtwert",c:"var(--ctl)",dots:true,v:g(d60,w=>w.hrv)},{name:"7-Tage-Mittel",c:"var(--ink)",v:roll}]});
+  document.getElementById("chRhr").innerHTML=lineChart({W:cw("chRhr"),dates:d60,shade,series:[{name:"Ruhepuls",c:"var(--atl)",v:g(d60,w=>w.rhr)}]});
+  const d30=days(30);
+  document.getElementById("chSleep").innerHTML=lineChart({W:cw("chSleep"),dates:d30,h:180,series:[{name:"Stunden",c:"var(--ctl)",dec:1,v:g(d30,w=>w.sleepH)}]});
+  // Summen
+  const tot={swim:{h:0,km:0,n:0},bike:{h:0,km:0,n:0},run:{h:0,km:0,n:0},other:{h:0,km:0,n:0}};
+  const from=settings.planStart<=t?settings.planStart:addDays(t,-27);
+  D.activities.forEach(a=>{if(a.date>=from&&a.date<=t){tot[a.sport].h+=a.secs;tot[a.sport].km+=a.km;tot[a.sport].n++}});
+  const sumH=Object.values(tot).reduce((s,v)=>s+v.h,0);
+  document.getElementById("totals").innerHTML=(settings.planStart>t?`<div class="hint" style="margin:0 0 6px">Plan hat noch nicht begonnen. Angezeigt: letzte 28 Tage.</div>`:`<div class="hint" style="margin:0 0 6px">Seit ${fD(from)}</div>`)+
+    `<table><tr><th>Sportart</th><th class="n">Einheiten</th><th class="n">Stunden</th><th class="n">km</th></tr>`+
+    ["swim","bike","run","other"].map(k=>`<tr><td><i style="display:inline-block;width:9px;height:9px;border-radius:2px;background:${SPORTS[k].c};margin-right:6px"></i>${SPORTS[k].n}</td><td class="n">${tot[k].n}</td><td class="n">${fH(tot[k].h)}</td><td class="n">${nf(tot[k].km,k==="swim"?1:0)}</td></tr>`).join("")+
+    `<tr><td><b>Gesamt</b></td><td class="n">${Object.values(tot).reduce((s,v)=>s+v.n,0)}</td><td class="n"><b>${fH(sumH)}</b></td><td></td></tr></table>`;
+  const rec=D.activities.slice().sort((a,b)=>b.date.localeCompare(a.date)).slice(0,12);
+  document.getElementById("recent").innerHTML=rec.length?`<table><tr><th>Datum</th><th>Einheit</th><th class="n">Dauer</th><th class="n">km</th><th class="n hs">Ø Puls</th><th class="n hs">Last</th></tr>`+rec.map(a=>`<tr><td>${fDL(a.date)}</td><td><i style="display:inline-block;width:9px;height:9px;border-radius:2px;background:${SPORTS[a.sport].c};margin-right:6px"></i>${esc(a.name)}</td><td class="n">${fH(a.secs)}</td><td class="n">${nf(a.km,a.sport==="swim"?2:1)}</td><td class="n hs">${a.hr?Math.round(a.hr):"–"}</td><td class="n hs">${nf(a.load)}</td></tr>`).join("")+"</table>":'<div class="empty">Keine Einheiten</div>';
+  const TL={oberhalb:"oberhalb des Halses",unterhalb:"unterhalb des Halses",verletzung:"Verletzung"};
+  const sl=D.sick.slice().sort((a,b)=>b.start.localeCompare(a.start));
+  document.getElementById("sickList").innerHTML=sl.length?`<table><tr><th>Zeitraum</th><th class="n">Tage</th><th>Art</th><th>Notiz</th><th></th></tr>`+sl.map(s=>`<tr><td>${fD(s.start)} bis ${fD(s.end)}${t>=s.start&&t<=s.end?' <span class="tag">aktuell</span>':""}</td><td class="n">${diffDays(s.start,s.end)+1}</td><td>${TL[s.type]||""}</td><td>${esc(s.note)}</td><td class="n">${t>=s.start&&t<=s.end?`<button class="small" data-heal="${esc(s.id)}">gesund ab heute</button> `:""}<button class="small" data-del="${esc(s.id)}">löschen</button></td></tr>`).join("")+"</table>":'<div class="empty">Keine Einträge</div>';
+  document.getElementById("rules").innerHTML=`
+<p><b>HRV</b><span class="tag">studienbasiert</span> Verglichen wird das Mittel der letzten 7 Nächte (logarithmierter rMSSD) mit deinem Normalbereich aus den Nächten 8 bis 60 davor (Mittelwert ± 0,5 Standardabweichungen). Liegt das Wochenmittel darunter, soll eine harte Einheit gegen eine lockere getauscht werden. Dieses Vorgehen stammt aus Studien zum HRV-gesteuerten Ausdauertraining. Zwei Meta-Analysen von 2021 (Manresa-Rocamora et al., Int J Environ Res Public Health, und eine Arbeit im J Sci Med Sport) fanden gegenüber festen Plänen nur einen kleinen, nicht signifikanten Leistungsvorteil. Der Nutzen liegt vor allem darin, harte Einheiten an schlechten Tagen zu vermeiden.</p>
+<p><b>Ruhepuls</b><span class="tag">Erfahrungswert</span> Liegt der Ruhepuls 5 oder mehr Schläge über dem Mittel der Tage 8 bis 60, wird gewarnt. Die Schwelle ist nicht durch Studien festgelegt.</p>
+<p><b>Form</b><span class="tag">Konvention</span> Fitness ist der 42-Tage-, Ermüdung der 7-Tage-Durchschnitt der Trainingslast. Form ist die Differenz. Die Warnschwelle −30 folgt der Einteilung bei intervals.icu.</p>
+<p><b>Schlaf</b><span class="tag">Erfahrungswert</span> Unter 6 Stunden in der letzten Nacht wird von neuen Höchstbelastungen abgeraten.</p>
+<p><b>Krankheit</b><span class="tag">Erfahrungswert</span> Beschwerden nur oberhalb des Halses: kurz und locker. Beschwerden unterhalb des Halses oder Fieber: Pause. Danach 7 Tage Rückkehrphase mit Warnhinweis. Der IOC-Konsens zu akuten Atemwegsinfekten bei Sportlern (Snyders et al., Br J Sports Med) hält fest, dass es für diese Regel keine evidenzbasierte Grundlage gibt. Bei Fieber, Brustschmerz oder anhaltenden Beschwerden ärztlich abklären lassen.</p>
+<p class="hint">Die Ampel ersetzt keinen Trainer und keine ärztliche Beurteilung.</p>`;
+  document.getElementById("footer").textContent=`Datenquelle: ${D.source} · Stand ${new Date().toLocaleString("de-DE",{dateStyle:"short",timeStyle:"short"})}`;
+}
+
+/* ---------- Laden ---------- */
+async function load(){
+  const btn=document.getElementById("btnRefresh");btn.disabled=true;btn.textContent="Lädt …";
+  try{
+    if(settings.demo||!settings.apiKey)DATA=prep(demoData());
+    else{DATA=prep(await loadLive());store.set("imCache",{t:Date.now(),d:Object.assign({},DATA,{wm:undefined})})}
+    render();
+  }catch(e){
+    const c=store.get("imCache",null);
+    if(c&&c.d){DATA=prep(c.d);DATA.source="intervals.icu (zwischengespeichert vom "+new Date(c.t).toLocaleString("de-DE",{dateStyle:"short",timeStyle:"short"})+")";render()}
+    else{DATA=prep(demoData());render()}
+    document.getElementById("banner").innerHTML=`<div class="banner" style="border-color:var(--red)"><b>Fehler beim Laden:</b> ${esc(e.message)}</div>`+document.getElementById("banner").innerHTML;
+  }finally{btn.disabled=false;btn.textContent="Aktualisieren"}
+}
+
+/* ---------- Krankheit ---------- */
+const open=id=>document.getElementById(id).classList.add("open");
+const close=id=>document.getElementById(id).classList.remove("open");
+document.getElementById("btnSick").onclick=()=>{document.getElementById("sStart").value=today();document.getElementById("sEnd").value=today();document.getElementById("sNote").value="";document.getElementById("sErr").textContent="";open("mSick")};
+document.getElementById("sCancel").onclick=()=>close("mSick");
+document.getElementById("sSave").onclick=async()=>{
+  const start=document.getElementById("sStart").value,end=document.getElementById("sEnd").value||start;
+  const type=document.querySelector('input[name="sType"]:checked').value,note=document.getElementById("sNote").value.trim();
+  const err=document.getElementById("sErr");
+  if(!start){err.textContent="Bitte den Beginn angeben.";return}
+  if(end<start){err.textContent="Das Ende liegt vor dem Beginn.";return}
+  try{
+    if(DATA.source==="Beispieldaten"){const l=store.get("imDemoSick",[]);l.push({id:"d"+Date.now(),start,end,type,note});store.set("imDemoSick",l)}
+    else await api("/events",{method:"POST",body:JSON.stringify({category:type==="verletzung"?"INJURED":"SICK",start_date_local:start+"T00:00:00",end_date_local:addDays(end,1)+"T00:00:00",name:type==="verletzung"?"Verletzt":"Krank",description:(type==="verletzung"?"":"["+type+"] ")+note})});
+    close("mSick");load();
+  }catch(e){err.textContent=e.message}
+};
+document.getElementById("sickList").onclick=async ev=>{
+  const del=ev.target.getAttribute("data-del"),heal=ev.target.getAttribute("data-heal");
+  if(!del&&!heal)return;
+  try{
+    if(DATA.source==="Beispieldaten"){
+      let l=store.get("imDemoSick",[]);
+      if(del)l=l.filter(s=>s.id!==del);else l.forEach(s=>{if(s.id===heal)s.end=addDays(today(),-1)<s.start?s.start:addDays(today(),-1)});
+      store.set("imDemoSick",l);
+    }else if(del){if(!confirm("Eintrag in intervals.icu löschen?"))return;await api("/events/"+encodeURIComponent(del),{method:"DELETE"})}
+    else{const s=DATA.sick.find(x=>String(x.id)===heal);const e=addDays(today(),-1)<s.start?s.start:addDays(today(),-1);
+      await api("/events/"+encodeURIComponent(heal),{method:"PUT",body:JSON.stringify({end_date_local:addDays(e,1)+"T00:00:00"})})}
+    load();
+  }catch(e){alert(e.message)}
+};
+
+/* ---------- Einstellungen ---------- */
+document.getElementById("btnSettings").onclick=()=>{
+  document.getElementById("cKey").value=settings.apiKey;document.getElementById("cRace").value=settings.raceDate;
+  document.getElementById("cStart").value=settings.planStart;document.getElementById("cWeeks").value=settings.planWeeks;
+  document.getElementById("cDemo").value=settings.demo?"demo":"live";document.getElementById("cErr").textContent="";open("mSet")};
+document.getElementById("cCancel").onclick=()=>close("mSet");
+document.getElementById("cSave").onclick=()=>{
+  const key=document.getElementById("cKey").value.trim(),demo=document.getElementById("cDemo").value==="demo";
+  if(!demo&&!key){document.getElementById("cErr").textContent="Für intervals.icu wird der API-Schlüssel benötigt.";return}
+  settings={apiKey:key,raceDate:document.getElementById("cRace").value||DEFAULTS.raceDate,planStart:document.getElementById("cStart").value||DEFAULTS.planStart,
+    planWeeks:+document.getElementById("cWeeks").value||DEFAULTS.planWeeks,demo};
+  store.set("imSettings",settings);close("mSet");load();
+};
+document.getElementById("btnRefresh").onclick=load;
+let rz;window.addEventListener("resize",()=>{clearTimeout(rz);rz=setTimeout(()=>{if(DATA)render()},200)});
+document.querySelectorAll(".modal").forEach(m=>m.addEventListener("click",e=>{if(e.target===m)m.classList.remove("open")}));
+load();
+</script>
+</body>
+</html>
