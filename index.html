@@ -222,7 +222,7 @@ html,body{font-family:var(--fd);font-size:15.5px;line-height:1.5}
  radial-gradient(circle at calc(100% - 16px) 16px,var(--bg) 0 5px,rgba(23,32,27,.18) 5.5px 6.5px,transparent 7px),
  radial-gradient(circle at 16px calc(100% - 16px),var(--bg) 0 5px,rgba(23,32,27,.18) 5.5px 6.5px,transparent 7px),
  radial-gradient(circle at calc(100% - 16px) calc(100% - 16px),var(--bg) 0 5px,rgba(23,32,27,.18) 5.5px 6.5px,transparent 7px)}
-.hero>.lbl:first-child{margin:0 -24px;padding:13px 44px;background:var(--acc);color:#fff;opacity:1;font-size:15px;font-weight:700;font-stretch:85%}
+.hero>.lbl:first-child{margin:0 -24px;padding:13px 44px;background:#1F3FD1;color:#fff;opacity:1;font-size:15px;font-weight:700;font-stretch:85%}
 .hero .lbl{color:#59645E;opacity:1;font-size:14px}
 .hero .big{font-size:clamp(104px,27vw,176px);font-weight:900;font-stretch:62%;letter-spacing:-.01em;line-height:.86;margin:18px 0 6px;color:#17201B;font-variant-numeric:tabular-nums}
 .hero .big small{font-size:24px;font-weight:700;font-stretch:80%;color:#59645E;opacity:1;margin-left:10px;letter-spacing:0}
@@ -422,7 +422,7 @@ let settings=Object.assign({},DEFAULTS,store.get("imSettings",{}));
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");
 const isLive=()=>!!settings.apiKey&&!settings.forceDemo;
-const VERSION="11";
+const VERSION="12";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
