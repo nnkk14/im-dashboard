@@ -300,7 +300,7 @@ let settings=Object.assign({},DEFAULTS,store.get("imSettings",{}));
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");
 const isLive=()=>!!settings.apiKey&&!settings.forceDemo;
-const VERSION="7";
+const VERSION="8";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -586,7 +586,7 @@ function render(){
     <button class="btn wide fab" id="btnSick1"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Krank oder verletzt melden</button>`;
   $("btnSick1").onclick=openSick;
   {const ns=(D.notes||[]).filter(n=>n.date<=t&&n.date>=addDays(t,-2)).sort((a,b)=>b.date.localeCompare(a.date));const cc=$("coachCard");
-   const ai=hasAi()&&isLive(),btn=ai?`<button class="btn wide" id="btnAiRun" style="margin-top:12px">${aiBusy?"Claude wertet aus …":"Auswertung jetzt starten"}</button><div class="err" id="aiErr">${esc(aiErrMsg)}</div>`:"";
+   const ai=hasAi()&&isLive(),btn=ai?`<button class="btn wide" id="btnAiRun" style="margin-top:12px">${aiBusy?"Claude wertet aus …":"Auswertung jetzt starten"}</button><div class="err" id="aiErr">${esc(aiErrMsg)}</div><div class="hint">Verbrauch dieses Monats auf diesem Gerät: ${spend().usd.toFixed(2).replace(".",",")} $ von ${AI_LIMIT} $</div>`:"";
    if(ns.length){const n=ns[0];cc.style.display="";cc.innerHTML=`<h2>Coach-Auswertung</h2><div class="sub">${n.date===t?"Heute":fD(n.date)} · von Claude</div><div class="coachtxt">${esc(n.text).replace(/\n/g,"<br>")}</div>${btn}`}
    else if(ai){cc.style.display="";cc.innerHTML=`<h2>Coach-Auswertung</h2><div class="sub">Für heute noch keine Auswertung</div>${btn}`}else cc.style.display="none";
    if($("btnAiRun"))$("btnAiRun").onclick=()=>aiDaily(true)}
@@ -780,12 +780,16 @@ window.coach={live:()=>isLive(),version:VERSION,writeNote,summary:()=>coachText(
 /* ---------- Claude-API ---------- */
 let aiBusy=false,aiErrMsg="";
 const hasAi=()=>!!settings.aiKey;
+const AI_LIMIT=10;
+function spend(){const m=today().slice(0,7),u=store.get("imAiSpend",{m,usd:0});return u.m===m?u:{m,usd:0}}
 async function claude(prompt,maxTokens){
+  if(spend().usd>=AI_LIMIT)throw new Error(`Monatslimit dieses Geräts erreicht (${AI_LIMIT} $). Ab dem 1. geht es weiter.`);
   let res;try{res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"content-type":"application/json","x-api-key":settings.aiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
     body:JSON.stringify({model:"claude-sonnet-5-5",max_tokens:maxTokens,system:COACH_SYS,messages:[{role:"user",content:prompt}]})})}
   catch(e){throw new Error("Claude-API nicht erreichbar.")}
   const j=await res.json().catch(()=>({}));
-  if(!res.ok)throw new Error("Claude-API: "+((j.error&&j.error.message)||("Status "+res.status)));
+  if(!res.ok){const m=(j.error&&j.error.message)||("Status "+res.status);throw new Error(/credit|balance|billing/i.test(m)?"Das API-Guthaben ist aufgebraucht. Im nächsten Monat kommt neues Guthaben.":"Claude-API: "+m)}
+  if(j.usage){const u=spend();u.usd+=(j.usage.input_tokens||0)*2e-6+(j.usage.output_tokens||0)*10e-6;store.set("imAiSpend",u)}
   return (j.content||[]).filter(c=>c.type==="text").map(c=>c.text).join("");
 }
 const COACH_SYS="Du bist ein erfahrener, sachlicher Ausdauertrainer (Laufen, Rad, Schwimmen, Triathlon) und wertest Trainings- und Gesundheitsdaten aus. Schreibe Deutsch, kurz, konkret, ohne Füllwörter, ohne Gedankenstriche und ohne Semikolons. Erfinde keine Werte. Nenne fehlende Daten. Keine Diagnosen. Bei Krankheitszeichen Pause empfehlen, bei Fieber oder Beschwerden unterhalb des Halses kein Training und ggf. Arzt. Respektiere bestehende Planeinheiten (z. B. aus TrainingPeaks), empfiehl nur, ob sie wie geplant, gekürzt, ohne Intensität oder gar nicht gemacht werden sollen.";
