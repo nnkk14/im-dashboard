@@ -6,11 +6,11 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="IM Frankfurt">
+<meta name="apple-mobile-web-app-title" content="Training">
 <meta name="theme-color" content="#0b0e13">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="manifest" href="manifest.json">
-<title>IM Frankfurt Dashboard</title>
+<title>Trainings-Dashboard</title>
 <style>
 :root{
   --bg:#f2f3f6;--card:#ffffff;--card2:#f6f7f9;--ink:#12151a;--muted:#6b7280;--line:rgba(0,0,0,.07);
@@ -155,12 +155,18 @@ input:focus,textarea:focus{border-color:var(--ctl)}
 [data-tab]{display:none}[data-tab].on{display:block}
 footer{color:var(--muted);font-size:12px;margin-top:20px;text-align:center}
 .fab{margin-top:14px}
+.races{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.races span{font-size:12px;background:rgba(255,255,255,.14);padding:4px 10px;border-radius:99px}
+.hero .btn{margin-top:14px;background:rgba(255,255,255,.16);color:#fff;border-color:transparent}
+.plan{margin-top:12px;padding:12px;border-radius:12px;border:1px dashed var(--line);font-size:14px}
+.plan b{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+.prio{display:grid;place-items:center;width:38px;height:38px;border-radius:12px;font-weight:800;color:#fff;flex:none}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="top">
-    <h1><span class="lg">Ironman </span>Frankfurt 2027</h1>
+    <h1 id="appTitle">Mein Training</h1>
     <span class="chip" id="chip">…</span>
     <button class="ib" id="btnRefresh" title="Aktualisieren"><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg></button>
     <button class="ib" id="btnSettings" title="Einstellungen"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
@@ -178,6 +184,7 @@ footer{color:var(--muted);font-size:12px;margin-top:20px;text-align:center}
 
   <section data-tab="training">
     <div class="grid">
+      <div class="card"><h2>Wettkämpfe und Ziele</h2><div class="sub">Gespeichert im intervals.icu-Kalender</div><div class="list" id="raceList"></div><button class="btn wide" id="btnRace" style="margin-top:12px"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Wettkampf oder Ziel eintragen</button></div>
       <div class="card"><h2>Wochenstunden</h2><div class="sub">Ist je Sportart und Soll aus dem Plan</div><div class="chartwrap" id="chWeeks"></div></div>
       <div class="card"><h2 id="totTitle">Summen</h2><div class="sub" id="totSub"></div><div class="sports" id="totals"></div></div>
       <div class="card"><h2>Fitness, Ermüdung und Form</h2><div class="sub">Letzte 120 Tage</div><div class="chartwrap" id="chPmc"></div>
@@ -227,17 +234,31 @@ footer{color:var(--muted);font-size:12px;margin-top:20px;text-align:center}
   <div class="actions"><button class="btn" id="sCancel">Abbrechen</button><button class="btn red" id="sSave">Speichern</button></div>
 </div></div>
 
+<div class="modal" id="mRace"><div class="sheet">
+  <h3>Wettkampf oder Ziel</h3>
+  <div class="sub">Wird im intervals.icu-Kalender gespeichert und erscheint im Countdown.</div>
+  <label class="f" for="rName">Name</label><input id="rName" placeholder="z. B. Ironman Frankfurt, Stadtlauf, 10.000 Schritte-Woche">
+  <div class="row">
+    <div><label class="f" for="rDate">Datum</label><input type="date" id="rDate"></div>
+    <div><label class="f" for="rPrio">Priorität</label><select id="rPrio"><option value="A">A · Saisonhöhepunkt</option><option value="B">B · wichtig</option><option value="C">C · Test, Training</option></select></div>
+  </div>
+  <div class="hint">Der Countdown oben zählt bis zum nächsten A-Wettkampf. Gibt es keinen, bis zum nächsten Termin.</div>
+  <div class="err" id="rErr"></div>
+  <div class="actions"><button class="btn" id="rCancel">Abbrechen</button><button class="btn blue" id="rSave">Speichern</button></div>
+</div></div>
+
 <div class="modal" id="mSet"><div class="sheet">
   <h3>Einstellungen</h3>
   <div class="sub">Gespeichert nur auf diesem Gerät.</div>
   <label class="f" for="cKey">intervals.icu API-Schlüssel</label>
   <input type="password" id="cKey" autocomplete="off" placeholder="intervals.icu → Settings → Developer Settings">
   <div class="hint">Der Schlüssel wird nur an intervals.icu gesendet. Ist ein Schlüssel eingetragen, zeigt die App deine echten Daten.</div>
+  <label class="f" for="cTitle">Name der App</label><input id="cTitle" placeholder="Mein Training">
   <div class="row">
-    <div><label class="f" for="cRace">Wettkampftag</label><input type="date" id="cRace"></div>
-    <div><label class="f" for="cStart">Planstart</label><input type="date" id="cStart"></div>
+    <div><label class="f" for="cStart">Trainingsplan ab</label><input type="date" id="cStart"></div>
+    <div><label class="f" for="cWeeks">Planwochen</label><input type="number" id="cWeeks" min="1" max="80"></div>
   </div>
-  <label class="f" for="cWeeks">Planwochen</label><input type="number" id="cWeeks" min="1" max="60">
+  <div class="hint">Plan-Felder leer lassen, wenn du keinem festen Plan folgst.</div>
   <label class="switch">Beispieldaten statt echter Daten anzeigen<input type="checkbox" id="cDemo"></label>
   <div class="err" id="cErr"></div>
   <div class="actions"><button class="btn" id="cCancel">Abbrechen</button><button class="btn blue" id="cSave">Speichern</button></div>
@@ -250,12 +271,13 @@ const store={
   get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},
   set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 };
-const DEFAULTS={apiKey:"",raceDate:"2027-06-27",planStart:"2026-11-16",planWeeks:32,forceDemo:false};
+const DEFAULTS={apiKey:"",title:"Mein Training",planStart:"",planWeeks:"",forceDemo:false};
 let settings=Object.assign({},DEFAULTS,store.get("imSettings",{}));
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");
 const isLive=()=>!!settings.apiKey&&!settings.forceDemo;
-const VERSION="3";let lastLoad=0;
+const VERSION="4";
+const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
 const $=id=>document.getElementById(id);
@@ -312,19 +334,20 @@ async function loadLive(){
   const [acts,well,evs]=await Promise.all([
     api(`/activities?oldest=${start}&newest=${end}`),
     api(`/wellness?oldest=${start}&newest=${end}`),
-    api(`/events?oldest=${addDays(end,-365)}&newest=${settings.raceDate}`)
+    api(`/events?oldest=${addDays(end,-365)}&newest=${addDays(end,730)}`)
   ]);
   const activities=(acts||[]).filter(a=>a&&a.start_date_local).map(a=>({
     date:a.start_date_local.slice(0,10),sport:sportOf(a.type),name:a.name||a.type||"",
     secs:a.moving_time||a.elapsed_time||0,km:(a.distance||0)/1000,load:a.icu_training_load||0,hr:a.average_heartrate||null}));
   const wellness=(well||[]).map(w=>({date:w.id,ctl:w.ctl,atl:w.atl,hrv:w.hrv||null,rhr:w.restingHR||null,
     sleepH:w.sleepSecs?w.sleepSecs/3600:null}));
-  const sick=[],planned=[];
+  const sick=[],planned=[],races=[];
   (evs||[]).forEach(e=>{
-    if(e.category==="SICK"||e.category==="INJURED")sick.push(sickFromEvent(e));
+    if(String(e.category||"").startsWith("RACE"))races.push({id:e.id,date:String(e.start_date_local).slice(0,10),name:e.name||"Wettkampf",prio:String(e.category).slice(-1)});
+    else if(e.category==="SICK"||e.category==="INJURED")sick.push(sickFromEvent(e));
     else if(e.category==="WORKOUT"&&e.start_date_local)planned.push({date:e.start_date_local.slice(0,10),sport:sportOf(e.type),secs:e.moving_time||0,name:e.name||""});
   });
-  return{activities,wellness,sick,planned,source:"intervals.icu"};
+  return{activities,wellness,sick,planned,races,source:"intervals.icu"};
 }
 
 /* ---------- Beispieldaten ---------- */
@@ -356,7 +379,8 @@ function demoData(){
     const after=sick.some(s=>d>s.end&&diffDays(s.end,d)<=4);
     wellness.push({date:d,ctl,atl,hrv:Math.round(64+gauss()*5-(isSick(d)?16:0)-(after?8:0)-(load>110?4:0)),rhr:Math.round(47+gauss()*1.4+(isSick(d)?7:0)+(after?3:0)),sleepH:Math.max(4.5,7.3+gauss()*0.7)});
   }
-  return{activities,wellness,sick,planned,source:"Beispieldaten"};
+  let races=store.get("imDemoRaces",null);if(!races){races=[{id:"r1",date:addDays(end,225),name:"Ironman Frankfurt (Beispiel)",prio:"A"},{id:"r2",date:addDays(end,90),name:"Halbmarathon (Beispiel)",prio:"B"},{id:"r3",date:addDays(end,-20),name:"Marathon (Beispiel)",prio:"A"}];store.set("imDemoRaces",races)}
+  return{activities,wellness,sick,planned,races,source:"Beispieldaten"};
 }
 
 /* ---------- Kennzahlen ---------- */
@@ -438,6 +462,7 @@ function lineChart(id,o){
     s+=`<rect x="${x(a)-3}" y="${pt}" width="${Math.max(6,x(b)-x(a)+6)}" height="${H-pt-pb}" rx="4" fill="var(--shade)"/>`});
   ticks(mn,mx,4).forEach(v=>{s+=`<line x1="${pl}" x2="${W-pr}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="${pl-6}" y="${y(v)+4}" text-anchor="end">${nf(v,Math.abs(v)<10&&v%1?1:0)}</text>`});
   if(o.band)s+=`<rect x="${pl}" y="${y(o.band[1])}" width="${W-pl-pr}" height="${Math.max(1,y(o.band[0])-y(o.band[1]))}" fill="var(--green)" opacity=".14" rx="3"/>`;
+  (o.marks||[]).forEach(m=>{const i=diffDays(dates[0],m.date);if(i<0||i>n-1)return;s+=`<line x1="${x(i)}" x2="${x(i)}" y1="${pt}" y2="${H-pb}" stroke="var(--ink)" stroke-opacity=".5" stroke-dasharray="4 3"/><text x="${Math.min(W-pr-4,x(i)+4)}" y="${pt+10}" style="fill:var(--ink);font-weight:700" text-anchor="${x(i)>W-80?"end":"start"}">${esc(m.name).slice(0,18)}</text>`});
   if(o.zero)s+=`<line x1="${pl}" x2="${W-pr}" y1="${y(0)}" y2="${y(0)}" stroke="var(--muted)" stroke-opacity=".5" stroke-dasharray="3 4"/>`;
   o.series.forEach((se,k)=>{
     const segs=[];let cur=[];se.v.forEach((v,i)=>{if(v==null||!isFinite(v)){if(cur.length)segs.push(cur);cur=[];return}cur.push([x(i),y(v)])});if(cur.length)segs.push(cur);
@@ -511,18 +536,27 @@ function render(){
   if(!live&&!$("banner").innerHTML)$("banner").innerHTML=`<div class="banner"><b>Beispieldaten.</b> Die Werte sind erfunden. ${settings.apiKey?"In den Einstellungen ist „Beispieldaten anzeigen“ aktiv.":'Trag in den <a href="#" id="bSet">Einstellungen</a> deinen intervals.icu-Schlüssel ein.'}</div>`;
   const b=$("bSet");if(b)b.onclick=e=>{e.preventDefault();openSettings()};
   // Hero
-  const toRace=diffDays(t,settings.raceDate),total=settings.planWeeks*7,done=Math.max(0,Math.min(total,diffDays(settings.planStart,t)));
-  const pw=Math.floor(diffDays(settings.planStart,t)/7)+1,frac=done/total;
+  D.races=D.races||[];
+  const up=D.races.filter(r=>r.date>=t).sort((a,b)=>a.date.localeCompare(b.date)),main=up.find(r=>r.prio==="A")||up[0];
+  const plan=hasPlan(),total=plan?settings.planWeeks*7:1,done=plan?Math.max(0,Math.min(total,diffDays(settings.planStart,t))):0;
+  const pw=plan?Math.floor(diffDays(settings.planStart,t)/7)+1:0,frac=done/total;
   const C=2*Math.PI*36;
-  $("hero").innerHTML=`<div class="lbl">Bis zum Start in Frankfurt</div>
-    <div class="big">${toRace}<small>Tage</small></div>
-    <div class="lbl">${fDY(settings.raceDate)} · ${Math.floor(toRace/7)} Wochen${toRace%7?" und "+(toRace%7)+(toRace%7===1?" Tag":" Tage"):""}</div>
-    <svg class="ring" viewBox="0 0 86 86"><circle cx="43" cy="43" r="36" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="8"/>${frac>0?`<circle cx="43" cy="43" r="36" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round" stroke-dasharray="${C*frac} ${C}" transform="rotate(-90 43 43)"/>`:""}<text x="43" y="40" text-anchor="middle" font-size="17">${pw<1?0:Math.min(pw,settings.planWeeks)}</text><text x="43" y="56" text-anchor="middle" font-size="10" opacity=".75">von ${settings.planWeeks}</text></svg>
-    <div class="bar"><i style="width:${(frac*100).toFixed(1)}%"></i></div>
-    <div class="meta"><div><b>${pw<1?"Start in "+diffDays(t,settings.planStart)+" T.":pw>settings.planWeeks?"Fertig":"Woche "+pw}</b>Trainingsplan</div><div><b>${D.pmc?nf(D.pmc.ctl):"–"}</b>Fitness</div><div><b>${D.pmc?nf(D.pmc.tsb):"–"}</b>Form</div></div>`;
+  if(!main){$("hero").innerHTML=`<div class="lbl">Nächstes Ziel</div><div class="big" style="font-size:30px">Noch kein Termin</div><div class="lbl">Trag einen Wettkampf oder ein Ziel ein, dann zählt hier der Countdown.</div>
+    <button class="btn" id="heroRace">${settings.raceDate&&!D.races.length&&isLive()?"Wettkampf am "+fDY(settings.raceDate)+" übernehmen":"Wettkampf oder Ziel eintragen"}</button>
+    <div class="meta"><div><b>${D.pmc?nf(D.pmc.ctl):"–"}</b>Fitness</div><div><b>${D.pmc?nf(D.pmc.tsb):"–"}</b>Form</div></div>`;
+    $("heroRace").onclick=()=>openRace(settings.raceDate&&!D.races.length?{name:"Ironman Frankfurt",date:settings.raceDate,prio:"A"}:null);}
+  else{const toRace=diffDays(t,main.date);
+  $("hero").innerHTML=`<div class="lbl">Bis ${esc(main.name)}</div>
+    <div class="big">${toRace}<small>${toRace===1?"Tag":"Tage"}</small></div>
+    <div class="lbl">${fDY(main.date)}${toRace>=7?" · "+Math.floor(toRace/7)+" Wochen"+(toRace%7?" und "+(toRace%7)+(toRace%7===1?" Tag":" Tage"):""):""}</div>
+    ${plan?`<svg class="ring" viewBox="0 0 86 86"><circle cx="43" cy="43" r="36" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="8"/>${frac>0?`<circle cx="43" cy="43" r="36" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round" stroke-dasharray="${C*frac} ${C}" transform="rotate(-90 43 43)"/>`:""}<text x="43" y="40" text-anchor="middle" font-size="17">${pw<1?0:Math.min(pw,settings.planWeeks)}</text><text x="43" y="56" text-anchor="middle" font-size="10" opacity=".75">von ${settings.planWeeks}</text></svg>
+    <div class="bar"><i style="width:${(frac*100).toFixed(1)}%"></i></div>`:""}
+    <div class="meta">${plan?`<div><b>${pw<1?"Start in "+diffDays(t,settings.planStart)+" T.":pw>settings.planWeeks?"Fertig":"Woche "+pw}</b>Trainingsplan</div>`:""}<div><b>${D.pmc?nf(D.pmc.ctl):"–"}</b>Fitness</div><div><b>${D.pmc?nf(D.pmc.tsb):"–"}</b>Form</div></div>
+    ${up.length>1?`<div class="races">${up.filter(r=>r!==main).slice(0,3).map(r=>`<span>${esc(r.name)} · in ${diffDays(t,r.date)} T.</span>`).join("")}</div>`:""}`;}
   // Ampel
   const ev=evaluate(D),ic=['<path d="M5 12.5l4.5 4.5L19 7.5"/>','<path d="M12 7v6M12 17h.01"/>','<path d="M7 7l10 10M17 7L7 17"/>'][ev.L];
   $("ampel").innerHTML=`<div class="status"><div class="ic" style="background:${LV[ev.L]}"><svg viewBox="0 0 24 24">${ic}</svg></div><div><div class="t1" style="color:${LV[ev.L]}">Heute · ${ev.t1}</div><div class="t2">${ev.t2}</div></div></div>
+    ${(()=>{const pt=D.planned.filter(p=>p.date===t);return pt.length?`<div class="plan"><b>Heute im Plan</b>${pt.map(p=>`${SPORTS[p.sport].n}${p.secs?" · "+fH(p.secs)+" h":""}${p.name?" · "+esc(p.name):""}`).join("<br>")}${ev.L===1?'<div class="hint" style="margin-top:6px">Ampel Gelb: harte Anteile weglassen oder die Einheit mit einer lockeren tauschen.</div>':ev.L===2?'<div class="hint" style="margin-top:6px">Ampel Rot: Einheit heute ausfallen lassen.</div>':""}</div>`:""})()}
     <ul class="sig">${ev.S.map(s=>`<li><i style="background:${LV[s.l]}"></i><div>${esc(s.t)}${s.src?`<span class="src">${esc(s.src)}</span>`:""}</div></li>`).join("")}</ul>
     <button class="btn wide fab" id="btnSick1"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Krank oder verletzt melden</button>`;
   $("btnSick1").onclick=openSick;
@@ -543,8 +577,13 @@ function render(){
   ];
   $("kpis").innerHTML=K.map(k=>`<div class="kpi"><div class="l"><i style="background:${k[1]}"></i>${k[0]}</div><div class="v">${k[2]}<small>${k[3]}</small></div><div class="d">${k[4]}</div>${k[5]?spark(k[5],k[1]):(hasS?`<svg viewBox="0 0 120 34" preserveAspectRatio="none"><rect x="0" y="13" width="120" height="8" rx="4" fill="var(--card2)"/><rect x="0" y="13" width="${Math.min(120,120*wk/Math.max(1,wkS))}" height="8" rx="4" fill="var(--run)"/></svg>`:"")}</div>`).join("");
   // Summen
-  const from=settings.planStart<=t?settings.planStart:addDays(t,-27);
-  $("totTitle").textContent=settings.planStart<=t?"Seit Planstart":"Letzte 28 Tage";
+  const from=plan&&settings.planStart<=t?settings.planStart:addDays(t,-27);
+  $("totTitle").textContent=plan&&settings.planStart<=t?"Seit Planstart":"Letzte 28 Tage";
+  // Wettkämpfe
+  const PC={A:"var(--red)",B:"var(--bike)",C:"var(--ctl)"},allR=D.races.slice().sort((a,b)=>a.date.localeCompare(b.date));
+  const fut=allR.filter(r=>r.date>=t),past=allR.filter(r=>r.date<t).reverse().slice(0,3);
+  $("raceList").innerHTML=allR.length?[...fut,...past].map(r=>{const d=diffDays(t,r.date);return`<div class="sick" style="${r.date<t?"opacity:.55":""}"><div class="prio" style="background:${PC[r.prio]||PC.C}">${esc(r.prio)}</div><div class="m"><b>${esc(r.name)}</b><span>${fDY(r.date)} · ${d>0?"in "+d+" Tagen":d===0?"heute":"vor "+(-d)+" Tagen"}</span></div><button class="btn sm" data-rdel="${esc(r.id)}">Löschen</button></div>`}).join(""):'<div class="empty">Noch keine Termine</div>';
+  $("appTitle").textContent=settings.title||"Mein Training";document.title=settings.title||"Trainings-Dashboard";
   const tot={swim:{h:0,km:0,n:0},bike:{h:0,km:0,n:0},run:{h:0,km:0,n:0},other:{h:0,km:0,n:0}};
   D.activities.forEach(a=>{if(a.date>=from&&a.date<=t){tot[a.sport].h+=a.secs;tot[a.sport].km+=a.km;tot[a.sport].n++}});
   const sumH=Object.values(tot).reduce((s,v)=>s+v.h,0);
@@ -573,7 +612,7 @@ function renderCharts(){
     weekChart(D);
     const d120=[];for(let i=119;i>=0;i--)d120.push(addDays(t,-i));
     const g=(ds,f)=>ds.map(d=>{const w=D.wm[d];return w?f(w):null});
-    lineChart("chPmc",{dates:d120,zero:true,shade:D.sick,series:[
+    lineChart("chPmc",{dates:d120,zero:true,shade:D.sick,marks:D.races,series:[
       {name:"Fitness",c:"var(--ctl)",area:true,v:g(d120,w=>w.ctl)},{name:"Ermüdung",c:"var(--atl)",w:1.6,v:g(d120,w=>w.atl)},{name:"Form",c:"var(--tsb)",v:g(d120,w=>w.ctl!=null?w.ctl-w.atl:null)}]});
   }
   if(TAB==="erholung"){
@@ -637,15 +676,39 @@ $("sickList").onclick=async ev=>{
   }catch(e){$("banner").innerHTML=`<div class="banner err"><b>Fehler:</b> ${esc(e.message)}</div>`}
 };
 
+/* ---------- Wettkämpfe ---------- */
+function openRace(pre){$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
+$("btnRace").onclick=()=>openRace(null);
+$("rCancel").onclick=()=>close("mRace");
+$("rSave").onclick=async()=>{
+  const name=$("rName").value.trim(),date=$("rDate").value,prio=$("rPrio").value;
+  if(!name||!date){$("rErr").textContent="Bitte Name und Datum angeben.";return}
+  try{
+    if(!isLive()){const l=store.get("imDemoRaces",[]);l.push({id:"r"+Date.now(),name,date,prio});store.set("imDemoRaces",l)}
+    else await api("/events",{method:"POST",body:JSON.stringify({category:"RACE_"+prio,start_date_local:date+"T00:00:00",name})});
+    if(settings.raceDate){delete settings.raceDate;store.set("imSettings",settings)}
+    close("mRace");load();
+  }catch(e){$("rErr").textContent=e.message}
+};
+$("raceList").onclick=async ev=>{
+  const btn=ev.target.closest("button");if(!btn)return;const id=btn.getAttribute("data-rdel");if(!id)return;
+  if(btn.dataset.sure!=="1"){btn.dataset.sure="1";btn.textContent="Wirklich löschen?";btn.classList.add("red");return}
+  try{
+    if(!isLive())store.set("imDemoRaces",store.get("imDemoRaces",[]).filter(r=>r.id!==id));
+    else await api("/events/"+encodeURIComponent(id),{method:"DELETE"});
+    load();
+  }catch(e){$("banner").innerHTML=`<div class="banner err"><b>Fehler:</b> ${esc(e.message)}</div>`}
+};
+
 /* ---------- Einstellungen ---------- */
 function openSettings(){
-  $("cKey").value=settings.apiKey;$("cRace").value=settings.raceDate;$("cStart").value=settings.planStart;
-  $("cWeeks").value=settings.planWeeks;$("cDemo").checked=!!settings.forceDemo;$("cErr").textContent="";open("mSet")}
+  $("cKey").value=settings.apiKey;$("cTitle").value=settings.title||"";$("cStart").value=settings.planStart||"";
+  $("cWeeks").value=settings.planWeeks||"";$("cDemo").checked=!!settings.forceDemo;$("cErr").textContent="";open("mSet")}
 $("btnSettings").onclick=openSettings;
 $("cCancel").onclick=()=>close("mSet");
 $("cSave").onclick=()=>{
-  settings={apiKey:$("cKey").value.trim(),raceDate:$("cRace").value||DEFAULTS.raceDate,planStart:$("cStart").value||DEFAULTS.planStart,
-    planWeeks:+$("cWeeks").value||DEFAULTS.planWeeks,forceDemo:$("cDemo").checked};
+  settings=Object.assign(settings,{apiKey:$("cKey").value.trim(),title:$("cTitle").value.trim()||"Mein Training",planStart:$("cStart").value||"",
+    planWeeks:+$("cWeeks").value||"",forceDemo:$("cDemo").checked});
   store.set("imSettings",settings);close("mSet");load();
 };
 $("btnRefresh").onclick=load;
