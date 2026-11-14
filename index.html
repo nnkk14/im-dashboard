@@ -415,6 +415,59 @@ em.ctg{font-style:normal;font-weight:600;color:var(--cc)}
 .kv .tap{cursor:pointer}
 .kv div>span+span{margin-top:2px}
 @media (min-width:900px){[data-tab].on .grid.two{align-items:start}}
+/* ---------- v16 ---------- */
+.wcr{margin-top:10px;font-size:15.5px;line-height:1.4}
+.wca{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}.wca .btn{background:var(--card);font-size:14px}
+.mts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mt{background:var(--card2);border-radius:16px;padding:10px 12px;cursor:pointer;min-width:0}
+.mth{display:flex;justify-content:space-between;align-items:center;gap:6px}
+.mth span{font:600 13.5px "Barlow Semi Condensed",sans-serif;color:var(--muted);display:flex;align-items:center;gap:6px}.mth span i{width:8px;height:8px;border-radius:50%;background:var(--mc)}
+.st{font-style:normal;font:600 12px "Barlow Semi Condensed",sans-serif;border-radius:99px;padding:2px 8px;white-space:nowrap}
+.st.ok{background:color-mix(in srgb,var(--green) 18%,transparent);color:var(--green)}.st.warn{background:color-mix(in srgb,var(--yellow) 22%,transparent);color:var(--yellow)}
+.st.bad{background:color-mix(in srgb,var(--red) 20%,transparent);color:var(--red)}.st.na{background:var(--card);color:var(--muted)}
+.mtv{font:700 28px/1.1 "Barlow Semi Condensed",sans-serif;margin:4px 0 6px}.mtv small{font-size:14px;color:var(--muted);margin-left:3px;font-weight:600}
+.rbar{position:relative;height:8px;border-radius:4px;background:var(--card);margin:4px 0}
+.rbar .band{position:absolute;top:0;bottom:0;border-radius:4px;background:color-mix(in srgb,var(--ink) 22%,transparent)}
+.rbar .dot{position:absolute;top:50%;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:var(--mc);border:2px solid var(--card2)}
+.mtr{font-size:12px;color:var(--muted)}
+.why2{display:grid;gap:0}
+.wr{display:grid;grid-template-columns:96px 1fr;gap:10px;padding:9px 0;border-top:1px solid var(--line);align-items:start}.wr:first-child{border-top:0}
+.wrt{font:600 13px "Barlow Semi Condensed",sans-serif;color:var(--tc);background:color-mix(in srgb,var(--tc) 14%,transparent);border-radius:8px;padding:3px 8px;justify-self:start}
+.wr b{display:block;font:700 17px "Barlow Semi Condensed",sans-serif}.wr span:not(.wrt){display:block;font-size:14px;color:var(--muted);line-height:1.4}.wr .wro{color:var(--ink)!important;font-size:14.5px!important}
+#askCard{border:1.5px solid color-mix(in srgb,var(--acc) 45%,transparent)}
+.askh{display:flex;gap:12px;align-items:center;margin-bottom:12px}
+.aski{width:42px;height:42px;border-radius:14px;background:color-mix(in srgb,var(--acc) 18%,transparent);display:grid;place-items:center;flex:none}
+.aski svg{width:22px;height:22px;stroke:var(--acc);fill:none;stroke-width:1.8;stroke-linejoin:round}
+.qsug{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.qsug button{display:flex;justify-content:space-between;align-items:center;gap:6px;text-align:left;background:var(--card2);border-radius:14px;padding:10px 12px;font-size:14px;line-height:1.3;transition:background-color .15s}
+.qsug button span{color:var(--acc);font-size:18px}
+@media (hover:hover){.qsug button:hover{background:color-mix(in srgb,var(--acc) 14%,var(--card2))}}
+.qrow{display:flex;gap:8px;align-items:flex-end;margin-top:10px}
+.qrow textarea{resize:none;min-height:46px;border-radius:16px;padding:12px 14px}
+.qsend{width:46px;height:46px;border-radius:50%;background:var(--acc);display:grid;place-items:center;flex:none}
+.qsend svg{width:22px;height:22px;stroke:#fff;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}.qsend.busy{opacity:.5}
+.qa2{margin-top:12px;display:grid;gap:6px}
+.qq{justify-self:end;max-width:85%;background:var(--acc);color:#fff;border-radius:16px 16px 4px 16px;padding:8px 12px;font-size:14.5px}
+.qa2 .qa{justify-self:start;max-width:92%;margin:0;background:var(--card2);border-radius:16px 16px 16px 4px;padding:10px 12px;font-size:14.5px;line-height:1.5}
+.ph2{display:flex;gap:3px;margin-top:14px}
+.phb{background:var(--card2);border-radius:10px;padding:8px;min-width:0;overflow:hidden;text-align:left;position:relative;opacity:.85}
+.phb.past{opacity:.45}.phb.on{background:var(--acc);color:#fff;opacity:1;box-shadow:0 0 0 2px var(--acc)}
+.phb b{display:block;font:600 13px "Barlow Semi Condensed",sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.phb span{font-size:11px;opacity:.8}
+.phm{position:absolute;bottom:3px;width:8px;height:8px;margin-left:-4px;border-radius:50%;background:#fff}
+.phcur{margin-top:10px;background:color-mix(in srgb,var(--acc) 12%,var(--card2));border-radius:16px;padding:12px 14px;cursor:pointer}
+.phct{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}.phct span{font:600 12.5px "Barlow Semi Condensed",sans-serif;color:var(--acc)}.phct b{font:700 19px "Barlow Semi Condensed",sans-serif}.phct em{font-style:normal;color:var(--muted);font-size:13px;margin-left:auto}
+.pbar{height:6px;border-radius:3px;background:var(--card);margin:8px 0}.pbar i{display:block;height:100%;border-radius:3px;background:var(--acc)}
+.phcur p{margin:4px 0;font-size:14px}
+.rinfo{background:var(--card2);border-radius:16px;padding:10px 14px;margin-top:12px}.rinfo summary{font:600 15px "Barlow Semi Condensed",sans-serif;color:var(--ink)}
+.kv1{display:grid;gap:6px;margin-top:10px}.kv1 div{display:grid;grid-template-columns:96px 1fr;gap:10px;font-size:14px}.kv1 span{color:var(--muted)}.kv1 b{font-weight:500}
+.rinfo a{color:var(--acc)}
+.pcheck{background:color-mix(in srgb,var(--yellow) 12%,var(--card2));border-radius:16px;padding:12px 14px;margin-bottom:12px}.pcheck.ok{background:color-mix(in srgb,var(--green) 12%,var(--card2))}
+.pct b{display:block}.pct span{font-size:14px;color:var(--muted)}
+.pcl{margin:8px 0 0;padding-left:18px;font-size:14px}.pcl li{margin:4px 0}.pcl span{display:block;color:var(--muted);font-size:13px}
+.nrbox{background:var(--card2);border-radius:16px;padding:4px 12px 12px;margin-top:10px}.nrbox input,.nrbox select{background:var(--card)}
+.best2{margin-top:12px;padding-top:10px;border-top:1px solid var(--line)}
+#mFuel .sheet h2{font-size:20px;margin:0 0 2px;padding-right:44px}
+.cx-tabs button{padding-left:20px}
 </style>
 </head>
 <body>
@@ -447,7 +500,7 @@ em.ctg{font-style:normal;font-weight:600;color:var(--cc)}
     <div class="subseg" id="tseg"><button data-s="plan">Plan</button><button data-s="fort">Fortschritt</button><button data-s="verlauf">Verlauf</button></div>
     <div class="grid two" data-sub="plan">
       <div class="card wide" id="goalCard"></div>
-      <div class="card"><h2>Nächste 14 Tage</h2><div class="sub">Am Griff ⠿ ziehen verschiebt eine Einheit. Tippen zeigt Ablauf, Verschieben und Löschen.</div><div id="nextList"></div></div>
+      <div class="card"><h2>Nächste 14 Tage</h2><div class="sub">Am Griff ⠿ ziehen verschiebt eine Einheit. Tippen zeigt Ablauf, Verschieben und Löschen.</div><div id="planCheck"></div><div id="nextList"></div><button class="btn wide" data-fuel="{}" style="margin-top:12px">Verpflegung für eine Einheit berechnen</button></div>
       <div class="card"><h2>Wochenstunden</h2><div class="sub">Ist je Sportart und Soll aus dem Plan. Tippen auf eine Woche zeigt die Einheiten.</div><div class="chartwrap" id="chWeeks"></div></div>
     </div>
     <div class="grid two" data-sub="fort">
@@ -469,9 +522,8 @@ em.ctg{font-style:normal;font-weight:600;color:var(--cc)}
       <div class="card" id="loadCard"></div>
       <div class="card wide"><h2>HRV in der Nacht</h2><div class="sub">60 Tage, grünes Band = dein Normalbereich</div><div class="chartwrap" id="chHrv"></div></div>
       <div class="card"><h2>Ruhepuls</h2><div class="sub">60 Tage</div><div class="chartwrap" id="chRhr"></div></div>
-      <div class="card"><h2>Schlafdauer</h2><div class="sub">60 Tage</div><div class="chartwrap" id="chSleep"></div></div>
-      <div class="card wide"><h2>Schlafscore</h2><div class="sub">60 Tage, von Garmin (0 bis 100)</div><div class="chartwrap" id="chSleepS"></div><div class="hint">Schlafphasen (Tief-, Leicht- und REM-Schlaf) gibt Garmin nicht an intervals.icu weiter. Die App zeigt deshalb Dauer und Score.</div></div>
-      <div class="card wide"><h2>Krankheit und Verletzung</h2><div class="sub">Einträge stehen im intervals.icu-Kalender, die Ampel berücksichtigt sie</div>
+      <div class="card"><h2>Schlaf</h2><div class="sub">60 Tage: Dauer als Balken, Score als Linie</div><div class="chartwrap" id="chSleep"></div><div class="hint">Schlafphasen (Tief-, Leicht- und REM-Schlaf) liefert deine Datenquelle derzeit nicht.</div></div>
+      <div class="card wide"><h2>Krankheit und Verletzung</h2><div class="sub">Einträge stehen in deinem Trainingskalender und fließen in die Auswertung ein</div>
         <button class="btn wide" id="btnSick2"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Krankheit oder Verletzung eintragen</button>
         <div class="list" id="sickList" style="margin-top:14px"></div></div>
     </div>
@@ -528,7 +580,10 @@ em.ctg{font-style:normal;font-weight:600;color:var(--cc)}
   <h3>Ziel und Trainingstage</h3>
   <div class="sub">Einmal einstellen. Claude richtet Plan und Auswertung danach aus.</div>
   <label class="f" for="gRace">Ziel</label><select id="gRace"></select>
-  <div class="hint">Wettkämpfe trägst du unten ein. Danach stehen sie hier zur Auswahl.</div>
+  <div id="gNewRace" class="nrbox" style="display:none"><label class="f" for="nrName">Name</label><input id="nrName" placeholder="z. B. Ironman Frankfurt, Stadtlauf Heilbronn" autocomplete="off">
+  <div class="row"><div><label class="f" for="nrDate">Datum</label><input type="date" id="nrDate"></div><div><label class="f" for="nrPrio">Priorität</label><select id="nrPrio"><option value="A">A · Saisonhöhepunkt</option><option value="B">B · wichtig</option><option value="C">C · Test</option></select></div></div>
+  <label class="f" for="nrSport">Sportart</label><select id="nrSport"><option value="Triathlon">Triathlon</option><option value="Run">Laufen</option><option value="Ride">Radfahren</option><option value="Swim">Schwimmen</option><option value="Other">Sonstiges</option></select>
+  <div class="hint">Bei offiziellen Wettkämpfen sucht Claude danach Strecke, Höhenmeter und typisches Wetter heraus. Das fließt in Plan und Auswertung ein.</div><div class="err" id="nrErr"></div><button class="btn blue wide" id="nrSave" style="margin-top:10px">Wettkampf speichern</button></div>
   <div id="gOwn"><div class="row"><div><label class="f" for="gSport">Sportart</label><select id="gSport"><option>Laufen</option><option>Radfahren</option><option>Schwimmen</option><option>Triathlon</option><option>Allgemeine Fitness</option><option>Gesundheit</option></select></div>
   <div><label class="f" for="gDate">Zieldatum (optional)</label><input type="date" id="gDate"></div></div>
   <div class="hint" id="gDateHint">Leer lassen: Claude schlägt ein realistisches Datum vor.</div></div>
@@ -542,15 +597,15 @@ em.ctg{font-style:normal;font-weight:600;color:var(--cc)}
   <label class="f" for="gSrc">Trainingsplan</label><select id="gSrc"><option value="claude">Claude erstellt den Plan</option><option value="extern">Eigener Plan im Kalender (z. B. TrainingPeaks)</option></select>
   <div class="hint" id="gSrcHint"></div>
   <label class="f" for="gNote">Sonstiges</label><textarea id="gNote" rows="2" placeholder="z. B. Knie empfindlich, Schwimmbad nur samstags"></textarea>
-  <h3 style="margin-top:20px">Wettkämpfe</h3>
+  <h3 style="margin-top:20px">Deine Wettkämpfe</h3>
   <div class="list" id="raceList"></div>
-  <button class="btn wide" id="btnRace" style="margin-top:10px"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Wettkampf eintragen</button>
+  <button class="btn wide" id="btnRace" style="margin-top:10px;display:none"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Wettkampf eintragen</button>
   <div class="actions"><button class="btn blue" id="gDone">Fertig</button></div>
 </div></div>
 
 <div class="modal" id="mRace"><div class="sheet">
   <h3>Wettkampf oder Ziel</h3>
-  <div class="sub">Wird im intervals.icu-Kalender gespeichert und erscheint im Countdown.</div>
+  <div class="sub">Wird in deinem Trainingskalender gespeichert und erscheint im Countdown.</div>
   <label class="f" for="rName">Name</label><input id="rName" placeholder="z. B. Ironman Frankfurt, Stadtlauf, 10.000 Schritte-Woche">
   <div class="row">
     <div><label class="f" for="rDate">Datum</label><input type="date" id="rDate"></div>
@@ -592,7 +647,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>!!settings.apiKey&&!settings.forceDemo;
-const VERSION="15";
+const VERSION="16";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -664,7 +719,7 @@ async function loadLive(){
   const sick=[],planned=[],races=[],notes=[];
   (evs||[]).forEach(e=>{
     if(e.category==="NOTE"&&/^Coach/.test(e.name||"")){notes.push({id:e.id,date:String(e.start_date_local).slice(0,10),name:e.name,text:e.description||""});return}
-    if(String(e.category||"").startsWith("RACE"))races.push({id:e.id,date:String(e.start_date_local).slice(0,10),name:e.name||"Wettkampf",prio:String(e.category).slice(-1)});
+    if(String(e.category||"").startsWith("RACE"))races.push({id:e.id,date:String(e.start_date_local).slice(0,10),name:e.name||"Wettkampf",prio:String(e.category).slice(-1),type:e.type||""});
     else if(e.category==="SICK"||e.category==="INJURED")sick.push(sickFromEvent(e));
     else if(e.category==="WORKOUT"&&e.start_date_local)planned.push({id:e.id,date:e.start_date_local.slice(0,10),sport:sportOf(e.type),secs:e.moving_time||0,name:e.name||"",desc:e.description||"",coach:String(e.external_id||"").startsWith("coach-")});
   });
@@ -750,7 +805,7 @@ function evaluate(D){
     else S.push({l:0,t:`Ruhepuls ${r.now} im üblichen Bereich (Mittel ${nf(r.base)}).`,src:""});
   }
   if(D.pmc){
-    if(D.pmc.tsb<-30)S.push({l:1,t:`Form ${nf(D.pmc.tsb)}: hohe Ermüdung. Nach der nächsten Belastungsspitze bewusst erholen.`,src:"Formbereiche wie bei intervals.icu (unter −30 hohes Risiko)"});
+    if(D.pmc.tsb<-30)S.push({l:1,t:`Form ${nf(D.pmc.tsb)}: hohe Ermüdung. Nach der nächsten Belastungsspitze bewusst erholen.`,src:"Übliche Formbereiche (unter −30 hohes Risiko)"});
     else S.push({l:0,t:`Form ${nf(D.pmc.tsb)}.`,src:""});
   }
   if(D.sleepNow!=null&&D.sleepNow<6)S.push({l:1,t:`Nur ${nf(D.sleepNow,1)} h Schlaf letzte Nacht: keine neue Höchstbelastung.`,src:"Erfahrungswert"});
@@ -836,7 +891,7 @@ function weekChart(D){
     if(i%Math.max(1,Math.ceil(weeks.length/Math.floor(W/56)))===0)s+=`<text x="${pl+i*bw+bw/2}" y="${H-5}" text-anchor="middle">${fD(w)}</text>`;s+=`<rect class="wkhit" data-w="${w}" x="${pl+i*bw}" y="${pt}" width="${bw}" height="${H-pt-pb}" rx="8" fill="transparent" style="cursor:pointer"><title>Woche ab ${fD(w)}</title></rect>`});
   s+="</svg>";
   s+='<div class="legend">'+["swim","bike","run"].map(k=>`<span><i style="background:${SPORTS[k].c}"></i>${SPORTS[k].n}</span>`).join("")+'<span><i style="background:var(--ink);height:3px;vertical-align:3px"></i>Soll</span><span><i style="background:var(--card2);border:1px solid var(--line)"></i>aktuelle Woche</span></div>';
-  if(!D.planned.length)s+='<div class="hint">Noch keine geplanten Workouts im intervals.icu-Kalender. Sobald der Trainingsplan dort liegt, erscheint die Soll-Linie.</div>';
+  if(!D.planned.length)s+='<div class="hint">Noch keine geplanten Einheiten im Kalender. Sobald ein Trainingsplan dort liegt, erscheint die Soll-Linie.</div>';
   $(id).innerHTML=s;
 }
 
@@ -923,7 +978,7 @@ function render(){
   $("rules").innerHTML=`
 <p><b>HRV</b><span class="tag g">studienbasiert</span><br>Verglichen wird das Mittel der letzten 7 Nächte (logarithmierter rMSSD) mit deinem Normalbereich aus den Nächten 8 bis 60 davor (Mittelwert ± 0,5 Standardabweichungen). Liegt das Wochenmittel darunter, soll eine harte Einheit gegen eine lockere getauscht werden. Zwei Meta-Analysen von 2021 (Manresa-Rocamora et al., Int J Environ Res Public Health, und eine Arbeit im J Sci Med Sport) fanden gegenüber festen Plänen nur einen kleinen, nicht signifikanten Leistungsvorteil. Der Nutzen liegt vor allem darin, harte Einheiten an schlechten Tagen zu vermeiden.</p>
 <p><b>Ruhepuls</b><span class="tag g">Erfahrungswert</span><br>Liegt der Ruhepuls 5 oder mehr Schläge über dem Mittel der Tage 8 bis 60, wird gewarnt. Die Schwelle ist nicht durch Studien festgelegt.</p>
-<p><b>Form</b><span class="tag g">Konvention</span><br>Fitness ist der 42-Tage-, Ermüdung der 7-Tage-Durchschnitt der Trainingslast. Form ist die Differenz. Die Warnschwelle −30 folgt der Einteilung bei intervals.icu.</p>
+<p><b>Form</b><span class="tag g">Konvention</span><br>Fitness ist der 42-Tage-, Ermüdung der 7-Tage-Durchschnitt der Trainingslast. Form ist die Differenz. Die Warnschwelle −30 ist eine übliche Einteilung.</p>
 <p><b>Schlaf</b><span class="tag g">Erfahrungswert</span><br>Unter 6 Stunden in der letzten Nacht wird von neuen Höchstbelastungen abgeraten.</p>
 <p><b>Krankheit</b><span class="tag g">Erfahrungswert</span><br>Beschwerden nur oberhalb des Halses: kurz und locker. Beschwerden unterhalb des Halses oder Fieber: Pause. Danach 7 Tage Rückkehrphase mit Warnhinweis. Der IOC-Konsens zu akuten Atemwegsinfekten bei Sportlern (Snyders et al., Br J Sports Med) hält fest, dass es für diese Regel keine evidenzbasierte Grundlage gibt. Bei Fieber, Brustschmerz oder anhaltenden Beschwerden ärztlich abklären lassen.</p>
 <p class="hint">Die Ampel ersetzt keinen Trainer und keine ärztliche Beurteilung.</p>`;
@@ -947,8 +1002,7 @@ function renderCharts(){
     lineChart("chHrv",{dates:d60,shade:D.sick,band:D.hrvStat.r?[D.hrvStat.lo,D.hrvStat.hi]:null,h:220,series:[
       {name:"Nachtwert",c:"var(--hrv)",dots:true,unit:" ms",v:g(d60,w=>w.hrv)},{name:"7-Tage-Mittel",c:"var(--hrv)",w:2.6,unit:" ms",v:roll}]});
     lineChart("chRhr",{dates:d60,shade:D.sick,series:[{name:"Ruhepuls",c:"var(--rhr)",area:true,unit:" /min",v:g(d60,w=>w.rhr)}]});
-    lineChart("chSleep",{dates:d60,series:[{name:"Schlaf",c:"var(--sleep)",area:true,dec:1,unit:" h",v:g(d60,w=>w.sleepH)}]});
-    lineChart("chSleepS",{dates:d60,series:[{name:"Schlafscore",c:"var(--sleep)",area:true,v:g(d60,w=>w.sleepS)}]});
+    dualChart("chSleep",d60,{name:"Dauer",c:"var(--sleep)",dec:1,unit:" h",v:g(d60,w=>w.sleepH)},{name:"Score",c:"var(--acc)",v:g(d60,w=>w.sleepS)});
   }
 }
 
@@ -1037,7 +1091,7 @@ function coachText(){
   L.push("","LETZTE EINHEITEN");
   D.activities.slice().sort((a,b)=>b.date.localeCompare(a.date)).slice(0,20).forEach(a=>L.push(`${a.date} ${SPORTS[a.sport].n}: ${a.name}, ${fH(a.secs)} h, ${nf(a.km,1)} km${a.hr?", Ø HF "+Math.round(a.hr):""}${a.load?", Last "+nf(a.load):""}`));
   const sk=D.sick.filter(s=>s.end>=addDays(t,-90));if(sk.length){L.push("","KRANKHEIT/VERLETZUNG (90 Tage)");sk.forEach(s=>L.push(`${s.start} bis ${s.end}: ${s.type}${s.note?" ("+s.note+")":""}`))}
-  const up=(D.races||[]).filter(r=>r.date>=t);if(up.length){L.push("","WETTKÄMPFE");up.forEach(r=>L.push(`${r.date} ${r.name} (Priorität ${r.prio})`))}
+  const up=(D.races||[]).filter(r=>r.date>=t);if(up.length){L.push("","WETTKÄMPFE");up.forEach(r=>{L.push(`${r.date} ${r.name} (Priorität ${r.prio})`);const ri=typeof raceInfoText==="function"?raceInfoText(r):"";if(ri)L.push("  "+ri)})}
   const pl=D.planned.filter(p=>p.date>=t);if(pl.length)L.push("",`Bereits geplant: ${pl.length} Einheiten ab heute im Kalender.`);
   L.push("","ANTWORTFORMAT","Erst eine kurze Auswertung in Worten. Dann den Plan als JSON-Liste in einem Codeblock mit json, je Einheit:",'{"date":"JJJJ-MM-TT","sport":"Run|Ride|Swim|Workout","name":"kurzer Titel","minutes":60,"description":"Ablauf im intervals.icu-Workout-Format, z. B. - 15m Z1 / 4x - 4m Z4 - 3m Z1 / - 10m Z1"}');
   return L.join("\n");
@@ -1110,7 +1164,7 @@ async function claude(prompt,maxTokens){
   if(j.usage){const u=spend();u.usd+=(j.usage.input_tokens||0)*2e-6+(j.usage.output_tokens||0)*10e-6;store.set("imAiSpend",u)}
   return (j.content||[]).filter(c=>c.type==="text").map(c=>c.text).join("");
 }
-const COACH_SYS="Du bist ein erfahrener, sachlicher Ausdauertrainer (Laufen, Rad, Schwimmen, Triathlon) und wertest Trainings- und Gesundheitsdaten aus. Schreibe Deutsch, kurz, konkret, ohne Füllwörter, ohne Gedankenstriche und ohne Semikolons. Erfinde keine Werte. Nenne fehlende Daten. Keine Diagnosen. Bei Krankheitszeichen Pause empfehlen, bei Fieber oder Beschwerden unterhalb des Halses kein Training und ggf. Arzt. Respektiere bestehende Planeinheiten (z. B. aus TrainingPeaks), empfiehl nur, ob sie wie geplant, gekürzt, ohne Intensität oder gar nicht gemacht werden sollen.";
+const COACH_SYS="Du bist ein erfahrener, sachlicher Ausdauertrainer (Laufen, Rad, Schwimmen, Triathlon) und wertest Trainings- und Gesundheitsdaten aus. Schreibe Deutsch, kurz, konkret, ohne Füllwörter, ohne Gedankenstriche und ohne Semikolons. Erfinde keine Werte. Nenne fehlende Daten. Nenne keine Gerätehersteller oder Plattformen. Keine Diagnosen. Bei Krankheitszeichen Pause empfehlen, bei Fieber oder Beschwerden unterhalb des Halses kein Training und ggf. Arzt. Respektiere bestehende Planeinheiten (z. B. aus TrainingPeaks), empfiehl nur, ob sie wie geplant, gekürzt, ohne Intensität oder gar nicht gemacht werden sollen.";
 const HEALTH_SYS="Du bist ein freundlicher, sachlicher Gesundheits- und Bewegungscoach. Schreibe Deutsch in einfacher, verständlicher Sprache, ohne Fachbegriffe, ohne Gedankenstriche und ohne Semikolons. Schwerpunkt: Alltagsbewegung, Schritte, Spaziergänge, leichte Ausdauer, Kraft und Beweglichkeit, Schlaf und Ruhepuls. Erfinde keine Werte. Keine Diagnosen. Bei auffälligen Werten oder Beschwerden zum Arzt raten. Die Feldnamen im JSON bleiben gleich, Alternativen dürfen auch Spazierengehen, Radfahren, Schwimmen oder Gymnastik sein.";
 function jsonFrom(txt){const m=txt.match(/```(?:json)?\s*([\s\S]*?)```/i),s=m?m[1]:txt,a=s.indexOf("{"),b=s.lastIndexOf("}");if(a<0||b<a)throw new Error("Claude hat kein lesbares Ergebnis geliefert. Bitte nochmal tippen.");try{return JSON.parse(s.slice(a,b+1))}catch(e){throw new Error("Das Ergebnis von Claude war unvollständig. Bitte nochmal tippen.")}}
 function planFmt(){return 'description im intervals.icu-Workout-Format, jede Zeile ein Schritt, z. B. "Warm-up\n- 15m Z2\nMain Set 4x\n- 4m Z4\n- 3m Z1\nCooldown\n- 10m Z1". sport ist Run, Ride, Swim oder WeightTraining.'}
@@ -1305,7 +1359,7 @@ const WIKI=[
  ["Fitness (CTL)","Der Durchschnitt deiner Trainingslast der letzten 42 Tage. Steigt langsam, wenn du regelmäßig trainierst, und sinkt langsam in Pausen. Zeigt, wie viel Training dein Körper zurzeit gewohnt ist. Höher heißt: mehr Grundlage, nicht automatisch schneller am Wettkampftag."],
  ["Ermüdung (ATL)","Der Durchschnitt deiner Trainingslast der letzten 7 Tage. Reagiert schnell: nach harten Tagen steigt sie, nach ein paar ruhigen Tagen fällt sie wieder."],
  ["Form (TSB)","Fitness minus Ermüdung. Negativ heißt: du trainierst gerade mehr, als du gewohnt bist (normal im Aufbau, etwa −10 bis −30). Unter −30 wird es riskant. Positiv heißt: du bist ausgeruht, zum Beispiel vor einem Wettkampf oder nach einer Pause. Kurz: Fitness ist, was du aufgebaut hast. Form ist, wie frisch du heute bist."],
- ["Trainingslast (Last)","Eine Zahl für die Belastung einer Einheit, berechnet von intervals.icu aus Dauer und Intensität (Leistung, Puls oder Tempo). Eine Stunde an der Schwelle ergibt etwa 100."],
+ ["Trainingslast (Last)","Eine Zahl für die Belastung einer Einheit, berechnet aus Dauer und Intensität (Leistung, Puls oder Tempo). Eine Stunde an der Schwelle ergibt etwa 100."],
  ["HRV","Herzratenvariabilität: wie stark der Abstand zwischen Herzschlägen schwankt, gemessen nachts von deiner Uhr (rMSSD in ms). Höher als dein eigener Normalbereich heißt meist: gut erholt. Darunter: Stress, Krankheit, Schlafmangel oder viel Training. Wichtig ist der Vergleich mit dir selbst, nicht mit anderen."],
  ["Ruhepuls","Puls in Ruhe, nachts gemessen. Liegt er mehrere Tage 5 oder mehr Schläge über deinem Mittel, kann das auf Ermüdung oder eine beginnende Krankheit hinweisen."],
  ["Normalbereich","Dein persönlicher Bereich für die HRV, berechnet aus den Nächten 8 bis 60 vor heute (Mittelwert plus und minus eine halbe Standardabweichung)."],
@@ -1321,14 +1375,14 @@ const WIKI=[
  ["Erholungswert","Eigene Kennzahl dieser App von 0 bis 100 aus HRV, Ruhepuls und Schlaf im Vergleich zu deinem Normalbereich. Kein wissenschaftlich geprüfter Wert, sondern eine Zusammenfassung zur Orientierung."],
  ["Belastungsverhältnis","Trainingslast der letzten 7 Tage geteilt durch den Wochenschnitt der letzten 28 Tage. Um 0,8 bis 1,3 gilt als gleichmäßige Steigerung. Ob ein hoher Wert das Verletzungsrisiko vorhersagt, ist in der Forschung umstritten (z. B. Impellizzeri et al., 2020). Hier nur als Hinweis auf sprunghafte Wochen."],
  ["Regel-Check (Ampel)","Feste Regeln aus HRV, Ruhepuls, Form, Schlaf und Krankheitseinträgen. Läuft ohne Claude. Die Coach-Auswertung von Claude berücksichtigt den Regel-Check und hat Vorrang."],
- ["Schlaf","Dauer, Score (0 bis 100) und Qualität kommen von deiner Garmin-Uhr über intervals.icu. Der Score fasst Dauer, Tiefe und Unruhe zusammen. Für Erwachsene empfehlen Fachgesellschaften mindestens 7 Stunden. Zu wenig Schlaf senkt die HRV und erhöht den Ruhepuls. Schlafphasen gibt Garmin nicht an intervals.icu weiter."],
- ["Max. Puls und Schwellenpuls","Der maximale Puls ist der höchste Wert, den du bei voller Belastung erreichst. Der Schwellenpuls (LTHR) ist etwa der Puls, den du eine Stunde halten kannst. Aus ihm berechnet intervals.icu deine Pulszonen. Beide Werte stehen im Wiki unter Deine Zonen."],
- ["eFTP","Die FTP, die intervals.icu aus deinen Fahrten mit Leistungsmessung schätzt. Weicht sie deutlich von deiner eingestellten FTP ab, stimmen deine Radzonen nicht mehr. Dann lohnt ein FTP-Test oder das Anpassen des Werts."],
+ ["Schlaf","Dauer, Score (0 bis 100) und Qualität kommen von deiner Uhr. Der Score fasst Dauer, Tiefe und Unruhe zusammen. Für Erwachsene empfehlen Fachgesellschaften mindestens 7 Stunden. Zu wenig Schlaf senkt die HRV und erhöht den Ruhepuls. Schlafphasen liefert deine Datenquelle derzeit nicht."],
+ ["Max. Puls und Schwellenpuls","Der maximale Puls ist der höchste Wert, den du bei voller Belastung erreichst. Der Schwellenpuls (LTHR) ist etwa der Puls, den du eine Stunde halten kannst. Aus ihm berechnen sich deine Pulszonen. Beide Werte stehen im Wiki unter Deine Zonen."],
+ ["eFTP","Die FTP, die aus deinen Fahrten mit Leistungsmessung geschätzt wird. Weicht sie deutlich von deiner eingestellten FTP ab, stimmen deine Radzonen nicht mehr. Dann lohnt ein FTP-Test oder das Anpassen des Werts."],
  ["CSS (Schwimmen)","Critical Swim Speed: ungefähr das Tempo, das du über 1500 m halten kannst. Test: 400 m und 200 m jeweils Vollgas mit Pause dazwischen. CSS = 200 m geteilt durch die Zeitdifferenz der beiden Strecken."],
  ["Schwellentempo (Laufen)","Das Tempo, das du etwa eine Stunde halten kannst. Test: 30 Minuten allein so schnell wie gleichmäßig möglich laufen. Das Durchschnittstempo ist dein Schwellentempo, der Durchschnittspuls der letzten 20 Minuten dein Schwellenpuls."],
  ["Trainingsnutzen","Die App ordnet jede Einheit nach der Zeit in deinen Pulszonen ein: Regeneration (kurz, fast nur Z1), Grundlage (überwiegend Z1 und Z2), Lange Grundlage (Lauf ab 90 Minuten, Rad ab 2,5 Stunden, Schwimmen ab 3 km), Tempo (viel Z3), Schwelle (viel Z4 und höher) und Intervalle (harte Wiederholungen). Das ist eine Einordnung, keine Messung."],
  ["Tapering","Die Entlastung vor einem Wettkampf, meist 1 bis 3 Wochen. Der Umfang sinkt deutlich, kurze intensive Reize bleiben. Die Ermüdung baut sich ab, die Form steigt."],
- ["intervals.icu","Kostenlose Trainingsplattform, die deine Garmin- und Zwift-Daten sammelt und berechnet. Die App liest von dort und schreibt geplante Einheiten und Notizen zurück. Von intervals.icu gehen geplante Einheiten auf deine Uhr."]
+ ["Datenquelle","Die App liest Trainings, Schlaf, HRV und Ruhepuls aus der Trainingsplattform, die du in den Einstellungen verbindest. Geplante Einheiten und Notizen schreibt sie dorthin zurück. Von dort gelangen sie auf deine Uhr."]
 ];
 function wikiDesc(k){const e=WIKI.find(x=>x[0].toLowerCase().startsWith(k.toLowerCase()));return e?e[1]:""}
 function renderWiki(){const q=($("wikiQ").value||"").toLowerCase();$("wikiList").innerHTML=WIKI.filter(e=>!q||(e[0]+" "+e[1]).toLowerCase().includes(q)).map(e=>`<details class="wk"><summary>${esc(e[0])}</summary><p>${esc(e[1])}</p></details>`).join("")||'<div class="empty">Nichts gefunden</div>'}
@@ -1398,11 +1452,11 @@ async function aiPlan(manual){
   if(b){b.disabled=true;b.textContent="Claude plant …"}
   try{
     const ov=noteBy("Coach Plan Übersicht");
-    const pr=coachText().replace(/\nANTWORTFORMAT[\s\S]*$/,"")+`\n\nZIELDATUM: ${goalInfo(D).date?goalInfo(D).date+" ("+goalInfo(D).name+")":"offen, bitte realistisch vorschlagen"}\nDURCHSCHNITT LETZTE 6 WOCHEN: ${nf(avgHours(D),1)} h pro Woche\n${ov&&!manual?"BESTEHENDE PHASEN:\n"+ov.text+"\n":""}\nAUFGABE\n${manual?"Plane den Weg bis zum Zieldatum in Phasen (Grundlage, Aufbau, Spitze, Tapering usw.) und ":"Setze den bestehenden Plan fort und "}erstelle konkrete Einheiten für 28 Tage ab ${from}. Leite den Wochenumfang aus meinen bisherigen Stunden ab und steigere ihn höchstens um etwa 10 Prozent pro Woche, mit Entlastungswochen. Halte die Trainingstage ein, lange Einheiten an den markierten Tagen. Antworte nur mit JSON in einem json-Codeblock: {"target_date":"JJJJ-MM-TT","phases":[{"from":"JJJJ-MM-TT","to":"JJJJ-MM-TT","name":"kurz","focus":"ein Satz"}],"note":"max. 400 Zeichen","workouts":[{"date","sport","name","minutes","description"}]}. ${planFmt()}`;
+    const pr=coachText().replace(/\nANTWORTFORMAT[\s\S]*$/,"")+`\n\nZIELDATUM: ${goalInfo(D).date?goalInfo(D).date+" ("+goalInfo(D).name+")":"offen, bitte realistisch vorschlagen"}\nDURCHSCHNITT LETZTE 6 WOCHEN: ${nf(avgHours(D),1)} h pro Woche\n${ov&&!manual?"BESTEHENDE PHASEN:\n"+ov.text+"\n":""}\nAUFGABE\n${manual?"Plane den Weg bis zum Zieldatum in Phasen (Grundlage, Aufbau, Spitze, Tapering usw.) und ":"Setze den bestehenden Plan fort und "}erstelle konkrete Einheiten für 28 Tage ab ${from}. Leite den Wochenumfang aus meinen bisherigen Stunden ab und steigere ihn höchstens um etwa 10 Prozent pro Woche, mit Entlastungswochen. Halte die Trainingstage ein, lange Einheiten an den markierten Tagen. Berücksichtige die Wettkampf-Infos (Strecke, Höhenmeter, Hitze, Wasser) mit passenden Einheiten, zum Beispiel Hitzeanpassung in den letzten Wochen oder Bergintervalle. Höchstens eine Einheit pro Tag, außer bei Koppeleinheiten. Antworte nur mit JSON in einem json-Codeblock: {"target_date":"JJJJ-MM-TT","phases":[{"from":"JJJJ-MM-TT","to":"JJJJ-MM-TT","name":"kurz","focus":"ein Satz"}],"note":"max. 400 Zeichen","workouts":[{"date","sport","name","minutes","description"}]}. ${planFmt()}`;
     const o=jsonFrom(await claude(pr,16000));const items=parsePlan(JSON.stringify(o.workouts||[])).filter(x=>x.date>=from);
     if(!items.length)throw new Error("Claude hat keine Einheiten geliefert.");
     if(o.phases&&o.phases.length)await writeNote(t,[...o.phases.map(p=>`Phase: ${p.from} | ${p.to} | ${p.name} | ${p.focus||""}`),`Zieldatum: ${o.target_date||g.gDate||""}`].join("\n"),"Coach Plan Übersicht");
-    const n=await importPlan(items);await load();if($("coachHint"))$("coachHint").textContent=`${n} Einheiten eingetragen. ${o.note||""}`;
+    if(manual)await delCoachFrom(from);const n=await importPlan(items);await load();if($("coachHint"))$("coachHint").textContent=`${n} Einheiten eingetragen. ${o.note||""}`;
   }catch(e){if($("coachHint"))$("coachHint").textContent="Fehler: "+e.message;if(manual)throw e}
   finally{const bb=$("btnAiPlan");if(bb){bb.disabled=false;bb.dataset.sure=""}}
 }
@@ -1568,7 +1622,7 @@ function kpiInfo(key){
   if(key==="hrv"&&D.hrvStat.r)extra=`<div class="kv"><div><span>7-Tage-Mittel</span><b>${nf(D.hrvStat.r)} ms</b></div><div><span>Normalbereich</span><b>${nf(D.hrvStat.lo)}–${nf(D.hrvStat.hi)} ms</b></div></div>`;
   if(key==="rhr"&&D.rhrStat.base)extra=`<div class="kv"><div><span>Heute</span><b>${D.rhrStat.now||"–"} /min</b></div><div><span>Mittel Tage 8 bis 60</span><b>${nf(D.rhrStat.base)} /min</b></div></div>`;
   if(key==="sleep"){const n7=[];for(let i=0;i<8;i++){const w=D.wm[addDays(t,-i)];if(w&&w.sleepH)n7.push([addDays(t,-i),w])}
-    extra=`<div class="kv">${n7.slice(0,6).map(([d,w])=>`<div><span>${fDL(d)}</span><b>${nf(w.sleepH,1)} h</b><span>${w.sleepS?"Score "+w.sleepS:""}${w.sleepQ?" · "+SQ[w.sleepQ]:""}</span></div>`).join("")}</div><p class="hint">Schlafphasen (Tief-, Leicht- und REM-Schlaf) gibt Garmin nicht an intervals.icu weiter. Die App zeigt deshalb Dauer, Score und Qualität.</p>`}
+    extra=`<div class="kv">${n7.slice(0,6).map(([d,w])=>`<div><span>${fDL(d)}</span><b>${nf(w.sleepH,1)} h</b><span>${w.sleepS?"Score "+w.sleepS:""}${w.sleepQ?" · "+SQ[w.sleepQ]:""}</span></div>`).join("")}</div><p class="hint">Schlafphasen (Tief-, Leicht- und REM-Schlaf) liefert deine Datenquelle derzeit nicht. Die App zeigt deshalb Dauer, Score und Qualität.</p>`}
   info(`<h3>${K[0]}</h3><div class="ibig" style="color:${K[1]}">${K[3]}</div>${extra}<p>${esc(wikiDesc(K[0].split(" ")[0]))}</p>`,{dates:s.dates,zero:["ctl","atl","tsb"].includes(key),band:key==="hrv"&&D.hrvStat.r?[D.hrvStat.lo,D.hrvStat.hi]:null,series:[{name:K[0],c:K[1],area:true,dec:K[4],v:s.v}]},'<p class="hint">Letzte 90 Tage</p>')}
 document.addEventListener("click",e=>{const el=e.target.closest("#kpis .kpi");if(el&&el.dataset.k)kpiInfo(el.dataset.k)});
 /* Woche anzeigen */
@@ -1718,7 +1772,7 @@ function renderBench(D){
     return`<span class="bd" style="color:${z?"var(--muted)":good?"var(--green)":"var(--red)"}">${z?"unverändert":(d>0?"+":"−")+fmt(Math.abs(d))+unit} seit 3 Monaten</span>`};
   const tile=(k,v,sub,delta,series,c,key)=>`<div class="bt" data-b="${key}"><div class="bk">${k}</div><div class="bv">${v}</div><div class="bs">${sub}</div>${delta}${series&&series.filter(x=>x!=null).length>1?`<div class="bsp">${spark(series,c)}</div><div class="bcap">Verlauf 12 Monate</div>`:""}</div>`;
   const T=[],E=[[5,"5 km","e5"],[10,"10 km","e10"],[21.0975,"Halbmarathon","e21"],[42.195,"Marathon","e42"]];
-  if(b.r5)T.push(`<div class="bt wide nob"><div class="bk">Laufen, geschätzte Zeiten</div><div class="bs">Aus deinem schnellsten Lauf der letzten 90 Tage. Tippen zeigt den Verlauf.</div><div class="best">${E.map(([d,n,k])=>{const f=Math.pow(d/5,1.06);return`<div class="bt2" data-b="${k}"><span>${n}</span><b>${fT(b.r5*f)}</b>${dl(b.r5*f,b.r5o?b.r5o*f:null,x=>fT(x),true)}</div>`}).join("")}</div></div>`);
+  if(b.r5)T.push(`<div class="bt wide nob"><div class="bk">Laufen, geschätzte Zeiten</div><div class="bs">Aus deinem schnellsten Lauf der letzten 90 Tage. Tippen zeigt den Verlauf.</div><div class="best">${E.map(([d,n,k])=>{const f=Math.pow(d/5,1.06);return`<div class="bt2" data-b="${k}"><span>${n}</span><b>${fT(b.r5*f)}</b>${dl(b.r5*f,b.r5o?b.r5o*f:null,x=>fT(x),true)}</div>`}).join("")}</div>${thrEstRow(D)}</div>`);
   const R5=real5s(D);if(R5.best)T.push(tile("Schnellster 5-km-Lauf",fT(R5.best.t),"gelaufen, "+fDY(R5.best.a.date),dl(R5.now,R5.old,x=>fT(x),true),R5.series,"var(--run)","r5"));
   if(b.eN)T.push(tile("Laufökonomie",nf(b.eN,2)+" m","pro Herzschlag, 6 Wochen",dl(b.eN,b.eO,x=>nf(x,2),false," m"),b.sE,"var(--run)","econ"));
   if(b.sN)T.push(tile("Schwimmen",fT(b.sN)+" /100 m","bestes Tempo, 90 Tage",dl(b.sN,b.sO,x=>fT(x),true),b.sS.map(v=>v==null?null:-v),"var(--swim)","swim"));
@@ -1804,6 +1858,289 @@ function renderV15(D){const t=today();
   heroV15(D);const hasNote=(D.notes||[]).some(n=>n.name==="Coach "+t);$("ampel").classList.remove("compact");$("ampel").style.display=hasNote?"none":"";
   renderRecent();renderZones();wxInit();if($("mGoal").classList.contains("open")){const v=$("gRace").value;fillRaceSel();$("gRace").value=v}}
 function renderV14(D){renderPlanTab(D);renderErholung(D);renderWeekNew(D);renderV15(D)}
+
+/* ---------- v16 ---------- */
+const SPAPI={run:"Run",bike:"Ride",swim:"Swim",other:"WeightTraining"};
+const ICS='<svg viewBox="0 0 24 24"><path d="M12 3l1.8 4.6L18.5 9l-4.7 1.6L12 15l-1.8-4.4L5.5 9l4.7-1.4z"/><path d="M19 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></svg>';
+const ICSEND='<svg viewBox="0 0 24 24"><path d="M5 12h13M13 6l6 6-6 6"/></svg>';
+/* Tabs: Training startet immer mit Plan */
+function setTab(t){const prev=TAB;TAB=t;store.set("imTab",t);
+  document.querySelectorAll("[data-tab]").forEach(s=>s.classList.toggle("on",s.dataset.tab===t));
+  document.querySelectorAll("#seg button,#tabbar button").forEach(b=>b.classList.toggle("on",b.dataset.t===t));
+  if(t==="training"&&prev!=="training"&&typeof setSub==="function"&&TSUB!=="plan")setSub("plan");
+  if(DATA)renderCharts();window.scrollTo({top:0})}
+/* Notiz lesen */
+function parseNote(txt){
+  const o={status:"",head:"",goal:"",plan:"",why:[],whyS:[],week:"",tip:"",fuel:"",opts:[],wo:null,alts:[]};
+  String(txt||"").split(/\n+/).map(s=>s.trim()).filter(Boolean).forEach(l=>{let m;
+    if(m=l.match(/^Status:\s*(.*)$/i))o.status=m[1].toLowerCase();
+    else if(m=l.match(/^Heute:\s*(.*)$/i))o.head=m[1];
+    else if(m=l.match(/^Ziel:\s*(.*)$/i))o.goal=m[1];
+    else if(m=l.match(/^Einheit:\s*(\{.*\})\s*$/i)){try{o.wo=JSON.parse(m[1])}catch(e){}}
+    else if(m=l.match(/^Alternative:\s*(\{.*\})\s*$/i)){try{o.alts.push(JSON.parse(m[1]))}catch(e){}}
+    else if(m=l.match(/^Warum:\s*(\{.*\})\s*$/i)){try{o.whyS.push(JSON.parse(m[1]))}catch(e){}}
+    else if(m=l.match(/^Plan:\s*(.*)$/i))o.plan=m[1];
+    else if(m=l.match(/^Woche:\s*(.*)$/i))o.week=m[1];
+    else if(m=l.match(/^Tipp:\s*(.*)$/i))o.tip=m[1];
+    else if(m=l.match(/^Verpflegung:\s*(.*)$/i))o.fuel=m[1];
+    else if(m=l.match(/^Option (Laufen|Rad|Schwimmen|Kombi):\s*(.*)$/i))o.opts.push([m[1],m[2]]);
+    else o.why.push(l.replace(/^[-•*]\s*/,""));});
+  return o}
+/* Kennzahlen als Bereichsbalken */
+function metricTiles(D){const h=D.hrvStat,r=D.rhrStat,sw=sleepLast(D),tsb=D.pmc?D.pmc.tsb:null,T=[];
+  const bar=(v,lo,hi,mn,mx)=>{const p=x=>Math.max(0,Math.min(100,(x-mn)/(mx-mn)*100));return`<div class="rbar"><i class="band" style="left:${p(lo)}%;width:${Math.max(2,p(hi)-p(lo))}%"></i>${v!=null?`<i class="dot" style="left:${p(v)}%"></i>`:""}</div>`};
+  if(h&&h.r){const sp=Math.max(2,h.hi-h.lo),st=h.r<h.lo-sp*.6?["bad","deutlich unter Normal"]:h.r<h.lo?["warn","unter Normal"]:h.r>h.hi?["ok","über Normal"]:["ok","normal"];
+    T.push(["hrv","HRV","var(--hrv)",nf(h.r),"ms",st,bar(h.r,h.lo,h.hi,h.lo-sp*1.3,h.hi+sp*1.3),`Normal ${nf(h.lo)}–${nf(h.hi)} ms`])}
+  else T.push(["hrv","HRV","var(--hrv)","–","ms",["na","zu wenig Daten"],"",""]);
+  if(r&&r.now&&r.base){const d=r.now-r.base,st=d>=8?["bad","deutlich erhöht"]:d>=5?["warn","erhöht"]:["ok","normal"];
+    T.push(["rhr","Ruhepuls","var(--rhr)",r.now,"/min",st,bar(r.now,r.base-3,r.base+3,r.base-9,r.base+11),`Mittel ${nf(r.base)} /min`])}
+  else T.push(["rhr","Ruhepuls","var(--rhr)",r&&r.now?r.now:"–","/min",["na","zu wenig Daten"],"",""]);
+  if(sw){const v=sw.sleepH,st=v<5?["bad","sehr kurz"]:v<6.5?["warn","kurz"]:["ok","ausreichend"];T.push(["sleep","Schlaf","var(--sleep)",nf(v,1),"h",st,bar(v,7,9,4,10.5),sw.sleepS?`Score ${sw.sleepS}`:"Ziel 7–9 h"])}
+  else T.push(["sleep","Schlaf","var(--sleep)","–","h",["na","keine Daten"],"",""]);
+  if(isHealth()){const w=D.wm[today()]||D.wm[addDays(today(),-1)]||{};T.push(["week","Schritte","var(--form)",w.steps?nf(w.steps):"–","",w.steps?(w.steps>=7000?["ok","gut"]:["warn","wenig"]):["na","keine Daten"],w.steps?bar(w.steps,7000,12000,0,16000):"","Ziel 7.000–12.000"])}
+  else if(tsb!=null){const st=tsb<-30?["bad","stark ermüdet"]:tsb<-20?["warn","ermüdet"]:tsb>5?["ok","ausgeruht"]:["ok","im Training"];T.push(["tsb","Form","var(--form)",(tsb>0?"+":"")+nf(tsb),"",st,bar(tsb,-30,5,-45,30),"Üblich −30 bis +5"])}
+  return`<div class="mts">${T.map(([k,l,c,v,u,st,b,sub])=>`<div class="mt tap" data-k="${k}" style="--mc:${c}"><div class="mth"><span><i></i>${l}</span><em class="st ${st[0]}">${st[1]}</em></div><div class="mtv">${v}<small>${u}</small></div>${b}<div class="mtr">${sub}</div></div>`).join("")}</div>
+  <div class="hint rlegend">Grauer Balken: dein üblicher Bereich. Punkt: heute. Tippen zeigt den Verlauf.</div>`}
+function whyHTML(o){
+  if(o.whyS.length)return`<div class="why2">${o.whyS.map(w=>{const g=whyTag(w.topic||"")||[0,"var(--muted)"];return`<div class="wr"><span class="wrt" style="--tc:${g[1]}">${esc(w.topic||"")}</span><div><b>${esc(w.value||"")}</b><span>${esc(w.note||"")}</span></div></div>`}).join("")}</div>`;
+  return o.why.length?`<div class="why2">${o.why.map(x=>{const g=whyTag(x)||["Hinweis","var(--muted)"];return`<div class="wr"><span class="wrt" style="--tc:${g[1]}">${g[0]}</span><div><span class="wro">${esc(x)}</span></div></div>`}).join("")}</div>`:""}
+function fuelData(w){const k=spKey(w.sport||w.label),z=w.zone?zNum(w.zone):2,inside=/rolle|zwift|indoor|laufband|trainer/i.test((w.title||"")+" "+(w.description||""));
+  return esc(JSON.stringify({h:Math.round((w.minutes||60)/15)/4,int:z<=2?"locker":"mittel",where:k==="swim"||inside?"in":"out"}))}
+function wcard(w,i){const k=spKey(w.label&&i?w.label:w.sport||w.label),si=spInfo(k),sp=k==="kombi"?"bike":k==="rest"?"other":k,z=w.zone?zNum(w.zone):0,live=isLive()&&hasAi();
+  const cal=!w.old&&live&&SPAPI[sp]&&k!=="kombi"&&k!=="rest"&&w.minutes;
+  return`<div class="wcard" style="--wc:${si.c}"><div class="wch"><div class="wci">${svgI(ICON[sp]?sp:"other","#fff")}</div><div style="min-width:0"><div class="wck">${i?"Alternative":"Empfohlen"} · ${esc(si.n)}</div><div class="wct">${esc(w.title||"")}</div></div></div>
+  ${w.reason?`<div class="wcr">${esc(w.reason)}</div>`:""}
+  ${w.old?"":`<div class="wcm">${w.minutes?`<span>${fDur(w.minutes*60)}</span>`:""}${z?`<span class="zc" style="--zc:${ZC[z-1]}">${esc(String(w.zone))} ${ZN[z-1]}</span>`:""}${z&&zoneRange(sp,z)?`<span>${zoneRange(sp,z)}</span>`:""}</div>
+  ${w.purpose?`<div class="wcp"><b>Nutzen</b>${esc(w.purpose)}</div>`:""}
+  ${w.description&&parseWo(w.description,sp).length?`<div class="wop-wrap">${woSvg(parseWo(w.description,sp))}</div>`:""}
+  <div class="wca">${w.description?`<button class="btn sm" data-wd="${i}">Ablauf</button>`:""}${w.minutes>=60?`<button class="btn sm" data-fuel="${fuelData(w)}">Verpflegung</button>`:""}${cal?`<button class="btn sm" data-cal="${i}">In den Kalender</button>`:""}</div>`}</div>`}
+function coachHTML(n,D,t){
+  const o=parseNote(n.text),L=/rot/.test(o.status)?2:/gelb/.test(o.status)?1:/gr/.test(o.status)?0:evaluate(D).L,c=LV[L];
+  let W=[];if(o.wo)W=[Object.assign({reason:o.wo.reason||o.head},o.wo),...o.alts.filter(a=>spKey(a.label||a.sport)!==spKey(o.wo.sport))];
+  else if(o.plan){W=[{title:o.plan,sport:o.plan,old:true,reason:o.head}];o.opts.forEach(([k,v])=>{if(spKey(k)!==spKey(o.plan))W.push({label:k,sport:k,title:v,old:true})})}
+  window.__cw=W;
+  return`<div style="--cxc:${c}"><div class="cx-st"><i></i>${["Training wie geplant","Locker trainieren","Pause"][L]}${n.date===t?"":" · Stand "+fD(n.date)}</div>
+  ${o.goal?`<div class="cx-goal">${TGT}<span><b>Ziel heute</b>${esc(o.goal)}</span></div>`:!o.wo&&o.head?`<div class="cx-h" style="font-size:20px">${esc(o.head)}</div>`:""}
+  ${W.length?`<div class="cx-tabs">${W.map((w,i)=>{const k=spKey(i?w.label||w.sport:w.sport||w.label);return`<button data-w="${i}" class="${i?"":"on"}" style="--wc:${spInfo(k).c}"><i></i>${i?esc(spInfo(k).n):"Empfohlen"}${i?"":`<small>${esc(spInfo(k).n)}</small>`}</button>`}).join("")}</div><div id="cxW">${wcard(W[0],0)}</div>`:""}
+  <h4 class="cx-sh">Dein Zustand</h4>${metricTiles(D)}
+  ${o.whyS.length||o.why.length?`<h4 class="cx-sh">Warum</h4>${whyHTML(o)}`:""}
+  ${o.fuel?`<div class="cx-box"><svg viewBox="0 0 24 24"><path d="M7 2v9a3 3 0 0 0 3 3v8M7 2v6M10 2v6M17 2c-1.7 0-3 2-3 5s1.3 4 3 4v11"/></svg><div><b>Verpflegung</b><br>${esc(o.fuel)}${W[0]&&W[0].minutes?`<br><button class="lnk" data-fuel="${fuelData(W[0])}">Genau berechnen</button>`:""}</div></div>`:""}
+  ${o.week?`<div class="cx-box"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><div><b>Woche</b><br>${esc(o.week)}</div></div>`:""}
+  ${o.tip?`<div class="cx-box"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.6.6 1 1.4 1 2.5h6c0-1.1.4-1.9 1-2.5A6 6 0 0 0 12 3z"/></svg><div><b>Tipp</b><br>${esc(o.tip)}</div></div>`:""}
+  <button class="lnk" id="cxSick">Krank oder verletzt melden</button></div>`}
+async function toCal(w,btn){const t=today(),k=spKey(w.sport),sp=SPAPI[k];if(!sp)return;btn.disabled=true;btn.textContent="Trage ein …";
+  try{for(const p of DATA.planned.filter(p=>p.date===t&&p.coach&&p.id))await api("/events/"+encodeURIComponent(p.id),{method:"DELETE"});
+    await importPlan([{date:t,sport:sp,name:w.title||"Training",minutes:w.minutes||0,description:w.description||""}]);await load()}
+  catch(e){btn.disabled=false;btn.textContent="Fehler: "+e.message}}
+$("coachCard").addEventListener("click",e=>{const b=e.target.closest("[data-cal]");if(!b)return;const w=(window.__cw||[])[+b.dataset.cal];if(!w)return;
+  if(b.dataset.sure!=="1"){const ex=DATA.planned.some(p=>p.date===today()&&p.coach);b.dataset.sure="1";b.textContent=ex?"Geplante Einheit ersetzen?":"Für heute eintragen?";return}toCal(w,b)});
+async function aiDaily(manual){
+  if(aiBusy||!hasAi()||!isLive()||!DATA)return;const t=today();
+  if(!manual&&(noteBy("Coach "+t)||store.get("imAiDay","")===t))return;
+  aiBusy=true;aiErrMsg="";store.set("imAiDay",t);render();
+  try{
+    const up=DATA.planned.filter(p=>p.date>=t&&p.date<=addDays(t,6)),sick=DATA.sick.some(s=>s.end>=addDays(t,-7));
+    const W='{"sport":"Run|Ride|Swim|Strength|Rest|Kombi","title":"max. 45 Zeichen","minutes":45,"zone":"Z2","reason":"warum diese Einheit heute passt, ein Satz, max. 100 Zeichen","purpose":"Trainingsnutzen, max. 90 Zeichen","description":"Ablauf"}';
+    const pr=coachText().replace(/\nANTWORTFORMAT[\s\S]*$/,"")+"\n\nGEPLANT NÄCHSTE 7 TAGE\n"+(up.length?up.map(p=>`${p.date} ${SPORTS[p.sport].n}: ${p.name}${p.secs?", "+fH(p.secs)+" h":""}${p.desc?" ("+p.desc.replace(/\n/g," / ").slice(0,200)+")":""}`).join("\n"):"nichts")+
+      `\n\nAUFGABE\nTagesauswertung für heute (${t}). Antworte nur mit JSON in einem json-Codeblock: {"status":"gruen|gelb|rot","goal":"Ziel des heutigen Tages, max. 80 Zeichen","workout":${W},"alternatives":[wie workout, zusätzlich "label"],"why":[{"topic":"HRV|Ruhepuls|Schlaf|Form|Belastung|Plan|Gesundheit","value":"Kennzahl mit Einheit, max. 20 Zeichen","note":"Einordnung, max. 70 Zeichen"}],"week":"ein Satz zur Woche","fuel":"Verpflegung in einem Satz, nur wenn die Einheit länger als 75 Minuten ist, sonst leer","tip":"siehe Regeln"}
+REGELN
+- workout ist die empfohlene Einheit. Wähle die Sportart nach Plan, Belastung der letzten Tage, Erholung und Ziel. Steht heute etwas im Plan, übernimm es und sag im title, ob wie geplant, gekürzt oder ohne Intensität.
+- alternatives: genau eine Alternative für jede andere Option aus Laufen, Rad, Schwimmen und Kombi (label genau so, sport bei Kombi "Kombi" und description mit beiden Teilen). Nie dieselbe Sportart wie workout. Gleiche Belastungsstufe. reason sagt, wann die Alternative besser passt.
+- why: 3 bis 4 Einträge, jeweils ein Thema.
+- description: ${planFmt()} Zonen Z1 bis Z5 nach meinen Zonen. Technikübungen beim Namen nennen (z. B. Steigerungsläufe, Abschlagschwimmen).
+- tip: nur ein Hinweis, der sich aus meinen heutigen Daten ergibt. Keine allgemeinen Ratschläge.${sick?"":" Krankheit nicht erwähnen, es ist keine eingetragen."} Gibt es nichts Konkretes, leer lassen.
+- Nenne keine Gerätehersteller oder Plattformen.`;
+    const o=jsonFrom(await claude(pr,7000));
+    const txt=[`Status: ${o.status||""}`,o.goal?`Ziel: ${o.goal}`:"",o.workout?`Einheit: ${JSON.stringify(o.workout)}`:"",o.workout?`Plan: ${o.workout.title||""}`:"",
+      ...(o.alternatives||[]).slice(0,4).map(a=>`Alternative: ${JSON.stringify(a)}`),...(o.why||[]).slice(0,4).map(x=>typeof x==="string"?"- "+x:`Warum: ${JSON.stringify(x)}`),o.week?`Woche: ${o.week}`:"",o.tip?`Tipp: ${o.tip}`:"",o.fuel?`Verpflegung: ${o.fuel}`:""].filter(Boolean).join("\n");
+    await writeNote(t,txt.slice(0,12000));
+  }catch(e){aiErrMsg=e.message;if(manual)store.set("imAiDay","")}
+  finally{aiBusy=false;render()}}
+/* Frag deinen Coach */
+const QS=["Was soll ich morgen trainieren?","Ich habe heute nur 30 Minuten","Ich fühle mich müde. Was jetzt?","Passt mein Plan diese Woche?"];
+function renderAsk(){const H=store.get("imAskH",null)||(store.get("imAsk",null)?[store.get("imAsk",null)]:[]);
+  $("qOut").innerHTML=H.slice(0,3).map(x=>`<div class="qa2"><div class="qq">${esc(x.q)}</div><div class="qa">${esc(x.a).replace(/\n/g,"<br>")}</div></div>`).join("")}
+(function(){const q=$("askCard");$("coachCard").after(q);q.dataset.init="1";
+  q.innerHTML=`<div class="askh"><div class="aski">${ICS}</div><div><h2>Frag deinen Coach</h2><div class="sub" style="margin:0">Claude kennt deine Daten, deinen Plan und dein Ziel</div></div></div>
+  <div class="qsug">${QS.map(s=>`<button data-qq="${esc(s)}">${esc(s)}<span>›</span></button>`).join("")}</div>
+  <div class="qrow"><textarea id="qIn" rows="1" placeholder="Eigene Frage stellen …"></textarea><button class="qsend" id="qSend" aria-label="Fragen">${ICSEND}</button></div><div class="err" id="qErr"></div><div id="qOut"></div>`;
+  renderAsk()})();
+async function ask(qs){qs=(qs||"").trim();if(!qs)return;const b=$("qSend");b.disabled=true;b.classList.add("busy");$("qErr").textContent="";
+  $("qOut").insertAdjacentHTML("afterbegin",`<div class="qa2" id="qPend"><div class="qq">${esc(qs)}</div><div class="qa">Claude denkt nach …</div></div>`);
+  try{const t=today(),pr=coachText().replace(/\nANTWORTFORMAT[\s\S]*$/,"")+"\n\nGEPLANT NÄCHSTE 7 TAGE\n"+(DATA.planned.filter(p=>p.date>=t&&p.date<=addDays(t,6)).map(p=>`${p.date} ${SPORTS[p.sport].n}: ${p.name}${p.secs?", "+fH(p.secs)+" h":""}`).join("\n")||"nichts")+`\n\nFRAGE\n${qs}\n\nAntworte direkt, konkret und kurz (max. 120 Wörter), als Fließtext ohne Markdown. Nenne keine Gerätehersteller oder Plattformen.`;
+    const a=(await claude(pr,1500)).trim();const H=store.get("imAskH",[]);H.unshift({q:qs,a});store.set("imAskH",H.slice(0,5));$("qIn").value="";renderAsk()}
+  catch(e){const p=$("qPend");if(p)p.remove();$("qErr").textContent=e.message}finally{b.disabled=false;b.classList.remove("busy")}}
+$("qSend").onclick=()=>ask($("qIn").value);
+$("qIn").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();ask($("qIn").value)}});
+$("qIn").addEventListener("input",()=>{const el=$("qIn");el.style.height="auto";el.style.height=Math.min(140,el.scrollHeight)+"px"});
+document.addEventListener("click",e=>{const b=e.target.closest("[data-qq]");if(b)ask(b.dataset.qq)});
+/* Verpflegungsrechner als Fenster */
+(function(){const m=document.createElement("div");m.className="modal";m.id="mFuel";m.innerHTML='<div class="sheet"><button class="ib sx" id="fClose" title="Schließen"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>';document.body.appendChild(m);
+  const w=$("wFuel"),ph=document.createElement("div");ph.className="card";ph.style.marginTop="16px";ph.innerHTML='<h2>Verpflegung berechnen</h2><div class="sub">Kohlenhydrate, Trinken und Natrium für eine Einheit, mit dem Wetter am Trainingsort</div><button class="btn wide" data-fuel="{}">Rechner öffnen</button>';
+  w.before(ph);m.querySelector(".sheet").appendChild(w);w.classList.remove("card");w.style.marginTop="0";$("fClose").onclick=()=>close("mFuel");m.addEventListener("click",e=>{if(e.target===m)close("mFuel")})})();
+function openFuel(o){close("mInfo");if(o.h)$("fDur").value=o.h;if(o.int)$("fInt").value=o.int;if(o.where)$("fWhere").value=o.where;$("fDate").value=o.date||today();if(o.time)$("fTime").value=o.time;if($("fSport").value==="ironman"&&!o.ironman)$("fSport").value="einheit";open("mFuel");wx()}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-fuel]");if(!b)return;let o={};try{o=JSON.parse(b.dataset.fuel)}catch(_){}openFuel(o)});
+function plInfo(p){const si=SPORTS[p.sport],h=Math.round(p.secs/900)/4;
+  info(`<div class="wch" style="--wc:${si.c};margin-bottom:6px"><div class="wci">${svgI(p.sport,"#fff")}</div><div><div class="wck">${fDL(p.date)} · ${si.n}${p.secs?" · "+fH(p.secs)+" h":""}</div><h3 style="margin:0">${esc(p.name||si.n)}</h3></div></div>
+   <p class="hint">${p.coach?"Von Claude geplant":"Aus deinem Kalender (eigener Plan)"}</p>${woHTML(p.desc,p.sport)}
+   ${p.secs>=2700?`<button class="btn wide" data-fuel="${esc(JSON.stringify({h,int:/Z[45]/.test(p.desc||"")?"mittel":"locker",where:p.sport==="swim"?"in":"out",date:p.date}))}" style="margin-top:12px">Verpflegung berechnen</button>`:""}`,null,
+   p.id?`<label class="f" for="plDate">Verschieben auf</label><div class="row"><div><input type="date" id="plDate" value="${p.date}"></div><div style="flex:none"><button class="btn" id="plMove">Verschieben</button></div></div><button class="btn wide" id="plDel" style="margin-top:10px">Einheit löschen</button><div class="err" id="plErr"></div>`:"");
+  if($("plMove"))$("plMove").onclick=async()=>{const d=$("plDate").value;if(!d)return;close("mInfo");await movePlanned(p.id,d)};
+  if($("plDel"))$("plDel").onclick=async()=>{const b=$("plDel");if(b.dataset.sure!=="1"){b.dataset.sure="1";b.textContent="Wirklich löschen?";b.classList.add("red");return}b.disabled=true;try{await delPlanned(p.id);close("mInfo")}catch(e){$("plErr").textContent=e.message;b.disabled=false}}}
+/* Plan ändern und prüfen lassen */
+let MOVED=[],PCR=null;
+async function movePlanned(id,date){const p=DATA.planned.find(x=>String(x.id)===String(id));if(!p||p.date===date)return;const old=p.date;p.date=date;renderNext(DATA);
+  MOVED.push({id:p.id,name:p.name,from:old,to:date});PCR=null;renderPlanCheck();if(!isLive())return;
+  try{await api("/events/"+encodeURIComponent(id),{method:"PUT",body:JSON.stringify({start_date_local:date+"T00:00:00"})});load()}catch(e){p.date=old;MOVED.pop();renderNext(DATA);renderPlanCheck();$("banner").innerHTML=`<div class="banner err"><b>Verschieben fehlgeschlagen:</b> ${esc(e.message)}</div>`}}
+async function delPlanned(id){const p=DATA.planned.find(x=>String(x.id)===String(id));if(p){MOVED.push({id:p.id,name:p.name,from:p.date,to:"gelöscht"});PCR=null}
+  if(!isLive()){DATA.planned=DATA.planned.filter(x=>String(x.id)!==String(id));renderNext(DATA);renderPlanCheck();return}await api("/events/"+encodeURIComponent(id),{method:"DELETE"});await load()}
+function renderPlanCheck(){const el=$("planCheck");if(!el)return;const ai=hasAi()&&isLive();
+  if(PCR){const o=PCR;el.innerHTML=`<div class="pcheck ${o.ok?"ok":""}"><div class="pct"><b>${o.ok?"Plan passt so":"Claude schlägt Änderungen vor"}</b><span>${esc(o.comment||"")}</span></div>
+    ${(o.changes||[]).length?`<ul class="pcl">${o.changes.map(c=>{const p=DATA.planned.find(x=>String(x.id)===String(c.id));return p?`<li><b>${esc(p.name)}</b> ${c.action==="delete"?"löschen":"auf "+fDL(c.date)}<span>${esc(c.reason||"")}</span></li>`:""}).join("")}</ul><div class="btnrow"><button class="btn blue" id="pcApply">Vorschläge übernehmen</button><button class="btn" id="pcNo">Nein danke</button></div>`:`<button class="btn sm" id="pcNo">Ausblenden</button>`}</div>`;
+    if($("pcApply"))$("pcApply").onclick=applyPC;$("pcNo").onclick=()=>{PCR=null;MOVED=[];renderPlanCheck()};return}
+  el.innerHTML=MOVED.length?`<div class="pcheck"><div class="pct"><b>Plan geändert</b><span>${MOVED.length} ${MOVED.length===1?"Änderung":"Änderungen"} seit dem letzten Prüfen</span></div><div class="btnrow">${ai?'<button class="btn blue sm" id="pcBtn">Von Claude prüfen lassen</button>':""}<button class="btn sm" id="pcNo">Ausblenden</button></div></div>`:"";
+  if($("pcBtn"))$("pcBtn").onclick=aiPlanCheck;if($("pcNo"))$("pcNo").onclick=()=>{MOVED=[];renderPlanCheck()}}
+async function aiPlanCheck(){const b=$("pcBtn");b.disabled=true;b.textContent="Claude prüft …";const t=today();
+  const pl=DATA.planned.filter(p=>p.date>=t&&p.date<=addDays(t,20)).sort((a,b)=>a.date.localeCompare(b.date));
+  const pr=coachText().replace(/\nANTWORTFORMAT[\s\S]*$/,"")+`\n\nPLAN NÄCHSTE 3 WOCHEN (id | Datum | Sportart | Titel | Minuten | von Claude)\n${pl.map(p=>`${p.id} | ${p.date} ${DAYN[(P(p.date).getDay()+6)%7]} | ${SPORTS[p.sport].n} | ${p.name} | ${Math.round(p.secs/60)} | ${p.coach?"ja":"nein"}`).join("\n")}\n\nVOM NUTZER GEÄNDERT\n${MOVED.map(m=>`${m.name}: ${m.from} nach ${m.to}`).join("\n")}\n\nAUFGABE\nPrüfe, ob der Plan nach diesen Änderungen noch sinnvoll ist: Abstände zwischen harten und langen Einheiten, Erholung, Trainingstage, Wochenumfang. Respektiere die Wünsche des Nutzers und ändere nur, was nötig ist. Antworte nur mit JSON in einem json-Codeblock: {"ok":true,"comment":"max. 250 Zeichen","changes":[{"id":"…","action":"move|delete","date":"JJJJ-MM-TT","reason":"max. 90 Zeichen"}]}. Nur Einheiten mit "von Claude: ja" ändern, höchstens 5 Änderungen.`;
+  try{const o=jsonFrom(await claude(pr,2500));o.changes=(o.changes||[]).filter(c=>DATA.planned.some(p=>String(p.id)===String(c.id)&&p.coach)&&(c.action==="delete"||/^\d{4}-\d{2}-\d{2}$/.test(c.date||"")));PCR=o;MOVED=[];renderPlanCheck()}
+  catch(e){b.disabled=false;b.textContent="Fehler: "+e.message}}
+async function applyPC(){const b=$("pcApply");b.disabled=true;b.textContent="Übernehme …";
+  try{for(const c of PCR.changes){if(c.action==="delete")await api("/events/"+encodeURIComponent(c.id),{method:"DELETE"});else await api("/events/"+encodeURIComponent(c.id),{method:"PUT",body:JSON.stringify({start_date_local:c.date+"T00:00:00"})})}PCR=null;MOVED=[];await load()}
+  catch(e){b.disabled=false;b.textContent="Fehler: "+e.message}}
+async function delCoachFrom(from){if(!isLive())return;for(const p of DATA.planned.filter(p=>p.coach&&p.date>=from&&p.id))await api("/events/"+encodeURIComponent(p.id),{method:"DELETE"})}
+/* Ziel: Wettkampf direkt anlegen */
+function goalInfo(D){const t=today(),g=store.get("imGoal",{}),R=(D&&D.races)||[],up=R.filter(r=>r.date>=t).sort((a,b)=>a.date.localeCompare(b.date)),main=up.find(r=>r.prio==="A")||up[0];
+  const gr=g.gRace==="__new"?"":g.gRace;let race=gr?R.find(r=>String(r.id)===String(gr)):null;if(!race&&!g.gSet&&!g.gDate&&main)race=main;
+  const date=race?race.date:g.gDate||"",name=race?race.name:((g.gDist?g.gDist+" ":"")+(g.gSport||"")).trim()||"Eigenes Ziel";
+  return{g,race,main,date,name,has:!!(race||g.gDate||g.gSet),src:g.gSrc||"claude"}}
+function fillRaceSel(){const t=today(),R=((DATA&&DATA.races)||[]).filter(r=>r.date>=t).sort((a,b)=>a.date.localeCompare(b.date)),s=$("gRace"),v=s.value;
+  s.innerHTML=R.map(r=>`<option value="${esc(String(r.id))}">${esc(r.name)} · ${fDY(r.date)}</option>`).join("")+'<option value="__new">Neuen Wettkampf eintragen …</option><option value="">Eigenes Ziel ohne Wettkampf</option>';if(v!==undefined&&[...s.options].some(o=>o.value===v))s.value=v}
+function goalUI(){const v=$("gRace").value;$("gOwn").style.display=v===""?"":"none";$("gNewRace").style.display=v==="__new"?"":"none";
+  $("gSrcHint").textContent=$("gSrc").value==="extern"?"Claude plant nichts dazu, wertet aber täglich aus und richtet die Empfehlung nach deinem Plan.":"Claude plant den Weg bis zum Ziel in Phasen.";
+  $("gDone").textContent=GMODE==="plan"&&$("gSrc").value==="claude"&&hasAi()&&isLive()?"Speichern und Plan erstellen":"Fertig"}
+let GMODE="";
+function openGoal(mode){GMODE=typeof mode==="string"?mode:"";fillRaceSel();loadGoal();const g=store.get("imGoal",{}),gi=goalInfo(DATA);
+  const gv=g.gRace==="__new"?undefined:g.gRace;$("gRace").value=gv!==undefined&&gv!==null&&(gv===""||[...$("gRace").options].some(o=>o.value===String(gv)))?String(gv):(gi.race?String(gi.race.id):"");
+  $("gSrc").value=g.gSrc||"claude";if(!$("gDays").value)$("gDays").value=weekArr({}).join(",");renderDays();$("nrDate").value="";$("nrName").value="";$("nrErr").textContent="";goalUI();
+  const h=DATA?avgHours(DATA):0;$("gHoursHint").textContent=`Leer lassen: Claude leitet den Umfang aus deinen Daten ab (zuletzt im Schnitt ${nf(h,1)} h pro Woche) und steigert ihn passend.`;open("mGoal")}
+$("gDone").onclick=$("gClose").onclick=e=>{if($("gRace").value==="__new")$("gRace").value="";$("gSet").value="1";saveGoal();close("mGoal");const go=e&&e.currentTarget&&e.currentTarget.id==="gDone"&&GMODE==="plan"&&$("gSrc").value==="claude"&&hasAi()&&isLive();GMODE="";if(DATA)render();if(go){setTab("training");aiPlan(true)}};
+async function createRace(name,date,prio,sp){
+  if(!isLive()){const l=store.get("imDemoRaces",[]),id="r"+Date.now();l.push({id,name,date,prio});store.set("imDemoRaces",l);return id}
+  const base={category:"RACE_"+prio,start_date_local:date+"T00:00:00",end_date_local:addDays(date,1)+"T00:00:00",name};let last,res;
+  for(const ty of [...new Set([sp,"Other","Run",null])]){try{res=await api("/events",{method:"POST",body:JSON.stringify(ty?Object.assign({type:ty},base):base)});last=null;break}catch(e){last=e;if(e.status!==422)break}}
+  if(last)throw last;return res&&res.id}
+$("nrSave").onclick=async()=>{const name=$("nrName").value.trim(),date=$("nrDate").value,b=$("nrSave");if(!name||!date){$("nrErr").textContent="Bitte Name und Datum angeben.";return}
+  b.disabled=true;b.textContent="Speichere …";try{const id=await createRace(name,date,$("nrPrio").value,$("nrSport").value);await load();fillRaceSel();
+    const r=DATA.races.find(x=>String(x.id)===String(id))||DATA.races.find(x=>x.name===name&&x.date===date);$("gRace").value=r?String(r.id):"";saveGoal();goalUI();
+    if(r&&hasAi()&&isLive())aiRaceInfo(r)}catch(e){$("nrErr").textContent=e.message}finally{b.disabled=false;b.textContent="Wettkampf speichern"}};
+$("gRace").addEventListener("change",goalUI);$("gSrc").addEventListener("change",goalUI);
+/* Wettkampf-Infos von Claude */
+async function claudeX(prompt,maxTokens,tools){
+  if(spend().usd>=AI_LIMIT)throw new Error(`Monatslimit dieses Geräts erreicht (${AI_LIMIT} $).`);
+  const body={model:"claude-sonnet-5-5",max_tokens:maxTokens,system:COACH_SYS,messages:[{role:"user",content:prompt}]};if(tools)body.tools=tools;
+  let res;try{res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"content-type":"application/json","x-api-key":settings.aiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify(body)})}catch(e){throw new Error("Claude-API nicht erreichbar.")}
+  const j=await res.json().catch(()=>({}));if(!res.ok){const m=(j.error&&j.error.message)||("Status "+res.status);const er=new Error("Claude-API: "+m);er.tool=/tool|web_search|search/i.test(m);throw er}
+  if(j.usage){const u=spend();u.usd+=(j.usage.input_tokens||0)*2e-6+(j.usage.output_tokens||0)*10e-6+((j.usage.server_tool_use||{}).web_search_requests||0)*0.01;store.set("imAiSpend",u)}
+  return(j.content||[]).filter(c=>c.type==="text").map(c=>c.text).join("")}
+function raceInfo(r){const n=r&&noteBy("Coach Wettkampf "+r.id);if(!n)return null;const m=n.text.match(/Daten:\s*(\{[\s\S]*\})\s*$/);try{return m?JSON.parse(m[1]):null}catch(e){return null}}
+function raceInfoText(r){const o=raceInfo(r);if(!o)return"";return[o.location&&"Ort: "+o.location,o.distances&&"Strecke: "+o.distances,o.elevation&&"Höhenmeter: "+o.elevation,o.weather&&"Wetter: "+o.weather,o.water&&"Wasser: "+o.water,(o.demands||[]).length&&"Besonderheiten: "+o.demands.join(". ")].filter(Boolean).join(". ")}
+let RACEBUSY=false;
+async function aiRaceInfo(r){if(RACEBUSY)return;RACEBUSY=true;const btn=$("btnRaceInfo");if(btn){btn.disabled=true;btn.textContent="Claude sucht Infos zum Wettkampf …"}
+  const pr=`Wettkampf: ${r.name}\nDatum: ${r.date}\nArt: ${r.type||"unbekannt"}\n\nAUFGABE\nSuche im Web nach diesem Wettkampf und prüfe, ob er an diesem Datum offiziell stattfindet. Fasse zusammen, was für Training und Verpflegung wichtig ist. Nur belegte Angaben, sonst Feld leer lassen. Antworte am Ende nur mit JSON in einem json-Codeblock: {"official":true,"location":"Ort","distances":"Strecken","elevation":"Höhenmeter je Disziplin","weather":"typisches Wetter am Termin mit Temperaturbereich","water":"Wassertemperatur und Neoprenregel, falls geschwommen wird","cutoffs":"Zeitlimits","demands":["2 bis 4 Besonderheiten der Strecke, je max. 100 Zeichen"],"training":["2 bis 4 Folgerungen fürs Training, z. B. Hitzeanpassung oder Bergintervalle, je max. 100 Zeichen"],"sources":["URLs der Quellen"]}`;
+  try{let txt,noweb=false;try{txt=await claudeX(pr,5000,[{type:"web_search_20250305",name:"web_search",max_uses:5}])}catch(e){if(!e.tool)throw e;noweb=true;txt=await claudeX(pr.replace("Suche im Web nach diesem Wettkampf und prüfe","Nutze dein Wissen über diesen Wettkampf und prüfe"),3000,null)}
+    const o=jsonFrom(txt);o.noweb=noweb;o.sources=(o.sources||[]).filter(u=>/^https?:\/\/[^\s"<>]+$/.test(u)).slice(0,6);await writeNote(r.date,"Daten: "+JSON.stringify(o),"Coach Wettkampf "+r.id)}
+  catch(e){if($("coachHint"))$("coachHint").textContent="Wettkampf-Infos: "+e.message;if(btn){btn.disabled=false;btn.textContent="Nochmal versuchen"}}finally{RACEBUSY=false}}
+const host=u=>{try{return new URL(u).hostname.replace(/^www\./,"")}catch(e){return u}};
+function raceInfoHTML(r,ai){const o=raceInfo(r);if(!o)return ai?`<button class="btn wide" id="btnRaceInfo" style="margin-top:12px">${ICS.replace("<svg","<svg style=\"width:18px;height:18px\"")}Infos zum Wettkampf suchen lassen</button>`:"";
+  const rows=[["Ort",o.location],["Strecke",o.distances],["Höhenmeter",o.elevation],["Wetter",o.weather],["Wasser",o.water],["Zeitlimits",o.cutoffs]].filter(x=>x[1]);
+  return`<details class="rinfo"><summary>Wettkampf-Infos${o.official===false?" (nicht als offizieller Wettkampf gefunden)":""}</summary><div class="kv1">${rows.map(x=>`<div><span>${x[0]}</span><b>${esc(x[1])}</b></div>`).join("")}</div>
+   ${(o.demands||[]).length?`<h4 class="cx-sh">Besonderheiten</h4><ul class="cx-why" style="--cxc:var(--yellow)">${o.demands.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}
+   ${(o.training||[]).length?`<h4 class="cx-sh">Das fließt in deinen Plan ein</h4><ul class="cx-why" style="--cxc:var(--acc)">${o.training.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}
+   ${o.sources&&o.sources.length?`<p class="hint">Quellen: ${o.sources.map(u=>`<a href="${esc(u)}" target="_blank" rel="noopener">${esc(host(u))}</a>`).join(", ")}</p>`:""}${o.noweb?'<p class="hint">Ohne Websuche aus dem Wissen von Claude. Bitte prüfen.</p>':""}
+   ${ai?'<button class="lnk" id="btnRaceInfo">Neu suchen</button>':""}</details>`}
+/* Phasen */
+const PHX=[[/einstieg|wieder|übergang|regener|erhol|reset/i,"Wiedereinstieg","Nach einem Wettkampf oder einer Pause baut der Körper die Belastbarkeit wieder auf. Kurze, lockere Einheiten, kaum Intensität. Sehnen, Bänder und Muskeln gewöhnen sich wieder an regelmäßiges Training."],
+ [/grundlag|basis|base|aerob/i,"Grundlage","Viel lockeres Training in Z1 und Z2, der Umfang steigt langsam. Ziel sind aerobe Ausdauer, Fettstoffwechsel und Belastbarkeit. Darauf baut alles Spätere auf."],
+ [/aufbau|build|entwickl/i,"Aufbau","Der Umfang bleibt hoch, dazu kommen gezielte Einheiten an der Schwelle und im Wettkampftempo. Ziel ist, das Tempo zu erhöhen, das du lange halten kannst."],
+ [/spitz|peak|spezif|wettkampfnah|race/i,"Spitze","Training, das dem Wettkampf möglichst ähnelt: Wettkampftempo, lange Koppeleinheiten, Verpflegung testen. Die höchste Belastung des Plans."],
+ [/taper|entlast|frisch/i,"Tapering","Der Umfang sinkt deutlich, kurze intensive Reize bleiben. Die Ermüdung baut sich ab, damit du am Wettkampftag frisch bist."]];
+const phDesc=n=>{const e=PHX.find(x=>x[0].test(n||""));return e?e[2]:""};
+function phInfo(p){const t=today(),wk=Math.max(1,Math.ceil((diffDays(p[0],p[1])+1)/7)),pl=DATA.planned.filter(x=>x.date>=p[0]&&x.date<=p[1]),h=pl.reduce((s,x)=>s+x.secs,0);
+  info(`<div class="cx-k" style="color:var(--acc)">Phase</div><h3>${esc(p[2]||"")}</h3><p class="hint">${fDY(p[0])} bis ${fDY(p[1])} · ${wk} ${wk===1?"Woche":"Wochen"}${t>=p[0]&&t<=p[1]?" · du bist gerade hier":""}</p>
+   ${p[3]?`<div class="cx-box"><div><b>Schwerpunkt in deinem Plan</b><br>${esc(p[3])}</div></div>`:""}${phDesc(p[2])?`<p>${esc(phDesc(p[2]))}</p>`:""}${pl.length?`<p class="hint">Bisher geplant: ${pl.length} Einheiten, ${fH(h)} h</p>`:""}`)}
+function phasesHTML(ph){const t=today();if(!ph.length)return"";const ci=ph.findIndex(p=>t>=p[0]&&t<=p[1]),c=ph[ci];
+  const pct=c?Math.round(Math.max(0,Math.min(1,(diffDays(c[0],t)+.5)/(diffDays(c[0],c[1])+1)))*100):0,wk=c?Math.floor(diffDays(c[0],t)/7)+1:0,wt=c?Math.ceil((diffDays(c[0],c[1])+1)/7):0;
+  return`<div class="ph2">${ph.map((p,i)=>`<button class="phb ${i===ci?"on":""} ${p[1]<t?"past":""}" data-ph="${i}" style="flex:${Math.max(1,diffDays(p[0],p[1]))}"><b>${esc(p[2]||"")}</b><span>${fD(p[0])}</span>${i===ci?`<i class="phm" style="left:${pct}%"></i>`:""}</button>`).join("")}</div>
+   ${c?`<div class="phcur" data-ph="${ci}"><div class="phct"><span>Du bist hier</span><b>${esc(c[2])}</b><em>Woche ${wk} von ${wt}</em></div><div class="pbar"><i style="width:${pct}%"></i></div>${c[3]?`<p>${esc(c[3])}</p>`:""}<span class="lnk">Wozu diese Phase? ›</span></div>`:""}`}
+function renderPlanTab(D){
+  const t=today(),gi=goalInfo(D),g=gi.g,ai=hasAi()&&isLive(),ov=noteBy("Coach Plan Übersicht"),cw=D.planned.filter(p=>p.coach&&p.date>=t),ext=D.planned.filter(p=>!p.coach&&p.date>=t);
+  if(!gi.has){$("goalCard").innerHTML=`<div class="cx-k" style="color:var(--acc)">Trainingsplan</div><div class="cx-h">Lege zuerst dein Ziel fest</div>
+    <ol class="steps"><li class="on"><div><b>Ziel wählen</b><span>Einen Wettkampf oder ein eigenes Ziel mit Datum</span></div></li><li><div><b>Trainingstage festlegen</b><span>Wann du trainierst und wann lange Einheiten passen</span></div></li><li><div><b>Plan wählen</b><span>Claude erstellt ihn, oder du nutzt deinen eigenen Plan</span></div></li></ol>
+    <button class="btn blue wide" id="gStart">Ziel festlegen</button>`;$("gStart").onclick=()=>openGoal("plan");renderNext(D);renderPlanCheck();return}
+  const ph=[];let td="";if(ov)ov.text.split(/\n+/).forEach(l=>{let m;if(m=l.match(/^Phase:\s*(.*)$/))ph.push(m[1].split("|").map(s=>s.trim()));else if(m=l.match(/^Zieldatum:\s*(.*)$/))td=m[1]});
+  const date=gi.date||td,dd=date?diffDays(t,date):null,isExt=gi.src==="extern";
+  $("goalCard").innerHTML=`<div class="cx-k" style="color:var(--acc)">Dein Ziel</div><div class="cx-h">${esc(gi.name)}</div>
+    <div class="hint">${date?fDY(date)+(dd>=0?" · in "+dd+" Tagen":""):"Datum offen"}${g.gTime?" · Zielzeit "+esc(g.gTime):""} · ${esc(weekText(g))}</div>
+    ${gi.race?raceInfoHTML(gi.race,ai):""}
+    <div class="srcrow">Trainingsplan: <b>${isExt?"eigener Plan":"von Claude"}</b>${isExt?` · ${ext.length} Einheiten im Kalender`:cw.length?` · ${cw.length} Einheiten geplant`:" · noch keiner"}</div>
+    ${!isExt?phasesHTML(ph):""}
+    <div class="btnrow">${!isExt&&ai?`<button class="btn blue" id="btnAiPlan">${ov?"Plan neu erstellen":"Plan erstellen"}</button>`:""}<button class="btn" id="gEdit">Ziel und Tage bearbeiten</button>${!isExt&&(cw.length||ov)?'<button class="btn" id="btnDelPlan">Plan löschen</button>':""}</div>
+    <div class="hint" id="coachHint">${isExt?"Claude plant nichts dazu. Die tägliche Auswertung richtet sich nach deinem Plan.":ai?(ov?"Neu erstellen ersetzt die Einheiten von Claude ab morgen. Danach plant die App automatisch weiter.":"Vor dem Erstellen siehst du noch einmal Ziel, Trainingstage und Umfang."):"Für Pläne von Claude den Claude-API-Schlüssel in den Einstellungen eintragen."}</div>`;
+  $("gEdit").onclick=()=>openGoal();if($("btnAiPlan"))$("btnAiPlan").onclick=()=>openGoal("plan");if($("btnDelPlan"))$("btnDelPlan").onclick=e=>delPlan(e.currentTarget);
+  if($("btnRaceInfo"))$("btnRaceInfo").onclick=()=>aiRaceInfo(gi.race);
+  $("goalCard").querySelectorAll("[data-ph]").forEach(el=>el.onclick=()=>phInfo(ph[+el.dataset.ph]));
+  if(gi.race&&ai&&!raceInfo(gi.race)&&!RACEBUSY&&lockOnce("race"+gi.race.id))setTimeout(()=>aiRaceInfo(gi.race),800);
+  renderNext(D);renderPlanCheck()}
+/* Schwelle aus Puls und Tempo */
+function runThr(D){const t=today(),z=D.zones&&D.zones.run,lthr=z&&z.lthr;if(!lthr)return null;
+  const R=D.activities.filter(a=>a.sport==="run"&&a.date>addDays(t,-150)&&a.hr&&a.km>=3&&a.secs>=1200&&catOf(a)!==CAT.int).map(a=>[a.hr,a.km*1000/a.secs,a]);
+  if(R.length<8)return null;const mx=mean(R.map(r=>r[0])),my=mean(R.map(r=>r[1]));let sxy=0,sxx=0,syy=0;R.forEach(([x,y])=>{sxy+=(x-mx)*(y-my);sxx+=(x-mx)**2;syy+=(y-my)**2});
+  if(sxx<=0||syy<=0)return null;const b=sxy/sxx;if(b<=0)return null;const a=my-b*mx,v=a+b*lthr,hm=Math.max(...R.map(r=>r[0]));if(v<=1.5||v>7)return null;
+  return{v,pace:1000/v,r2:sxy*sxy/(sxx*syy),n:R.length,lthr,hmax:hm,pts:R}}
+const thrT=(e,d)=>3600*Math.pow(d*1000/(e.v*3600),1.06);
+function thrEstRow(D){const e=runThr(D);if(!e)return"";const E=[[5,"5 km"],[10,"10 km"],[21.0975,"Halbmarathon"],[42.195,"Marathon"]];
+  return`<div class="best2"><div class="bk">Aus Puls und Tempo geschätzt</div><div class="bs">Schwellentempo etwa ${fT(e.pace)} /km. Unsicherer, siehe Erklärung.</div><div class="brow">${E.map(([d,n])=>`<div><b>${fT(thrT(e,d))}</b><span>${n}</span></div>`).join("")}</div><button class="lnk" data-thr="1">Wie entstehen die zwei Schätzungen? ›</button></div>`}
+function thrInfo(){const D=DATA,e=runThr(D),b=bench(D);
+  info(`<h3>Zwei Wege zur Prognose</h3>
+   <div class="cx-box"><div><b>Aus deinen schnellsten Läufen</b><br>Die App nimmt deinen schnellsten Lauf der letzten 90 Tage und rechnet ihn mit der Riegel-Formel auf andere Strecken um. Läufst du fast nur locker, unterschätzt das dein Potenzial.${b.r5?` Ergebnis: 5 km ${fT(b.r5)}.`:""}</div></div>
+   ${e?`<div class="cx-box"><div><b>Aus Puls und Tempo</b><br>Aus ${e.n} Läufen der letzten 150 Tage ermittelt die App, wie schnell du bei welchem Puls läufst, und rechnet bis zu deinem Schwellenpuls von ${e.lthr} hoch. Das ergibt ein Schwellentempo von etwa ${fT(e.pace)} /km und daraus 5 km ${fT(thrT(e,5))}. Dein höchster Durchschnittspuls in diesen Läufen war ${Math.round(e.hmax)}. Je weiter die Schwelle darüber liegt, desto unsicherer ist die Hochrechnung. Zusammenhang der Daten: R² ${nf(e.r2,2)} (1 wäre perfekt).</div></div>`:'<p class="hint">Für die Schätzung aus Puls und Tempo fehlen noch Läufe mit Pulsdaten (mindestens 8 in 150 Tagen) oder dein Schwellenpuls.</p>'}
+   <p>Sportuhren schätzen ähnlich wie der zweite Weg: Sie nutzen das Verhältnis von Puls und Tempo aus allen Läufen und leiten daraus eine VO2max ab. Solche Prognosen gelten als eher optimistisch, wenn das spezifische Training für eine Strecke fehlt. Die echte Zeit liegt meist zwischen beiden Schätzungen. Ein Testlauf oder Wettkampf zeigt, welche näher liegt.</p>`)}
+document.addEventListener("click",e=>{if(e.target.closest("[data-thr]"))thrInfo()});
+function renderThr(D){const el=$("thrCard");if(!el)return;const Z=D.zones||{},b=bench(D),R=[];
+  const bk=Z.bike;if(bk&&bk.ftp){if(D.eftp){const d=(D.eftp-bk.ftp)/bk.ftp*100,off=Math.abs(d)>5;R.push(["Rad: FTP",`${bk.ftp} W eingestellt, aus deinen Fahrten geschätzt ${Math.round(D.eftp)} W`,off,off?`Abweichung ${d>0?"+":"−"}${nf(Math.abs(d))} %. Einen FTP-Test machen (z. B. 20 Minuten Vollgas, FTP etwa 95 % davon) oder den eingestellten Wert anpassen. Sonst stimmen die Radzonen nicht.`:"Die Einstellung passt zu deinen Fahrten. Kein Test nötig, die Schätzung läuft mit jeder Fahrt mit."])}
+    else R.push(["Rad: FTP",`${bk.ftp} W eingestellt`,false,"Für eine Schätzung fehlen Fahrten mit Leistungsmessung."])}else R.push(["Rad: FTP","nicht eingestellt",true,"FTP-Test machen und den Wert eintragen."]);
+  const rn=Z.run,e=runThr(D);if(rn){if(!rn.tp)R.push(["Laufen: Schwellentempo",e?`nicht eingestellt, aus deinen Läufen geschätzt etwa ${fT(e.pace)} /km`:"nicht eingestellt",!e,e?`Die App schätzt den Wert aus ${e.n} Läufen (Puls und Tempo). Einen Test brauchst du dafür nicht. Er macht die Zonen nur genauer. Wenn du den Wert übernehmen willst, trag ${fT(e.pace)} /km in deiner Datenquelle ein.`:"Für eine Schätzung fehlen Läufe mit Pulsdaten. Alternativ zeigt ein 10-km-Wettkampf dein Schwellentempo (etwa das Tempo, das du eine Stunde halten kannst)."]);
+    else R.push(["Laufen: Schwellentempo",fT(1000/rn.tp)+" /km",false,"Eingestellt."]);
+    if(rn.lthr)R.push(["Puls",`Schwellenpuls ${rn.lthr}, max. Puls ${rn.max||"–"}`,false,"Daraus berechnen sich deine Pulszonen."])}
+  const sw=Z.swim;if(sw&&sw.tp){const css=100/sw.tp,fast=b.sN&&b.sN<css-5;R.push(["Schwimmen: Schwellentempo (CSS)",`${fT(css)} /100 m eingestellt${b.sN?", bestes Tempo 90 Tage "+fT(b.sN):""}`,fast,fast?"Du schwimmst schneller als die eingestellte Schwelle. CSS-Test: 400 m und 200 m Vollgas, CSS = 200 m geteilt durch die Zeitdifferenz.":"Passt zu deinen Einheiten."])}
+  el.innerHTML=`<h2>Schwellenwerte und Tests</h2><div class="sub">Daraus berechnen sich deine Zonen.</div>${R.map(r=>`<div class="thr"><i style="background:${r[2]?"var(--yellow)":"var(--green)"}"></i><div><b>${r[0]}</b><span>${esc(r[1])}</span><p>${esc(r[3])}</p></div></div>`).join("")}`}
+function zoneText(D){const Z=D.zones||{},L=[];const r=Z.run||Z.bike;if(r){if(r.max)L.push(`Max. Puls ${r.max}`);if(r.lthr)L.push(`Schwellenpuls ${r.lthr}`)}
+  ["run","bike","swim"].forEach(k=>{const z=Z[k];if(!z)return;const p=[];if(z.hr)p.push("Puls "+z.hr.slice(0,5).map((v,i)=>`Z${i+1} bis ${v}`).join(", "));if(k==="bike"&&z.ftp)p.push(`FTP ${z.ftp} W${D.eftp?" (geschätzt "+Math.round(D.eftp)+" W)":""}`);if(k==="run"){const e=runThr(D);p.push(z.tp?`Schwellentempo ${fT(1000/z.tp)} /km`:e?`Schwellentempo nicht eingestellt, aus Puls und Tempo geschätzt etwa ${fT(e.pace)} /km`:"Schwellentempo nicht eingestellt")}if(k==="swim"&&z.tp)p.push(`Schwimm-Schwelle ${fT(100/z.tp)} /100 m`);L.push(`${SPORTS[k].n}: ${p.join(", ")}`)});
+  return L.join(". ")||"keine Angaben"}
+function thrText(D){const Z=D.zones||{},o=[];if(Z.bike&&Z.bike.ftp&&D.eftp&&Math.abs(D.eftp-Z.bike.ftp)/Z.bike.ftp>.05)o.push(`FTP-Einstellung ${Z.bike.ftp} W weicht von der Schätzung ${Math.round(D.eftp)} W ab`);return o.join(", ")}
+function renderZones(){const el=$("wZones");if(!el||!DATA)return;const Z=DATA.zones||{};
+  const blk=k=>{const z=Z[k];if(!z||!z.hr)return"";const mx=z.max||z.hr[z.hr.length-1],lo=Math.round(mx*.5);let prev=lo;
+    return`<h4 class="cx-sh" style="color:${SPORTS[k].c}">${SPORTS[k].n}</h4><div class="zstrip">${z.hr.slice(0,7).map((v,i)=>{const w=Math.max(1,v-prev);prev=v;return`<i style="flex:${w};background:${ZC[i]}"></i>`}).join("")}</div>
+     ${z.hr.slice(0,5).map((v,i)=>`<div class="zrow"><i style="background:${ZC[i]}">Z${i+1}</i><div><b>${ZN[i]}</b><span>${ZF[i]}</span></div><em>${zoneRange(k,i+1).replace(/ · /g,"<br>")}</em></div>`).join("")}`};
+  const z0=Z.run||Z.bike;el.innerHTML=`<h2>Deine Zonen</h2><div class="sub">Aus deinen Einstellungen in der Datenquelle. Dort kannst du sie ändern.</div>
+   <div class="kv">${z0&&z0.max?`<div><span>Max. Puls</span><b>${z0.max}</b></div>`:""}${z0&&z0.lthr?`<div><span>Schwellenpuls</span><b>${z0.lthr}</b></div>`:""}${Z.bike&&Z.bike.ftp?`<div><span>FTP Rad</span><b>${Z.bike.ftp} W</b></div>`:""}${Z.swim&&Z.swim.tp?`<div><span>Schwimm-Schwelle</span><b>${fT(100/Z.swim.tp)} /100 m</b></div>`:""}</div>
+   ${blk("run")}${Z.bike&&Z.bike.ftp?blk("bike"):""}<p class="hint">Z6 und Z7 sind kurze Spitzenbelastungen und kommen im Ausdauertraining selten vor.</p>`}
+/* Schlaf: Dauer und Score in einem Diagramm */
+function dualChart(id,dates,A,B){const el=$(id);if(!el)return;const W=cw(id),H=210,pl=34,pr=34,pt=10,pb=22,n=dates.length;
+  const rg=s=>{const v=s.v.filter(x=>x!=null&&isFinite(x));if(!v.length)return null;let mn=Math.min(...v),mx=Math.max(...v);if(mn===mx){mn-=1;mx+=1}const p=(mx-mn)*.12;return[mn-p,mx+p]};
+  const ra=rg(A),rb=rg(B);if(!ra&&!rb){el.innerHTML='<div class="empty">Noch keine Daten</div>';return}
+  const x=i=>pl+(n<=1?0:i*(W-pl-pr)/(n-1)),Y=(r,v)=>pt+(r[1]-v)*(H-pt-pb)/(r[1]-r[0]);
+  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}">`;
+  if(ra)ticks(ra[0],ra[1],4).forEach(v=>{s+=`<line x1="${pl}" x2="${W-pr}" y1="${Y(ra,v)}" y2="${Y(ra,v)}" stroke="var(--line)"/><text x="${pl-6}" y="${Y(ra,v)+4}" text-anchor="end" style="fill:${A.c}">${nf(v,v%1?1:0)}</text>`});
+  if(rb)ticks(rb[0],rb[1],4).forEach(v=>{s+=`<text x="${W-pr+6}" y="${Y(rb,v)+4}" style="fill:${B.c}">${nf(v)}</text>`});
+  const path=(se,r,w,dash)=>{let d="",on=false;se.v.forEach((v,i)=>{if(v==null){on=false;return}d+=(on?"L":"M")+x(i).toFixed(1)+" "+Y(r,v).toFixed(1);on=true});return`<path d="${d}" fill="none" stroke="${se.c}" stroke-width="${w}"${dash?' stroke-dasharray="4 4"':""} stroke-linejoin="round" stroke-linecap="round"/>`};
+  if(ra){A.v.forEach((v,i)=>{if(v!=null)s+=`<rect x="${x(i)-Math.max(1.5,(W-pl-pr)/n*.32)}" y="${Y(ra,v)}" width="${Math.max(3,(W-pl-pr)/n*.64)}" height="${Math.max(0,H-pb-Y(ra,v))}" rx="2" fill="${A.c}" opacity=".35"/>`})}
+  if(rb){s+=path(B,rb,2.2);B.v.forEach((v,i)=>{if(v!=null)s+=`<circle cx="${x(i)}" cy="${Y(rb,v)}" r="2.4" fill="${B.c}"/>`})}
+  const step=Math.max(1,Math.ceil(n/Math.max(3,Math.floor(W/80))));for(let i=0;i<n;i+=step)s+=`<text x="${x(i)}" y="${H-5}" text-anchor="middle">${fD(dates[i])}</text>`;
+  s+=`<line class="cross" x1="0" x2="0" y1="${pt}" y2="${H-pb}" stroke="var(--muted)" stroke-dasharray="2 3" opacity="0"/><rect class="hit" x="${pl}" y="0" width="${W-pl-pr}" height="${H}" fill="transparent"/></svg><div class="tip"></div>
+   <div class="legend"><span><i style="background:${A.c};opacity:.5"></i>${A.name} (links)</span><span><i style="background:${B.c}"></i>${B.name} (rechts)</span></div>`;
+  el.innerHTML=s;CH[id]={x,n,W,pl,pr,dates,series:[A,B]};bindTip(id)}
 
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
