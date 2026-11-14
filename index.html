@@ -787,10 +787,15 @@ label.f b{color:var(--acc);font-weight:600;margin-left:6px}
 #btnFb svg{fill:none;stroke:currentColor;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
 .seg3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:12px 0}.seg3 button{padding:10px;border-radius:12px;background:var(--card2);font-weight:600;font-size:14px}.seg3 button.on{background:var(--acc);color:#fff}
 #fbTxt{width:100%;resize:vertical;font:inherit;padding:12px;border-radius:14px;background:var(--card2);color:var(--ink);border:0}
+/* v24 */
+#toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 84px);transform:translate(-50%,20px);max-width:calc(100% - 32px);background:var(--ink);color:var(--bg);padding:11px 16px;border-radius:14px;font-size:14px;font-weight:500;box-shadow:0 8px 24px rgba(0,0,0,.3);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:600;text-align:center}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+#apperr{position:fixed;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom) + 84px);z-index:650;background:#5c1d1d;color:#fff;padding:12px 14px;border-radius:14px;font-size:13px}
 </style>
 </head>
 <body>
 <div id="splash" aria-hidden="true"><svg viewBox="0 0 64 64"><rect class="sbg" width="64" height="64" rx="14"/><path class="swave" d="M8 40 q4 -5 8 0 t8 0" stroke-width="4" fill="none" stroke-linecap="round"/><circle class="swheel" cx="34" cy="34" r="8" stroke-width="4" fill="none"/><path class="sarrow" d="M42 34 L52 24" stroke-width="4.5" stroke-linecap="round"/><circle class="sdot" cx="54" cy="22" r="3"/></svg><div class="sname">Mein Training</div></div>
+<script>setTimeout(function(){var s=document.getElementById("splash");if(s)s.remove()},3500);window.addEventListener("error",function(e){try{var d=document.getElementById("apperr");if(!d){d=document.createElement("div");d.id="apperr";document.body.appendChild(d)}d.textContent="Fehler in der App: "+(e.message||"unbekannt")+". Bitte über den Feedback-Knopf melden."}catch(x){}})</script>
 <div class="wrap">
   <div class="top">
     <h1 id="appTitle">Mein Training</h1>
@@ -967,7 +972,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="23";
+const VERSION="24";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -3698,6 +3703,17 @@ $("mFb").addEventListener("click",async e=>{if(e.target.closest("[data-fbx]")){c
 
 function renderV14(D){renderPlanTab(D);renderErholung(D);renderWeekNew(D);renderV15(D);renderCoach17(D);thrDecor();renderTotals(D);renderReviews(D);pmcSum(D);
   [renderErh20,renderChkCard,renderAds,renderLocks,heroRing,hideNW,renderPlanLock,aiRunTime,autoOnUpgrade,offlineBanner].forEach(f=>{try{f(D)}catch(e){console.error(e)}})}
+
+
+/* ---------- v24 ---------- */
+/* Kurze Hinweise am unteren Rand */
+function toast(msg){let t=$("toast");if(!t){t=document.createElement("div");t.id="toast";t.setAttribute("role","status");document.body.appendChild(t)}t.textContent=msg;t.classList.add("on");clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove("on"),3200)}
+/* Offline: klare Hinweise statt Fehler */
+document.addEventListener("click",e=>{if(navigator.onLine)return;const b=e.target.closest("#btnAiRun,#btnAiPlan,#qSend,#askSend,#pcBtn,[data-qtake]");if(!b)return;e.preventDefault();e.stopImmediatePropagation();toast("Keine Internetverbindung. Die KI braucht Internet.")},true);
+document.addEventListener("touchend",()=>{if(!navigator.onLine&&scrollY<=0){const p=$("ptr");if(p&&+p.style.opacity>.8)toast("Keine Internetverbindung. Aktualisieren klappt wieder, sobald du online bist.")}},true);
+/* Morgen-Check-in nur morgens anbieten */
+renderChkCard=(o=>function(D){o(D);const c=$("chkCard"),h=new Date().getHours();if(!c||chkToday())return;if(h>=4&&h<14)return;
+  if(NW()){c.style.display="";c.innerHTML='<button class="btn wide" data-man="1">Training eintragen</button>'}else c.style.display="none"})(renderChkCard);
 
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
