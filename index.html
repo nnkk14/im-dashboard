@@ -255,6 +255,7 @@ let settings=Object.assign({},DEFAULTS,store.get("imSettings",{}));
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");
 const isLive=()=>!!settings.apiKey&&!settings.forceDemo;
+const VERSION="3";let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
 const $=id=>document.getElementById(id);
@@ -563,7 +564,7 @@ function render(){
 <p><b>Schlaf</b><span class="tag g">Erfahrungswert</span><br>Unter 6 Stunden in der letzten Nacht wird von neuen Höchstbelastungen abgeraten.</p>
 <p><b>Krankheit</b><span class="tag g">Erfahrungswert</span><br>Beschwerden nur oberhalb des Halses: kurz und locker. Beschwerden unterhalb des Halses oder Fieber: Pause. Danach 7 Tage Rückkehrphase mit Warnhinweis. Der IOC-Konsens zu akuten Atemwegsinfekten bei Sportlern (Snyders et al., Br J Sports Med) hält fest, dass es für diese Regel keine evidenzbasierte Grundlage gibt. Bei Fieber, Brustschmerz oder anhaltenden Beschwerden ärztlich abklären lassen.</p>
 <p class="hint">Die Ampel ersetzt keinen Trainer und keine ärztliche Beurteilung.</p>`;
-  $("footer").textContent=`Datenquelle: ${D.source} · Stand ${new Date().toLocaleString("de-DE",{dateStyle:"short",timeStyle:"short"})}`;
+  $("footer").textContent=`Version ${VERSION} · Datenquelle: ${D.source} · Stand ${new Date().toLocaleString("de-DE",{dateStyle:"short",timeStyle:"short"})}`;
   renderCharts();
 }
 function renderCharts(){
@@ -589,7 +590,7 @@ function renderCharts(){
 
 /* ---------- Laden ---------- */
 async function load(){
-  const btn=$("btnRefresh");btn.classList.add("spin");$("banner").innerHTML="";
+  lastLoad=Date.now();const btn=$("btnRefresh");btn.classList.add("spin");$("banner").innerHTML="";
   try{
     if(!isLive())DATA=prep(demoData());
     else{DATA=prep(await loadLive());store.set("imCache",{t:Date.now(),d:Object.assign({},DATA,{wm:undefined})})}
@@ -652,6 +653,9 @@ let rz;window.addEventListener("resize",()=>{clearTimeout(rz);rz=setTimeout(()=>
 document.querySelectorAll(".modal").forEach(m=>m.addEventListener("click",e=>{if(e.target===m)m.classList.remove("open")}));
 setTab(TABS.some(x=>x[0]===TAB)?TAB:"heute");
 load();
+async function checkUpdate(){try{const r=await fetch(location.pathname+"?c="+Date.now(),{cache:"no-store"});const m=(await r.text()).match(/const VERSION="(\d+)"/);if(m&&m[1]!==VERSION)location.replace(location.pathname+"?v="+m[1])}catch(e){}}
+document.addEventListener("visibilitychange",()=>{if(document.hidden)return;checkUpdate();if(Date.now()-lastLoad>5*6e4)load()});
+setInterval(()=>{if(!document.hidden){checkUpdate();load()}},15*6e4);
 </script>
 </body>
 </html>
