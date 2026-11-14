@@ -7,133 +7,240 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="IM Frankfurt">
-<meta name="theme-color" content="#101318">
+<meta name="theme-color" content="#0b0e13">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="manifest" href="manifest.json">
 <title>IM Frankfurt Dashboard</title>
 <style>
 :root{
-  --bg:#f4f5f7;--card:#fff;--ink:#14171c;--muted:#6b7280;--line:#e5e7eb;
-  --swim:#2f7de1;--bike:#e08a12;--run:#1a9e6e;--other:#9aa1ab;
-  --ctl:#2f7de1;--atl:#d9466f;--tsb:#e08a12;
-  --green:#1a9e6e;--yellow:#e0a800;--red:#d93f3f;--shade:rgba(217,63,63,.12);
+  --bg:#f2f3f6;--card:#ffffff;--card2:#f6f7f9;--ink:#12151a;--muted:#6b7280;--line:rgba(0,0,0,.07);
+  --swim:#3b82f6;--bike:#f59e0b;--run:#10b981;--other:#94a3b8;
+  --ctl:#3b82f6;--atl:#ec4899;--tsb:#f59e0b;--hrv:#8b5cf6;--rhr:#ef4444;--sleep:#06b6d4;
+  --green:#10b981;--yellow:#f5b400;--red:#ef4444;--shade:rgba(239,68,68,.10);
+  --hero1:#1e293b;--hero2:#0f172a;--shadow:0 1px 2px rgba(0,0,0,.04),0 6px 20px rgba(0,0,0,.05);
+  --r:18px;
 }
 @media (prefers-color-scheme:dark){:root{
-  --bg:#101318;--card:#1a1e25;--ink:#eef0f3;--muted:#9aa1ab;--line:#2a2f38;--shade:rgba(217,63,63,.22);
+  --bg:#0b0e13;--card:#141922;--card2:#1b212c;--ink:#eef1f5;--muted:#8b95a5;--line:rgba(255,255,255,.07);
+  --shade:rgba(239,68,68,.16);--shadow:none;--hero1:#1d2a44;--hero2:#111827;
 }}
-*{box-sizing:border-box}
-html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 -apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Arial,sans-serif}
-.wrap{max-width:1100px;margin:0 auto;padding:calc(env(safe-area-inset-top) + 14px) 14px calc(env(safe-area-inset-bottom) + 30px)}
-header{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
-header h1{font-size:20px;margin:0;flex:1;min-width:180px}
-header .sub{display:block;font-size:13px;font-weight:400;color:var(--muted)}
-button{font:inherit;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:8px 12px;cursor:pointer}
-button.primary{background:var(--red);border-color:var(--red);color:#fff;font-weight:600}
-button.small{padding:4px 8px;font-size:13px}
-.banner{background:var(--card);border:1px dashed var(--yellow);border-radius:12px;padding:10px 12px;margin-bottom:12px;font-size:14px}
-.grid{display:grid;gap:12px;grid-template-columns:1fr}
-@media (min-width:760px){.grid{grid-template-columns:1fr 1fr}}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
-.card h2{font-size:15px;margin:0 0 8px}
-.card .hint{font-size:12px;color:var(--muted);margin-top:6px}
-.wide{grid-column:1/-1}
-.ampel{display:flex;gap:14px;align-items:flex-start}
-.dot{width:46px;height:46px;border-radius:50%;flex:none}
-.ampel .head{font-size:17px;font-weight:600;margin-bottom:4px}
-.sig{margin:6px 0 0;padding:0;list-style:none}
-.sig li{padding:6px 0;border-top:1px solid var(--line);font-size:14px}
-.sig li b{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px}
-.sig .src{display:block;font-size:12px;color:var(--muted)}
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
-.kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
-.kpi .l{font-size:12px;color:var(--muted)}
-.kpi .v{font-size:22px;font-weight:600;margin-top:2px}
-.kpi .s{font-size:12px;color:var(--muted)}
-svg.chart{width:100%;height:auto;display:block}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 -apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1080px;margin:0 auto;padding:calc(env(safe-area-inset-top) + 12px) 16px calc(env(safe-area-inset-bottom) + 96px)}
+@media (min-width:820px){.wrap{padding-bottom:40px}}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+.top{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+@media (max-width:480px){.lg{display:none}}
+.top h1{font-size:17px;margin:0;flex:1;font-weight:700;letter-spacing:-.01em}
+.chip{font-size:12px;font-weight:600;padding:4px 10px;border-radius:99px;background:var(--card2);color:var(--muted)}
+.chip.live{background:rgba(16,185,129,.14);color:var(--green)}
+.chip.demo{background:rgba(245,180,0,.16);color:#c98f00}
+.ib{width:38px;height:38px;border-radius:12px;background:var(--card);box-shadow:var(--shadow);display:grid;place-items:center;border:1px solid var(--line)}
+.ib svg{width:19px;height:19px;stroke:var(--ink);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ib.spin svg{animation:sp 1s linear infinite}@keyframes sp{to{transform:rotate(360deg)}}
+.seg{display:none;gap:4px;background:var(--card);border:1px solid var(--line);padding:4px;border-radius:14px;margin-bottom:16px;box-shadow:var(--shadow)}
+.seg button{flex:1;padding:9px 10px;border-radius:10px;font-weight:600;font-size:14px;color:var(--muted)}
+.seg button.on{background:var(--ink);color:var(--bg)}
+@media (min-width:820px){.seg{display:flex}}
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:5;display:flex;justify-content:space-around;padding:8px 8px calc(env(safe-area-inset-bottom) + 6px);background:color-mix(in srgb,var(--card) 88%,transparent);backdrop-filter:saturate(1.6) blur(18px);-webkit-backdrop-filter:saturate(1.6) blur(18px);border-top:1px solid var(--line)}
+.tabbar button{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;font-weight:600;color:var(--muted);padding:4px 10px;min-width:64px}
+.tabbar button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.tabbar button.on{color:var(--ctl)}
+@media (min-width:820px){.tabbar{display:none}}
+.banner{border-radius:14px;padding:11px 14px;margin-bottom:14px;font-size:14px;background:rgba(245,180,0,.12);border:1px solid rgba(245,180,0,.35)}
+.banner.err{background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.35)}
+.banner a{color:inherit;font-weight:600}
+.hero{position:relative;overflow:hidden;border-radius:22px;padding:20px 20px 18px;color:#fff;background:radial-gradient(120% 140% at 100% 0%,#3b82f6 0%,transparent 55%),radial-gradient(90% 120% at 0% 100%,#10b981 0%,transparent 55%),linear-gradient(160deg,var(--hero1),var(--hero2));margin-bottom:14px}
+.hero .lbl{font-size:13px;opacity:.75;font-weight:500}
+.hero .big{font-size:52px;font-weight:800;letter-spacing:-.03em;line-height:1;margin:6px 0 4px}
+.hero .big small{font-size:18px;font-weight:600;opacity:.8;margin-left:6px;letter-spacing:0}
+.hero .meta{display:flex;gap:18px;flex-wrap:wrap;font-size:13px;opacity:.85;margin-top:10px}
+.hero .meta b{display:block;font-size:17px;opacity:1}
+.bar{height:8px;border-radius:99px;background:rgba(255,255,255,.18);margin-top:14px;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#10b981,#3b82f6)}
+.ring{position:absolute;right:18px;top:18px;width:86px;height:86px}
+.ring text{fill:#fff;font-weight:700}
+.grid{display:grid;gap:14px;grid-template-columns:1fr}
+@media (min-width:820px){.grid.two{grid-template-columns:1fr 1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;box-shadow:var(--shadow);min-width:0}
+.card h2{font-size:15px;margin:0 0 2px;font-weight:700;letter-spacing:-.01em}
+.card .sub{font-size:12.5px;color:var(--muted);margin-bottom:10px}
+.hint{font-size:12px;color:var(--muted);margin-top:8px}
+.status{display:flex;gap:14px;align-items:center}
+.status .ic{width:58px;height:58px;border-radius:18px;display:grid;place-items:center;flex:none}
+.status .ic svg{width:30px;height:30px;stroke:#fff;fill:none;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.status .t1{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+.status .t2{font-size:18px;font-weight:700;line-height:1.25;letter-spacing:-.01em}
+.sig{list-style:none;margin:14px 0 0;padding:0;display:grid;gap:8px}
+.sig li{display:flex;gap:10px;align-items:flex-start;background:var(--card2);border-radius:12px;padding:10px 12px;font-size:14px}
+.sig li i{width:9px;height:9px;border-radius:50%;margin-top:6px;flex:none}
+.sig .src{display:block;font-size:12px;color:var(--muted);margin-top:2px}
+.kpis{display:grid;gap:12px;grid-template-columns:repeat(2,1fr)}
+@media (min-width:620px){.kpis{grid-template-columns:repeat(3,1fr)}}
+@media (min-width:980px){.kpis{grid-template-columns:repeat(4,1fr)}}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:13px 14px 10px;box-shadow:var(--shadow);min-width:0}
+.kpi .l{font-size:12px;color:var(--muted);font-weight:600;display:flex;align-items:center;gap:6px}
+.kpi .l i{width:8px;height:8px;border-radius:50%}
+.kpi .v{font-size:26px;font-weight:750;letter-spacing:-.02em;margin-top:4px;font-variant-numeric:tabular-nums}
+.kpi .v small{font-size:13px;font-weight:600;color:var(--muted);margin-left:3px}
+.kpi .d{font-size:12px;color:var(--muted);margin-top:1px}
+.kpi .d b{font-weight:600}
+.kpi svg{display:block;width:100%;height:34px;margin-top:6px}
+.up{color:var(--green)}.down{color:var(--red)}
+svg.chart{width:100%;height:auto;display:block;touch-action:pan-y}
 svg.chart text{fill:var(--muted);font-size:11px}
-.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:4px}
-.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
-table{width:100%;border-collapse:collapse;font-size:14px}
-th,td{text-align:left;padding:6px 4px;border-top:1px solid var(--line)}
-th{color:var(--muted);font-weight:500;font-size:12px;border-top:none}
-td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
-.empty{color:var(--muted);font-size:14px;padding:20px 0;text-align:center}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:flex-end;justify-content:center;z-index:10}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:6px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.chartwrap{position:relative}
+.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--bg);font-size:12px;padding:6px 9px;border-radius:9px;white-space:nowrap;transform:translate(-50%,-110%);opacity:0;transition:opacity .12s;z-index:2;line-height:1.35}
+.tip.show{opacity:1}
+.sports{display:grid;gap:10px;grid-template-columns:repeat(3,1fr)}
+.sp{border-radius:16px;padding:12px;background:var(--card2)}
+.sp .n{font-size:12px;font-weight:700;display:flex;align-items:center;gap:6px}
+.sp .n svg{width:18px;height:18px;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.sp .h{font-size:22px;font-weight:750;margin-top:6px;letter-spacing:-.02em}
+.sp .k{font-size:12px;color:var(--muted)}
+.list{display:grid;gap:8px}
+.act{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:14px;background:var(--card2)}
+.act .ico{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;flex:none}
+.act .ico svg{width:20px;height:20px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.act .m{flex:1;min-width:0}
+.act .m b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.act .m span{font-size:12px;color:var(--muted)}
+.act .r{text-align:right;font-size:13px;font-variant-numeric:tabular-nums}
+.act .r b{display:block;font-size:15px}
+.act .r span{color:var(--muted);font-size:12px}
+.empty{color:var(--muted);font-size:14px;padding:22px 0;text-align:center}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 16px;border-radius:14px;font-weight:700;font-size:15px;background:var(--card2);border:1px solid var(--line)}
+.btn.red{background:var(--red);color:#fff;border-color:transparent}
+.btn.blue{background:var(--ctl);color:#fff;border-color:transparent}
+.btn.sm{padding:7px 11px;font-size:13px;border-radius:10px}
+.btn.wide{width:100%}
+.btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.sick{display:flex;gap:12px;align-items:center;padding:12px;border-radius:14px;background:var(--card2)}
+.sick .m{flex:1;min-width:0}
+.sick .m b{font-size:14px}
+.sick .m span{display:block;font-size:12px;color:var(--muted)}
+.tag{font-size:11px;font-weight:700;border-radius:7px;padding:2px 7px;margin-left:6px;background:rgba(239,68,68,.14);color:var(--red)}
+.tag.g{background:var(--card2);color:var(--muted);border:1px solid var(--line)}
+.rules p{margin:10px 0;font-size:14px}
+details{margin-top:12px}
+summary{cursor:pointer;font-size:13px;font-weight:600;color:var(--muted);list-style:none}
+summary::-webkit-details-marker{display:none}
+summary:before{content:"›";display:inline-block;margin-right:6px;transition:transform .15s}
+details[open] summary:before{transform:rotate(90deg)}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:flex-end;justify-content:center;z-index:20;backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
 .modal.open{display:flex}
-.sheet{background:var(--card);color:var(--ink);width:100%;max-width:520px;border-radius:16px 16px 0 0;padding:18px 16px calc(env(safe-area-inset-bottom) + 18px);max-height:92vh;overflow:auto}
-@media (min-width:700px){.modal{align-items:center}.sheet{border-radius:16px}}
-.sheet h3{margin:0 0 10px}
-label{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px}
-input,textarea,select{font:inherit;width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink)}
-.radio label{display:flex;gap:8px;align-items:flex-start;color:var(--ink);font-size:14px;margin:6px 0}
-.radio input{width:auto;margin-top:3px}
-.row{display:flex;gap:10px}.row>div{flex:1}
-.actions{display:flex;gap:10px;justify-content:flex-end;margin-top:16px}
-.err{color:var(--red);font-size:14px;margin-top:8px}
-.rules p{margin:6px 0;font-size:14px}
-.tag{font-size:11px;border:1px solid var(--line);border-radius:6px;padding:1px 5px;color:var(--muted);margin-left:4px}
-@media (max-width:520px){.hs{display:none}}
-footer{color:var(--muted);font-size:12px;margin-top:16px;text-align:center}
+.sheet{background:var(--card);color:var(--ink);width:100%;max-width:520px;border-radius:22px 22px 0 0;padding:20px 18px calc(env(safe-area-inset-bottom) + 20px);max-height:92vh;overflow:auto;animation:up .22s ease}
+@keyframes up{from{transform:translateY(30px);opacity:0}}
+@media (min-width:700px){.modal{align-items:center}.sheet{border-radius:22px}}
+.sheet h3{margin:0 0 4px;font-size:19px}
+.sheet .sub{font-size:13px;color:var(--muted);margin-bottom:8px}
+label.f{display:block;font-size:12.5px;font-weight:600;color:var(--muted);margin:14px 0 6px}
+input,textarea,select{font:inherit;width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:var(--card2);color:var(--ink);outline:none}
+input:focus,textarea:focus{border-color:var(--ctl)}
+.row{display:flex;gap:10px}.row>div{flex:1;min-width:0}
+.opts{display:grid;gap:8px}
+.opt{display:flex;gap:12px;align-items:center;padding:12px;border-radius:14px;background:var(--card2);border:2px solid transparent;cursor:pointer}
+.opt input{display:none}
+.opt .dot{width:12px;height:12px;border-radius:50%;flex:none}
+.opt b{display:block;font-size:14px}
+.opt span{font-size:12px;color:var(--muted)}
+.opt:has(input:checked){border-color:var(--ctl)}
+.switch{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:14px;font-size:14px}
+.switch input{width:auto;transform:scale(1.2)}
+.actions{display:flex;gap:10px;margin-top:18px}
+.actions .btn{flex:1}
+.err{color:var(--red);font-size:14px;margin-top:10px}
+[data-tab]{display:none}[data-tab].on{display:block}
+footer{color:var(--muted);font-size:12px;margin-top:20px;text-align:center}
+.fab{margin-top:14px}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <header>
-    <h1>Ironman Frankfurt 2027<span class="sub" id="countdown"></span></h1>
-    <button class="primary" id="btnSick">Krank melden</button>
-    <button id="btnRefresh" title="Neu laden">Aktualisieren</button>
-    <button id="btnSettings" title="Einstellungen">Einstellungen</button>
-  </header>
-  <div id="banner"></div>
-  <div class="grid">
-    <div class="card wide" id="ampel"></div>
-    <div class="wide kpis" id="kpis"></div>
-    <div class="card wide"><h2>Wochenstunden: Ist je Sportart und Soll aus dem Plan</h2><div id="chWeeks"></div></div>
-    <div class="card wide"><h2>Fitness, Ermüdung und Form (120 Tage)</h2><div id="chPmc"></div></div>
-    <div class="card"><h2>HRV in der Nacht (60 Tage)</h2><div id="chHrv"></div></div>
-    <div class="card"><h2>Ruhepuls (60 Tage)</h2><div id="chRhr"></div></div>
-    <div class="card"><h2>Schlafdauer (30 Tage)</h2><div id="chSleep"></div></div>
-    <div class="card"><h2>Summen seit Planstart</h2><div id="totals"></div></div>
-    <div class="card wide"><h2>Letzte Einheiten</h2><div id="recent"></div></div>
-    <div class="card wide"><h2>Krankheits- und Verletzungsphasen</h2><div id="sickList"></div></div>
-    <div class="card wide rules"><h2>Regeln der Ampel</h2><div id="rules"></div></div>
+  <div class="top">
+    <h1><span class="lg">Ironman </span>Frankfurt 2027</h1>
+    <span class="chip" id="chip">…</span>
+    <button class="ib" id="btnRefresh" title="Aktualisieren"><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg></button>
+    <button class="ib" id="btnSettings" title="Einstellungen"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
   </div>
+  <div class="seg" id="seg"></div>
+  <div id="banner"></div>
+
+  <section data-tab="heute">
+    <div class="hero" id="hero"></div>
+    <div class="grid">
+      <div class="card" id="ampel"></div>
+      <div class="kpis" id="kpis"></div>
+    </div>
+  </section>
+
+  <section data-tab="training">
+    <div class="grid">
+      <div class="card"><h2>Wochenstunden</h2><div class="sub">Ist je Sportart und Soll aus dem Plan</div><div class="chartwrap" id="chWeeks"></div></div>
+      <div class="card"><h2 id="totTitle">Summen</h2><div class="sub" id="totSub"></div><div class="sports" id="totals"></div></div>
+      <div class="card"><h2>Fitness, Ermüdung und Form</h2><div class="sub">Letzte 120 Tage</div><div class="chartwrap" id="chPmc"></div>
+        <details><summary>Was bedeuten die Kurven?</summary><p class="hint">Fitness (CTL) ist der 42-Tage-Durchschnitt der Trainingslast, Ermüdung (ATL) der 7-Tage-Durchschnitt. Form (TSB) ist die Differenz. Werte unter −30 zeigen hohe Ermüdung, −30 bis −10 gilt bei intervals.icu als produktiver Bereich.</p></details></div>
+      <div class="card"><h2>Letzte Einheiten</h2><div class="sub">Die 15 neuesten Aktivitäten</div><div class="list" id="recent"></div></div>
+    </div>
+  </section>
+
+  <section data-tab="erholung">
+    <div class="grid two">
+      <div class="card" style="grid-column:1/-1"><h2>HRV in der Nacht</h2><div class="sub">60 Tage, grünes Band = dein Normalbereich</div><div class="chartwrap" id="chHrv"></div></div>
+      <div class="card"><h2>Ruhepuls</h2><div class="sub">60 Tage</div><div class="chartwrap" id="chRhr"></div></div>
+      <div class="card"><h2>Schlafdauer</h2><div class="sub">30 Tage</div><div class="chartwrap" id="chSleep"></div></div>
+    </div>
+  </section>
+
+  <section data-tab="gesundheit">
+    <div class="grid">
+      <div class="card"><h2>Krankheit und Verletzung</h2><div class="sub">Einträge werden im intervals.icu-Kalender gespeichert</div>
+        <button class="btn red wide" id="btnSick2"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Krankheit oder Verletzung eintragen</button>
+        <div class="list" id="sickList" style="margin-top:14px"></div></div>
+      <div class="card rules"><h2>Regeln der Ampel</h2><div id="rules"></div></div>
+    </div>
+  </section>
   <footer id="footer"></footer>
 </div>
 
+<nav class="tabbar" id="tabbar"></nav>
+
 <div class="modal" id="mSick"><div class="sheet">
-  <h3>Krankheit oder Verletzung eintragen</h3>
+  <h3>Krankheit oder Verletzung</h3>
+  <div class="sub">Die Ampel berücksichtigt den Eintrag sofort.</div>
   <div class="row">
-    <div><label for="sStart">Beginn</label><input type="date" id="sStart"></div>
-    <div><label for="sEnd">Ende (bei laufender Krankheit: heute, später anpassen)</label><input type="date" id="sEnd"></div>
+    <div><label class="f" for="sStart">Beginn</label><input type="date" id="sStart"></div>
+    <div><label class="f" for="sEnd">Ende</label><input type="date" id="sEnd"></div>
   </div>
-  <label>Art der Beschwerden</label>
-  <div class="radio">
-    <label><input type="radio" name="sType" value="oberhalb" checked> Nur oberhalb des Halses (Schnupfen, verstopfte Nase, leichte Halsschmerzen)</label>
-    <label><input type="radio" name="sType" value="unterhalb"> Auch unterhalb des Halses (Fieber, Husten, Gliederschmerzen, Magen-Darm)</label>
-    <label><input type="radio" name="sType" value="verletzung"> Verletzung</label>
+  <label class="f">Art der Beschwerden</label>
+  <div class="opts">
+    <label class="opt"><input type="radio" name="sType" value="oberhalb" checked><i class="dot" style="background:var(--yellow)"></i><div><b>Nur oberhalb des Halses</b><span>Schnupfen, verstopfte Nase, leichte Halsschmerzen</span></div></label>
+    <label class="opt"><input type="radio" name="sType" value="unterhalb"><i class="dot" style="background:var(--red)"></i><div><b>Auch unterhalb des Halses</b><span>Fieber, Husten, Gliederschmerzen, Magen-Darm</span></div></label>
+    <label class="opt"><input type="radio" name="sType" value="verletzung"><i class="dot" style="background:var(--hrv)"></i><div><b>Verletzung</b><span>z. B. Zerrung, Überlastung</span></div></label>
   </div>
-  <label for="sNote">Notiz</label>
-  <textarea id="sNote" rows="2" placeholder="z. B. Erkältung, Arzt war ..."></textarea>
+  <label class="f" for="sNote">Notiz</label>
+  <textarea id="sNote" rows="2" placeholder="z. B. Erkältung, beim Arzt gewesen"></textarea>
+  <div class="hint">Bei laufender Krankheit als Ende heute wählen und später mit „Gesund ab heute“ abschließen.</div>
   <div class="err" id="sErr"></div>
-  <div class="actions"><button id="sCancel">Abbrechen</button><button class="primary" id="sSave">Speichern</button></div>
+  <div class="actions"><button class="btn" id="sCancel">Abbrechen</button><button class="btn red" id="sSave">Speichern</button></div>
 </div></div>
 
 <div class="modal" id="mSet"><div class="sheet">
   <h3>Einstellungen</h3>
-  <label for="cKey">intervals.icu API-Schlüssel</label>
-  <input type="password" id="cKey" autocomplete="off" placeholder="aus intervals.icu: Settings, Developer Settings">
-  <div class="hint" style="font-size:12px;color:var(--muted);margin-top:4px">Der Schlüssel wird nur auf diesem Gerät gespeichert und nur an intervals.icu gesendet.</div>
+  <div class="sub">Gespeichert nur auf diesem Gerät.</div>
+  <label class="f" for="cKey">intervals.icu API-Schlüssel</label>
+  <input type="password" id="cKey" autocomplete="off" placeholder="intervals.icu → Settings → Developer Settings">
+  <div class="hint">Der Schlüssel wird nur an intervals.icu gesendet. Ist ein Schlüssel eingetragen, zeigt die App deine echten Daten.</div>
   <div class="row">
-    <div><label for="cRace">Wettkampftag</label><input type="date" id="cRace"></div>
-    <div><label for="cStart">Planstart</label><input type="date" id="cStart"></div>
+    <div><label class="f" for="cRace">Wettkampftag</label><input type="date" id="cRace"></div>
+    <div><label class="f" for="cStart">Planstart</label><input type="date" id="cStart"></div>
   </div>
-  <div class="row">
-    <div><label for="cWeeks">Planwochen</label><input type="number" id="cWeeks" min="1" max="60"></div>
-    <div><label for="cDemo">Datenquelle</label><select id="cDemo"><option value="live">intervals.icu</option><option value="demo">Beispieldaten</option></select></div>
-  </div>
+  <label class="f" for="cWeeks">Planwochen</label><input type="number" id="cWeeks" min="1" max="60">
+  <label class="switch">Beispieldaten statt echter Daten anzeigen<input type="checkbox" id="cDemo"></label>
   <div class="err" id="cErr"></div>
-  <div class="actions"><button id="cCancel">Abbrechen</button><button class="primary" id="cSave" style="background:var(--ctl);border-color:var(--ctl)">Speichern und laden</button></div>
+  <div class="actions"><button class="btn" id="cCancel">Abbrechen</button><button class="btn blue" id="cSave">Speichern</button></div>
 </div></div>
 
 <script>
@@ -143,11 +250,14 @@ const store={
   get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},
   set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 };
-const DEFAULTS={apiKey:"",raceDate:"2027-06-27",planStart:"2026-11-16",planWeeks:32,demo:true};
+const DEFAULTS={apiKey:"",raceDate:"2027-06-27",planStart:"2026-11-16",planWeeks:32,forceDemo:false};
 let settings=Object.assign({},DEFAULTS,store.get("imSettings",{}));
-let DATA=null;
+delete settings.demo;
+let DATA=null,TAB=store.get("imTab","heute");
+const isLive=()=>!!settings.apiKey&&!settings.forceDemo;
 
-/* ---------- Datum ---------- */
+/* ---------- Hilfsfunktionen ---------- */
+const $=id=>document.getElementById(id);
 const ymd=d=>{const z=new Date(d.getTime()-d.getTimezoneOffset()*6e4);return z.toISOString().slice(0,10)};
 const P=s=>new Date(s+"T12:00:00");
 const addDays=(s,n)=>{const d=P(s);d.setDate(d.getDate()+n);return ymd(d)};
@@ -155,14 +265,22 @@ const diffDays=(a,b)=>Math.round((P(b)-P(a))/864e5);
 const today=()=>ymd(new Date());
 const monday=s=>{const d=P(s);d.setDate(d.getDate()-((d.getDay()+6)%7));return ymd(d)};
 const fD=s=>P(s).toLocaleDateString("de-DE",{day:"2-digit",month:"2-digit"});
-const fDL=s=>P(s).toLocaleDateString("de-DE",{weekday:"short",day:"2-digit",month:"2-digit",year:"2-digit"});
+const fDL=s=>P(s).toLocaleDateString("de-DE",{weekday:"short",day:"2-digit",month:"2-digit"});
+const fDY=s=>P(s).toLocaleDateString("de-DE",{day:"2-digit",month:"2-digit",year:"numeric"});
 const fH=secs=>{const t=Math.round(secs/60);return Math.floor(t/60)+":"+String(t%60).padStart(2,"0")};
 const nf=(v,d=0)=>v==null||!isFinite(v)?"–":v.toLocaleString("de-DE",{minimumFractionDigits:d,maximumFractionDigits:d});
 const mean=a=>a.reduce((s,v)=>s+v,0)/a.length;
 const sd=a=>{const m=mean(a);return Math.sqrt(a.reduce((s,v)=>s+(v-m)*(v-m),0)/Math.max(1,a.length-1))};
 const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
+const ICON={
+  swim:'<path d="M2 18c2 0 2-1.5 4-1.5S8 18 10 18s2-1.5 4-1.5 2 1.5 4 1.5 2-1.5 4-1.5"/><path d="M8 13l3-4 4 3"/><circle cx="17" cy="7" r="2"/>',
+  bike:'<circle cx="6" cy="16" r="4"/><circle cx="18" cy="16" r="4"/><path d="M6 16l4-8h5l3 8M10 8l2 8"/>',
+  run:'<circle cx="14" cy="4.5" r="2"/><path d="M8 21l3-6 3 2v5M6 12l3-3 4 1 3 3 3 1"/>',
+  other:'<circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/>'
+};
 const SPORTS={swim:{n:"Schwimmen",c:"var(--swim)"},bike:{n:"Rad",c:"var(--bike)"},run:{n:"Laufen",c:"var(--run)"},other:{n:"Sonstiges",c:"var(--other)"}};
+const svgI=(k,stroke)=>`<svg viewBox="0 0 24 24" style="stroke:${stroke||"currentColor"}">${ICON[k]}</svg>`;
 function sportOf(t){t=String(t||"").toLowerCase();
   if(t.includes("swim"))return"swim";
   if(t.includes("ride")||t.includes("bike")||t.includes("cycl"))return"bike";
@@ -175,8 +293,8 @@ async function api(path,opts={}){
   if(opts.body)headers["Content-Type"]="application/json";
   let res;
   try{res=await fetch("https://intervals.icu/api/v1/athlete/0"+path,Object.assign({},opts,{headers}));}
-  catch(e){throw new Error("intervals.icu ist nicht erreichbar (Netz oder Browser blockiert die Anfrage).")}
-  if(res.status===401||res.status===403)throw new Error("intervals.icu lehnt den API-Schlüssel ab (Status "+res.status+").");
+  catch(e){throw new Error("intervals.icu ist nicht erreichbar. Bitte Internetverbindung prüfen.")}
+  if(res.status===401||res.status===403)throw new Error("intervals.icu lehnt den API-Schlüssel ab (Status "+res.status+"). Bitte den Schlüssel in den Einstellungen prüfen.");
   if(!res.ok)throw new Error("intervals.icu antwortet mit Status "+res.status+".");
   const t=await res.text();return t?JSON.parse(t):null;
 }
@@ -221,10 +339,7 @@ function demoData(){
   let ctl=38,atl=38;
   for(let i=N-1;i>=-60;i--){
     const d=addDays(end,-i),wd=(P(d).getDay()+6)%7,prog=1+(N-i)/N*0.35;
-    week[wd].forEach(([s,m])=>{
-      const mins=Math.round(m*prog*(0.9+r()*0.2));
-      planned.push({date:d,sport:s,secs:mins*60,name:"Plan "+SPORTS[s].n});
-    });
+    week[wd].forEach(([s,m])=>{planned.push({date:d,sport:s,secs:Math.round(m*prog*(0.9+r()*0.2))*60,name:"Plan "+SPORTS[s].n})});
     let load=0;
     if(i>=0&&!isSick(d)){
       week[wd].forEach(([s,m])=>{
@@ -238,9 +353,7 @@ function demoData(){
     if(i<0)continue;
     ctl+=(load-ctl)/42;atl+=(load-atl)/7;
     const after=sick.some(s=>d>s.end&&diffDays(s.end,d)<=4);
-    const hrv=Math.round(64+gauss()*5-(isSick(d)?16:0)-(after?8:0)-(load>110?4:0));
-    const rhr=Math.round(47+gauss()*1.4+(isSick(d)?7:0)+(after?3:0));
-    wellness.push({date:d,ctl,atl,hrv,rhr,sleepH:Math.max(4.5,7.3+gauss()*0.7)});
+    wellness.push({date:d,ctl,atl,hrv:Math.round(64+gauss()*5-(isSick(d)?16:0)-(after?8:0)-(load>110?4:0)),rhr:Math.round(47+gauss()*1.4+(isSick(d)?7:0)+(after?3:0)),sleepH:Math.max(4.5,7.3+gauss()*0.7)});
   }
   return{activities,wellness,sick,planned,source:"Beispieldaten"};
 }
@@ -248,7 +361,7 @@ function demoData(){
 /* ---------- Kennzahlen ---------- */
 function prep(D){
   const wm={};D.wellness.forEach(w=>wm[w.date]=w);
-  if(!D.wellness.some(w=>w.ctl!=null)){ // Fallback: selbst rechnen
+  if(!D.wellness.some(w=>w.ctl!=null)){
     const lm={};D.activities.forEach(a=>lm[a.date]=(lm[a.date]||0)+a.load);
     let c=0,a=0;for(let i=180;i>=0;i--){const d=addDays(today(),-i);const l=lm[d]||0;c+=(l-c)/42;a+=(l-a)/7;(wm[d]=wm[d]||{date:d});wm[d].ctl=c;wm[d].atl=a;}
   }
@@ -262,7 +375,7 @@ function prep(D){
   D.rhrStat={now:rNow,base:rb.length>=14?mean(rb):null};
   let last=null;for(let i=0;i<=3&&!last;i++){const w=wm[addDays(t,-i)];if(w&&w.ctl!=null)last=w}
   D.pmc=last?{ctl:last.ctl,atl:last.atl,tsb:last.ctl-last.atl}:null;
-  const sw=wm[t];D.sleepNow=sw&&sw.sleepH?sw.sleepH:null;
+  const sw=wm[t]||wm[addDays(t,-1)];D.sleepNow=sw&&sw.sleepH?sw.sleepH:null;
   return D;
 }
 
@@ -277,19 +390,18 @@ function evaluate(D){
     else if(act.type==="verletzung")S.push({l:2,t:"Verletzung eingetragen: Training nur nach ärztlicher oder physiotherapeutischer Freigabe.",src:"Erfahrungsregel"});
     else S.push({l:1,t:"Nur Beschwerden oberhalb des Halses: wenn überhaupt, kurz und locker trainieren. Keine Intervalle.",src:"Erfahrungsregel (Neck Check), keine evidenzbasierte Leitlinie (IOC-Konsens, Snyders et al.)"});
   }else if(recent){
-    const d=diffDays(recent.end,t);
-    S.push({l:1,t:`Rückkehrphase (Tag ${d} nach Krankheitsende): erst lockere Einheiten. Intensität erst steigern, wenn diese problemlos laufen und Ruhepuls und HRV wieder im Normalbereich sind.`,src:"Erfahrungsregel, keine evidenzbasierte Leitlinie"});
+    S.push({l:1,t:`Rückkehrphase (Tag ${diffDays(recent.end,t)} nach Krankheitsende): erst lockere Einheiten. Intensität erst steigern, wenn diese problemlos laufen und Ruhepuls und HRV wieder im Normalbereich sind.`,src:"Erfahrungsregel, keine evidenzbasierte Leitlinie"});
   }
   const h=D.hrvStat;
   if(h.r){
     if(h.rln<h.m-0.5*h.s)S.push({l:1,t:`HRV-Wochenmittel ${nf(h.r)} ms liegt unter deinem Normalbereich (${nf(h.lo)} bis ${nf(h.hi)} ms): harte Einheit heute durch eine lockere ersetzen oder tauschen.`,src:"Regel nach HRV-gesteuertem Training (7-Tage-Mittel des ln rMSSD gegen Basis ± 0,5 SD)"});
-    else if(h.rln>h.m+0.5*h.s)S.push({l:0,t:`HRV-Wochenmittel ${nf(h.r)} ms liegt über deinem Normalbereich. Kein Handlungsbedarf, im Blick behalten.`,src:"Regel nach HRV-gesteuertem Training"});
+    else if(h.rln>h.m+0.5*h.s)S.push({l:0,t:`HRV-Wochenmittel ${nf(h.r)} ms über deinem Normalbereich. Kein Handlungsbedarf.`,src:"Regel nach HRV-gesteuertem Training"});
     else S.push({l:0,t:`HRV-Wochenmittel ${nf(h.r)} ms im Normalbereich (${nf(h.lo)} bis ${nf(h.hi)} ms).`,src:"Regel nach HRV-gesteuertem Training"});
-  }else S.push({l:0,t:`Für die HRV-Regel fehlen noch Daten (Basis ${h.n} von 14 Nächten).`,src:""});
+  }else S.push({l:0,t:`Für die HRV-Regel fehlen noch Daten (${h.n} von 14 Nächten als Basis).`,src:""});
   const r=D.rhrStat;
   if(r.now&&r.base){
     if(r.now>=r.base+5)S.push({l:1,t:`Ruhepuls ${r.now} liegt 5 oder mehr Schläge über deinem Mittel (${nf(r.base)}). Mögliches Zeichen für Infekt oder Ermüdung.`,src:"Erfahrungswert, nicht studienbasiert"});
-    else S.push({l:0,t:`Ruhepuls ${r.now} (Mittel ${nf(r.base)}).`,src:""});
+    else S.push({l:0,t:`Ruhepuls ${r.now} im üblichen Bereich (Mittel ${nf(r.base)}).`,src:""});
   }
   if(D.pmc){
     if(D.pmc.tsb<-30)S.push({l:1,t:`Form ${nf(D.pmc.tsb)}: hohe Ermüdung. Nach der nächsten Belastungsspitze bewusst erholen.`,src:"Formbereiche wie bei intervals.icu (unter −30 hohes Risiko)"});
@@ -297,178 +409,248 @@ function evaluate(D){
   }
   if(D.sleepNow!=null&&D.sleepNow<6)S.push({l:1,t:`Nur ${nf(D.sleepNow,1)} h Schlaf letzte Nacht: keine neue Höchstbelastung.`,src:"Erfahrungswert"});
   const L=Math.max(...S.map(s=>s.l));
-  const head=["Training wie geplant","Heute vorsichtig: harte Einheit tauschen oder locker trainieren","Heute kein Training"][L];
-  return{L,head,S};
+  return{L,S,t1:["Grün","Gelb","Rot"][L],t2:["Training wie geplant","Vorsichtig: harte Einheit tauschen oder locker trainieren","Heute kein Training"][L]};
 }
 
 /* ---------- Diagramme ---------- */
+const cw=id=>Math.max(280,Math.round($(id).clientWidth||600));
 function ticks(mn,mx,n){const raw=(mx-mn)/n,p=Math.pow(10,Math.floor(Math.log10(raw))),f=raw/p,st=(f<1.5?1:f<3?2:f<7?5:10)*p;const o=[];for(let v=Math.ceil(mn/st)*st;v<=mx+1e-9;v+=st)o.push(+v.toFixed(6));return o}
-function lineChart(o){
-  const W=o.W||640,H=o.h||210,pl=38,pr=8,pt=8,pb=22,dates=o.dates,n=dates.length;
+function smooth(pts){ // Catmull-Rom zu Bezier
+  if(pts.length<3)return pts.map((p,i)=>(i?"L":"M")+p[0].toFixed(1)+" "+p[1].toFixed(1)).join("");
+  let d="M"+pts[0][0].toFixed(1)+" "+pts[0][1].toFixed(1);
+  for(let i=0;i<pts.length-1;i++){const p0=pts[i-1]||pts[i],p1=pts[i],p2=pts[i+1],p3=pts[i+2]||p2;
+    const c1=[p1[0]+(p2[0]-p0[0])/6,p1[1]+(p2[1]-p0[1])/6],c2=[p2[0]-(p3[0]-p1[0])/6,p2[1]-(p3[1]-p1[1])/6];
+    d+=`C${c1[0].toFixed(1)} ${c1[1].toFixed(1)} ${c2[0].toFixed(1)} ${c2[1].toFixed(1)} ${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`}
+  return d;}
+const CH={};
+function lineChart(id,o){
+  const W=cw(id),H=o.h||200,pl=34,pr=8,pt=10,pb=22,dates=o.dates,n=dates.length;
   const vals=[];o.series.forEach(s=>s.v.forEach(v=>{if(v!=null&&isFinite(v))vals.push(v)}));
   if(o.band)vals.push(o.band[0],o.band[1]);
-  if(!vals.length)return'<div class="empty">Noch keine Daten</div>';
+  if(!vals.length){$(id).innerHTML='<div class="empty">Noch keine Daten</div>';return}
   let mn=Math.min(...vals),mx=Math.max(...vals);if(o.zero){mn=Math.min(mn,0);mx=Math.max(mx,0)}
-  if(mn===mx){mn-=1;mx+=1}const pad=(mx-mn)*.08;mn-=pad;mx+=pad;
+  if(mn===mx){mn-=1;mx+=1}const pad=(mx-mn)*.1;mn-=pad;mx+=pad;
   const x=i=>pl+(n<=1?0:i*(W-pl-pr)/(n-1)),y=v=>pt+(mx-v)*(H-pt-pb)/(mx-mn);
-  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img">`;
+  const gid="g"+id;
+  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}"><defs>`+o.series.map((se,k)=>`<linearGradient id="${gid}${k}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${se.c}" stop-opacity=".28"/><stop offset="1" stop-color="${se.c}" stop-opacity="0"/></linearGradient>`).join("")+`</defs>`;
   (o.shade||[]).forEach(p=>{let a=diffDays(dates[0],p.start),b=diffDays(dates[0],p.end);if(b<0||a>n-1)return;a=Math.max(0,a);b=Math.min(n-1,b);
-    s+=`<rect x="${x(a)-2}" y="${pt}" width="${Math.max(4,x(b)-x(a)+4)}" height="${H-pt-pb}" fill="var(--shade)"><title>Krank/verletzt ${fD(p.start)} bis ${fD(p.end)}</title></rect>`});
-  ticks(mn,mx,4).forEach(v=>{s+=`<line x1="${pl}" x2="${W-pr}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="${pl-5}" y="${y(v)+4}" text-anchor="end">${nf(v,Math.abs(v)<10&&v%1?1:0)}</text>`});
-  if(o.band)s+=`<rect x="${pl}" y="${y(o.band[1])}" width="${W-pl-pr}" height="${Math.max(1,y(o.band[0])-y(o.band[1]))}" fill="var(--green)" opacity=".13"/>`;
-  if(o.zero)s+=`<line x1="${pl}" x2="${W-pr}" y1="${y(0)}" y2="${y(0)}" stroke="var(--muted)" stroke-dasharray="3 3"/>`;
-  o.series.forEach(se=>{let d="",pen=false;se.v.forEach((v,i)=>{if(v==null||!isFinite(v)){pen=false;return}d+=(pen?"L":"M")+x(i).toFixed(1)+" "+y(v).toFixed(1);pen=true});
-    if(se.dots)se.v.forEach((v,i)=>{if(v!=null)s+=`<circle cx="${x(i)}" cy="${y(v)}" r="2" fill="${se.c}" opacity=".55"><title>${fD(dates[i])}: ${nf(v,se.dec||0)}</title></circle>`});
-    else s+=`<path d="${d}" fill="none" stroke="${se.c}" stroke-width="${se.w||2}" stroke-linejoin="round"/>`;
-    if(se.dots&&se.line)s+=`<path d="${d}" fill="none" stroke="${se.c}" stroke-width="2"/>`});
-  const step=Math.max(1,Math.ceil(n/Math.max(3,Math.floor(W/90))));for(let i=0;i<n;i+=step)s+=`<text x="${x(i)}" y="${H-6}" text-anchor="middle">${fD(dates[i])}</text>`;
-  s+="</svg>";
-  s+='<div class="legend">'+o.series.filter(x=>x.name).map(x=>`<span><i style="background:${x.c}"></i>${x.name}</span>`).join("")+(o.band?'<span><i style="background:var(--green);opacity:.35"></i>Normalbereich</span>':"")+((o.shade||[]).length?'<span><i style="background:var(--shade)"></i>krank/verletzt</span>':"")+"</div>";
-  return s;
+    s+=`<rect x="${x(a)-3}" y="${pt}" width="${Math.max(6,x(b)-x(a)+6)}" height="${H-pt-pb}" rx="4" fill="var(--shade)"/>`});
+  ticks(mn,mx,4).forEach(v=>{s+=`<line x1="${pl}" x2="${W-pr}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="${pl-6}" y="${y(v)+4}" text-anchor="end">${nf(v,Math.abs(v)<10&&v%1?1:0)}</text>`});
+  if(o.band)s+=`<rect x="${pl}" y="${y(o.band[1])}" width="${W-pl-pr}" height="${Math.max(1,y(o.band[0])-y(o.band[1]))}" fill="var(--green)" opacity=".14" rx="3"/>`;
+  if(o.zero)s+=`<line x1="${pl}" x2="${W-pr}" y1="${y(0)}" y2="${y(0)}" stroke="var(--muted)" stroke-opacity=".5" stroke-dasharray="3 4"/>`;
+  o.series.forEach((se,k)=>{
+    const segs=[];let cur=[];se.v.forEach((v,i)=>{if(v==null||!isFinite(v)){if(cur.length)segs.push(cur);cur=[];return}cur.push([x(i),y(v)])});if(cur.length)segs.push(cur);
+    if(se.dots){se.v.forEach((v,i)=>{if(v!=null)s+=`<circle cx="${x(i)}" cy="${y(v)}" r="2.4" fill="${se.c}" opacity=".45"/>`});return}
+    segs.forEach(sg=>{const d=smooth(sg);
+      if(se.area&&sg.length>1)s+=`<path d="${d}L${sg[sg.length-1][0]} ${H-pb}L${sg[0][0]} ${H-pb}Z" fill="url(#${gid}${k})"/>`;
+      s+=`<path d="${d}" fill="none" stroke="${se.c}" stroke-width="${se.w||2.2}" stroke-linecap="round" stroke-linejoin="round"/>`});
+  });
+  const step=Math.max(1,Math.ceil(n/Math.max(3,Math.floor(W/80))));for(let i=0;i<n;i+=step)s+=`<text x="${x(i)}" y="${H-5}" text-anchor="middle">${fD(dates[i])}</text>`;
+  s+=`<line class="cross" x1="0" x2="0" y1="${pt}" y2="${H-pb}" stroke="var(--muted)" stroke-dasharray="2 3" opacity="0"/><rect class="hit" x="${pl}" y="0" width="${W-pl-pr}" height="${H}" fill="transparent"/></svg>`;
+  s+='<div class="tip"></div><div class="legend">'+o.series.filter(x=>x.name).map(x=>`<span><i style="background:${x.c}"></i>${x.name}</span>`).join("")+(o.band?'<span><i style="background:var(--green);opacity:.4"></i>Normalbereich</span>':"")+((o.shade||[]).length?'<span><i style="background:var(--shade)"></i>krank/verletzt</span>':"")+"</div>";
+  $(id).innerHTML=s;
+  CH[id]={x,n,W,pl,pr,dates,series:o.series,unit:o.unit||""};
+  bindTip(id);
+}
+function bindTip(id){
+  const el=$(id),svg=el.querySelector("svg"),tip=el.querySelector(".tip"),cr=svg.querySelector(".cross");
+  const show=ev=>{const c=CH[id],r=svg.getBoundingClientRect(),sx=(ev.clientX-r.left)*c.W/r.width;
+    const i=Math.max(0,Math.min(c.n-1,Math.round((sx-c.pl)/((c.W-c.pl-c.pr)/(c.n-1)))));
+    const rows=c.series.filter(s=>s.v[i]!=null).map(s=>`<span style="color:${s.c}">●</span> ${s.name||""} ${nf(s.v[i],s.dec||0)}${s.unit||""}`);
+    if(!rows.length){tip.classList.remove("show");return}
+    tip.innerHTML=`<b>${fDL(c.dates[i])}</b><br>`+rows.join("<br>");
+    const px=c.x(i)*r.width/c.W;tip.style.left=Math.max(60,Math.min(r.width-60,px))+"px";tip.style.top="18px";tip.classList.add("show");
+    cr.setAttribute("x1",c.x(i));cr.setAttribute("x2",c.x(i));cr.setAttribute("opacity","1")};
+  const hide=()=>{tip.classList.remove("show");cr.setAttribute("opacity","0")};
+  svg.addEventListener("pointermove",show);svg.addEventListener("pointerdown",show);svg.addEventListener("pointerleave",hide);
+}
+function spark(vals,color){
+  const v=vals.filter(x=>x!=null&&isFinite(x));if(v.length<2)return"";
+  const W=120,H=34,mn=Math.min(...v),mx=Math.max(...v),rg=mx-mn||1;
+  const pts=[];vals.forEach((a,i)=>{if(a!=null&&isFinite(a))pts.push([i*W/(vals.length-1),3+(mx-a)*(H-6)/rg])});
+  const d=smooth(pts),g="s"+Math.random().toString(36).slice(2,8);
+  return`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><defs><linearGradient id="${g}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${color}" stop-opacity=".3"/><stop offset="1" stop-color="${color}" stop-opacity="0"/></linearGradient></defs><path d="${d}L${pts[pts.length-1][0]} ${H}L${pts[0][0]} ${H}Z" fill="url(#${g})"/><path d="${d}" fill="none" stroke="${color}" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>`;
 }
 function weekChart(D){
-  const W=cw("chWeeks"),H=230,pl=34,pr=8,pt=8,pb=22,t=today(),mon=monday(t),N=16,weeks=[];
-  for(let i=N-1;i>=-1;i--)weeks.push(addDays(mon,-7*i));
+  const id="chWeeks",W=cw(id),H=220,pl=30,pr=6,pt=10,pb=22,t=today(),mon=monday(t),N=12,weeks=[];
+  for(let i=N-1;i>=-2;i--)weeks.push(addDays(mon,-7*i));
   const ist=weeks.map(w=>{const o={swim:0,bike:0,run:0,other:0};D.activities.forEach(a=>{if(monday(a.date)===w)o[a.sport]+=a.secs/3600});return o});
   const soll=weeks.map(w=>{let s=0,any=false;D.planned.forEach(p=>{if(monday(p.date)===w){s+=p.secs/3600;any=true}});return any?s:null});
-  const mx=Math.max(1,...ist.map(o=>o.swim+o.bike+o.run+o.other),...soll.filter(v=>v!=null))*1.1;
+  const mx=Math.max(1,...ist.map(o=>o.swim+o.bike+o.run+o.other),...soll.filter(v=>v!=null))*1.12;
   const bw=(W-pl-pr)/weeks.length,y=v=>pt+(mx-v)*(H-pt-pb)/mx;
   let s=`<svg class="chart" viewBox="0 0 ${W} ${H}">`;
-  ticks(0,mx,4).forEach(v=>{s+=`<line x1="${pl}" x2="${W-pr}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="${pl-5}" y="${y(v)+4}" text-anchor="end">${nf(v)}</text>`});
-  weeks.forEach((w,i)=>{let base=0;const x0=pl+i*bw+bw*.18,ww=bw*.64;
-    ["swim","bike","run","other"].forEach(k=>{const v=ist[i][k];if(v<=0)return;s+=`<rect x="${x0}" y="${y(base+v)}" width="${ww}" height="${y(base)-y(base+v)}" fill="${SPORTS[k].c}"><title>Woche ab ${fD(w)}: ${SPORTS[k].n} ${fH(v*3600)} h</title></rect>`;base+=v});
-    if(soll[i]!=null)s+=`<line x1="${pl+i*bw+2}" x2="${pl+(i+1)*bw-2}" y1="${y(soll[i])}" y2="${y(soll[i])}" stroke="var(--ink)" stroke-width="2.5"><title>Soll ${fH(soll[i]*3600)} h</title></line>`;
-    if(w===mon)s+=`<rect x="${pl+i*bw}" y="${pt}" width="${bw}" height="${H-pt-pb}" fill="none" stroke="var(--muted)" stroke-dasharray="3 3"/>`;
-    if(i%Math.max(1,Math.ceil(weeks.length/Math.floor(W/60)))===0)s+=`<text x="${pl+i*bw+bw/2}" y="${H-6}" text-anchor="middle">${fD(w)}</text>`});
+  ticks(0,mx,4).forEach(v=>{s+=`<line x1="${pl}" x2="${W-pr}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="${pl-6}" y="${y(v)+4}" text-anchor="end">${nf(v)}</text>`});
+  weeks.forEach((w,i)=>{const x0=pl+i*bw+bw*.2,ww=bw*.6;let base=0;
+    if(w===mon)s+=`<rect x="${pl+i*bw+2}" y="${pt}" width="${bw-4}" height="${H-pt-pb}" rx="8" fill="var(--card2)"/>`;
+    const tot=ist[i].swim+ist[i].bike+ist[i].run+ist[i].other;
+    ["swim","bike","run","other"].forEach(k=>{const v=ist[i][k];if(v<=0)return;const top=base+v===tot;
+      s+=`<rect x="${x0}" y="${y(base+v)}" width="${ww}" height="${Math.max(1,y(base)-y(base+v)-1)}" rx="${top?5:1.5}" fill="${SPORTS[k].c}"><title>${SPORTS[k].n} ${fH(v*3600)} h</title></rect>`;base+=v});
+    if(soll[i]!=null)s+=`<line x1="${x0-3}" x2="${x0+ww+3}" y1="${y(soll[i])}" y2="${y(soll[i])}" stroke="var(--ink)" stroke-width="2.5" stroke-linecap="round"><title>Soll ${fH(soll[i]*3600)} h</title></line>`;
+    if(i%Math.max(1,Math.ceil(weeks.length/Math.floor(W/56)))===0)s+=`<text x="${pl+i*bw+bw/2}" y="${H-5}" text-anchor="middle">${fD(w)}</text>`});
   s+="</svg>";
-  s+='<div class="legend">'+["swim","bike","run","other"].map(k=>`<span><i style="background:${SPORTS[k].c}"></i>${SPORTS[k].n}</span>`).join("")+'<span><i style="background:var(--ink);height:3px"></i>Soll aus Plan</span><span>gestrichelt: aktuelle Woche</span></div>';
-  if(!D.planned.length)s+='<div class="hint">Keine geplanten Workouts im intervals.icu-Kalender gefunden. Ohne Plan im Kalender gibt es keine Soll-Linie.</div>';
-  return s;
+  s+='<div class="legend">'+["swim","bike","run"].map(k=>`<span><i style="background:${SPORTS[k].c}"></i>${SPORTS[k].n}</span>`).join("")+'<span><i style="background:var(--ink);height:3px;vertical-align:3px"></i>Soll</span><span><i style="background:var(--card2);border:1px solid var(--line)"></i>aktuelle Woche</span></div>';
+  if(!D.planned.length)s+='<div class="hint">Noch keine geplanten Workouts im intervals.icu-Kalender. Sobald der Trainingsplan dort liegt, erscheint die Soll-Linie.</div>';
+  $(id).innerHTML=s;
 }
 
 /* ---------- Rendern ---------- */
-const cw=id=>Math.max(300,Math.round(document.getElementById(id).clientWidth||640));
+const TABS=[["heute","Heute",'<path d="M3 12l9-8 9 8"/><path d="M5 10v10h14V10"/>'],["training","Training",'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>'],["erholung","Erholung",'<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/>'],["gesundheit","Gesundheit",'<rect x="3" y="3" width="18" height="18" rx="5"/><path d="M12 8v8M8 12h8"/>']];
+function setTab(t){TAB=t;store.set("imTab",t);
+  document.querySelectorAll("[data-tab]").forEach(s=>s.classList.toggle("on",s.dataset.tab===t));
+  document.querySelectorAll("#seg button,#tabbar button").forEach(b=>b.classList.toggle("on",b.dataset.t===t));
+  if(DATA)renderCharts();window.scrollTo({top:0});}
+$("seg").innerHTML=TABS.map(([k,n])=>`<button data-t="${k}">${n}</button>`).join("");
+$("tabbar").innerHTML=TABS.map(([k,n,ic])=>`<button data-t="${k}"><svg viewBox="0 0 24 24">${ic}</svg>${n}</button>`).join("");
+document.querySelectorAll("#seg button,#tabbar button").forEach(b=>b.onclick=()=>setTab(b.dataset.t));
+
 function render(){
   const D=DATA,t=today();
-  const toRace=diffDays(t,settings.raceDate),pw=Math.floor(diffDays(settings.planStart,t)/7)+1;
-  document.getElementById("countdown").textContent=`Noch ${toRace} Tage (${Math.ceil(toRace/7)} Wochen) · `+(pw<1?`Planstart in ${diffDays(t,settings.planStart)} Tagen`:pw>settings.planWeeks?"Plan abgeschlossen":`Planwoche ${pw} von ${settings.planWeeks}`);
-  document.getElementById("banner").innerHTML=D.source==="Beispieldaten"?'<div class="banner"><b>Beispieldaten.</b> Alle Werte sind erfunden und zeigen nur das Layout. In den Einstellungen den intervals.icu-Schlüssel eintragen und „intervals.icu“ wählen.</div>':"";
-  const ev=evaluate(D);
-  document.getElementById("ampel").innerHTML=`<div class="ampel"><div class="dot" style="background:${LV[ev.L]}"></div><div style="flex:1"><div class="head">${ev.head}</div><ul class="sig">${ev.S.map(s=>`<li><b style="background:${LV[s.l]}"></b>${esc(s.t)}${s.src?`<span class="src">${esc(s.src)}</span>`:""}</li>`).join("")}</ul></div></div>`;
+  const live=D.source.startsWith("intervals");
+  $("chip").className="chip "+(live?"live":"demo");$("chip").textContent=live?"Live":"Beispiel";
+  if(!live&&!$("banner").innerHTML)$("banner").innerHTML=`<div class="banner"><b>Beispieldaten.</b> Die Werte sind erfunden. ${settings.apiKey?"In den Einstellungen ist „Beispieldaten anzeigen“ aktiv.":'Trag in den <a href="#" id="bSet">Einstellungen</a> deinen intervals.icu-Schlüssel ein.'}</div>`;
+  const b=$("bSet");if(b)b.onclick=e=>{e.preventDefault();openSettings()};
+  // Hero
+  const toRace=diffDays(t,settings.raceDate),total=settings.planWeeks*7,done=Math.max(0,Math.min(total,diffDays(settings.planStart,t)));
+  const pw=Math.floor(diffDays(settings.planStart,t)/7)+1,frac=done/total;
+  const C=2*Math.PI*36;
+  $("hero").innerHTML=`<div class="lbl">Bis zum Start in Frankfurt</div>
+    <div class="big">${toRace}<small>Tage</small></div>
+    <div class="lbl">${fDY(settings.raceDate)} · ${Math.floor(toRace/7)} Wochen${toRace%7?" und "+(toRace%7)+(toRace%7===1?" Tag":" Tage"):""}</div>
+    <svg class="ring" viewBox="0 0 86 86"><circle cx="43" cy="43" r="36" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="8"/>${frac>0?`<circle cx="43" cy="43" r="36" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round" stroke-dasharray="${C*frac} ${C}" transform="rotate(-90 43 43)"/>`:""}<text x="43" y="40" text-anchor="middle" font-size="17">${pw<1?0:Math.min(pw,settings.planWeeks)}</text><text x="43" y="56" text-anchor="middle" font-size="10" opacity=".75">von ${settings.planWeeks}</text></svg>
+    <div class="bar"><i style="width:${(frac*100).toFixed(1)}%"></i></div>
+    <div class="meta"><div><b>${pw<1?"Start in "+diffDays(t,settings.planStart)+" T.":pw>settings.planWeeks?"Fertig":"Woche "+pw}</b>Trainingsplan</div><div><b>${D.pmc?nf(D.pmc.ctl):"–"}</b>Fitness</div><div><b>${D.pmc?nf(D.pmc.tsb):"–"}</b>Form</div></div>`;
+  // Ampel
+  const ev=evaluate(D),ic=['<path d="M5 12.5l4.5 4.5L19 7.5"/>','<path d="M12 7v6M12 17h.01"/>','<path d="M7 7l10 10M17 7L7 17"/>'][ev.L];
+  $("ampel").innerHTML=`<div class="status"><div class="ic" style="background:${LV[ev.L]}"><svg viewBox="0 0 24 24">${ic}</svg></div><div><div class="t1" style="color:${LV[ev.L]}">Heute · ${ev.t1}</div><div class="t2">${ev.t2}</div></div></div>
+    <ul class="sig">${ev.S.map(s=>`<li><i style="background:${LV[s.l]}"></i><div>${esc(s.t)}${s.src?`<span class="src">${esc(s.src)}</span>`:""}</div></li>`).join("")}</ul>
+    <button class="btn wide fab" id="btnSick1"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Krank oder verletzt melden</button>`;
+  $("btnSick1").onclick=openSick;
   // KPIs
   const mon=monday(t);let wk=0;D.activities.forEach(a=>{if(a.date>=mon&&a.date<=t)wk+=a.secs});
-  let wkS=0,hasS=false;D.planned.forEach(p=>{if(monday(p.date)===mon){wkS+=p.secs;hasS=true}});
-  let wkS2=0;D.planned.forEach(p=>{if(p.date>=mon&&p.date<=t)wkS2+=p.secs});
-  const k=[
-    ["Fitness (CTL)",D.pmc?nf(D.pmc.ctl):"–","42-Tage-Belastung"],
-    ["Ermüdung (ATL)",D.pmc?nf(D.pmc.atl):"–","7-Tage-Belastung"],
-    ["Form (TSB)",D.pmc?nf(D.pmc.tsb):"–","Fitness minus Ermüdung"],
-    ["HRV 7 Tage",D.hrvStat.r?nf(D.hrvStat.r)+" ms":"–",D.hrvStat.r?`Normal ${nf(D.hrvStat.lo)}–${nf(D.hrvStat.hi)}`:"zu wenig Daten"],
-    ["Ruhepuls",D.rhrStat.now?D.rhrStat.now+" /min":"–",D.rhrStat.base?"Mittel "+nf(D.rhrStat.base):""],
-    ["Schlaf letzte Nacht",D.sleepNow!=null?nf(D.sleepNow,1)+" h":"–",""],
-    ["Diese Woche",fH(wk)+" h",hasS?`Soll bis heute ${fH(wkS2)} h, Woche ${fH(wkS)} h`:"kein Soll im Kalender"]
+  let wkS=0,hasS=false,wkS2=0;D.planned.forEach(p=>{if(monday(p.date)===mon){wkS+=p.secs;hasS=true}if(p.date>=mon&&p.date<=t)wkS2+=p.secs});
+  const ser=(f,n)=>{const o=[];for(let i=n-1;i>=0;i--){const w=D.wm[addDays(t,-i)];o.push(w?f(w):null)}return o};
+  const delta=(arr,dec=0,inv=false)=>{const a=arr.filter(v=>v!=null);if(a.length<8)return"";const d=a[a.length-1]-a[a.length-8];const good=inv?d<0:d>0;return`<b class="${Math.abs(d)<.05?"":good?"up":"down"}">${d>0?"+":""}${nf(d,dec)}</b> zur Vorwoche`};
+  const ctlS=ser(w=>w.ctl,30),atlS=ser(w=>w.atl,30),tsbS=ser(w=>w.ctl!=null?w.ctl-w.atl:null,30),hrvS=ser(w=>w.hrv,30),rhrS=ser(w=>w.rhr,30),slS=ser(w=>w.sleepH,30);
+  const K=[
+    ["Fitness","var(--ctl)",D.pmc?nf(D.pmc.ctl):"–","",delta(ctlS),ctlS],
+    ["Ermüdung","var(--atl)",D.pmc?nf(D.pmc.atl):"–","",delta(atlS,0,true),atlS],
+    ["Form","var(--tsb)",D.pmc?nf(D.pmc.tsb):"–","",delta(tsbS),tsbS],
+    ["HRV (7 Tage)","var(--hrv)",D.hrvStat.r?nf(D.hrvStat.r):"–","ms",D.hrvStat.r?`Normal ${nf(D.hrvStat.lo)}–${nf(D.hrvStat.hi)} ms`:"zu wenig Daten",hrvS],
+    ["Ruhepuls","var(--rhr)",D.rhrStat.now||"–","/min",D.rhrStat.base?"Mittel "+nf(D.rhrStat.base):"",rhrS],
+    ["Schlaf","var(--sleep)",D.sleepNow!=null?nf(D.sleepNow,1):"–","h","letzte Nacht",slS],
+    ["Diese Woche","var(--run)",fH(wk),"h",hasS?`Soll bis heute ${fH(wkS2)} h · Woche ${fH(wkS)} h`:"kein Soll im Kalender",null]
   ];
-  document.getElementById("kpis").innerHTML=k.map(x=>`<div class="kpi"><div class="l">${x[0]}</div><div class="v">${x[1]}</div><div class="s">${x[2]}</div></div>`).join("");
-  document.getElementById("chWeeks").innerHTML=weekChart(D);
-  const days=n=>{const o=[];for(let i=n-1;i>=0;i--)o.push(addDays(t,-i));return o};
-  const shade=D.sick.map(s=>({start:s.start,end:s.end}));
-  const d120=days(120),g=(ds,f)=>ds.map(d=>{const w=D.wm[d];return w?f(w):null});
-  document.getElementById("chPmc").innerHTML=lineChart({W:cw("chPmc"),dates:d120,zero:true,shade,series:[
-    {name:"Fitness (CTL)",c:"var(--ctl)",v:g(d120,w=>w.ctl)},{name:"Ermüdung (ATL)",c:"var(--atl)",v:g(d120,w=>w.atl)},{name:"Form (TSB)",c:"var(--tsb)",v:g(d120,w=>w.ctl!=null?w.ctl-w.atl:null)}]})+'<div class="hint">Werte von intervals.icu. Form unter −30: hohe Ermüdung, zwischen −30 und −10: produktiver Trainingsbereich (Einteilung wie bei intervals.icu).</div>';
-  const d60=days(60);
-  const roll=d60.map((d,i)=>{const a=[];for(let j=0;j<7;j++){const w=D.wm[addDays(d,-j)];if(w&&w.hrv>0)a.push(Math.log(w.hrv))}return a.length>=4?Math.exp(mean(a)):null});
-  document.getElementById("chHrv").innerHTML=lineChart({W:cw("chHrv"),dates:d60,shade,band:D.hrvStat.r?[D.hrvStat.lo,D.hrvStat.hi]:null,series:[
-    {name:"Nachtwert",c:"var(--ctl)",dots:true,v:g(d60,w=>w.hrv)},{name:"7-Tage-Mittel",c:"var(--ink)",v:roll}]});
-  document.getElementById("chRhr").innerHTML=lineChart({W:cw("chRhr"),dates:d60,shade,series:[{name:"Ruhepuls",c:"var(--atl)",v:g(d60,w=>w.rhr)}]});
-  const d30=days(30);
-  document.getElementById("chSleep").innerHTML=lineChart({W:cw("chSleep"),dates:d30,h:180,series:[{name:"Stunden",c:"var(--ctl)",dec:1,v:g(d30,w=>w.sleepH)}]});
+  $("kpis").innerHTML=K.map(k=>`<div class="kpi"><div class="l"><i style="background:${k[1]}"></i>${k[0]}</div><div class="v">${k[2]}<small>${k[3]}</small></div><div class="d">${k[4]}</div>${k[5]?spark(k[5],k[1]):(hasS?`<svg viewBox="0 0 120 34" preserveAspectRatio="none"><rect x="0" y="13" width="120" height="8" rx="4" fill="var(--card2)"/><rect x="0" y="13" width="${Math.min(120,120*wk/Math.max(1,wkS))}" height="8" rx="4" fill="var(--run)"/></svg>`:"")}</div>`).join("");
   // Summen
-  const tot={swim:{h:0,km:0,n:0},bike:{h:0,km:0,n:0},run:{h:0,km:0,n:0},other:{h:0,km:0,n:0}};
   const from=settings.planStart<=t?settings.planStart:addDays(t,-27);
+  $("totTitle").textContent=settings.planStart<=t?"Seit Planstart":"Letzte 28 Tage";
+  const tot={swim:{h:0,km:0,n:0},bike:{h:0,km:0,n:0},run:{h:0,km:0,n:0},other:{h:0,km:0,n:0}};
   D.activities.forEach(a=>{if(a.date>=from&&a.date<=t){tot[a.sport].h+=a.secs;tot[a.sport].km+=a.km;tot[a.sport].n++}});
   const sumH=Object.values(tot).reduce((s,v)=>s+v.h,0);
-  document.getElementById("totals").innerHTML=(settings.planStart>t?`<div class="hint" style="margin:0 0 6px">Plan hat noch nicht begonnen. Angezeigt: letzte 28 Tage.</div>`:`<div class="hint" style="margin:0 0 6px">Seit ${fD(from)}</div>`)+
-    `<table><tr><th>Sportart</th><th class="n">Einheiten</th><th class="n">Stunden</th><th class="n">km</th></tr>`+
-    ["swim","bike","run","other"].map(k=>`<tr><td><i style="display:inline-block;width:9px;height:9px;border-radius:2px;background:${SPORTS[k].c};margin-right:6px"></i>${SPORTS[k].n}</td><td class="n">${tot[k].n}</td><td class="n">${fH(tot[k].h)}</td><td class="n">${nf(tot[k].km,k==="swim"?1:0)}</td></tr>`).join("")+
-    `<tr><td><b>Gesamt</b></td><td class="n">${Object.values(tot).reduce((s,v)=>s+v.n,0)}</td><td class="n"><b>${fH(sumH)}</b></td><td></td></tr></table>`;
-  const rec=D.activities.slice().sort((a,b)=>b.date.localeCompare(a.date)).slice(0,12);
-  document.getElementById("recent").innerHTML=rec.length?`<table><tr><th>Datum</th><th>Einheit</th><th class="n">Dauer</th><th class="n">km</th><th class="n hs">Ø Puls</th><th class="n hs">Last</th></tr>`+rec.map(a=>`<tr><td>${fDL(a.date)}</td><td><i style="display:inline-block;width:9px;height:9px;border-radius:2px;background:${SPORTS[a.sport].c};margin-right:6px"></i>${esc(a.name)}</td><td class="n">${fH(a.secs)}</td><td class="n">${nf(a.km,a.sport==="swim"?2:1)}</td><td class="n hs">${a.hr?Math.round(a.hr):"–"}</td><td class="n hs">${nf(a.load)}</td></tr>`).join("")+"</table>":'<div class="empty">Keine Einheiten</div>';
-  const TL={oberhalb:"oberhalb des Halses",unterhalb:"unterhalb des Halses",verletzung:"Verletzung"};
+  $("totSub").textContent=`ab ${fDY(from)} · gesamt ${fH(sumH)} h`;
+  $("totals").innerHTML=["swim","bike","run"].map(k=>`<div class="sp"><div class="n" style="color:${SPORTS[k].c}">${svgI(k,SPORTS[k].c)}${SPORTS[k].n}</div><div class="h">${fH(tot[k].h)}</div><div class="k">${nf(tot[k].km,k==="swim"?1:0)} km · ${tot[k].n}×</div></div>`).join("");
+  // Liste
+  const rec=D.activities.slice().sort((a,b)=>b.date.localeCompare(a.date)).slice(0,15);
+  $("recent").innerHTML=rec.length?rec.map(a=>`<div class="act"><div class="ico" style="background:${SPORTS[a.sport].c}">${svgI(a.sport,"#fff")}</div><div class="m"><b>${esc(a.name)}</b><span>${fDL(a.date)}${a.hr?" · Ø "+Math.round(a.hr)+" bpm":""}${a.load?" · Last "+nf(a.load):""}</span></div><div class="r"><b>${fH(a.secs)} h</b><span>${nf(a.km,a.sport==="swim"?2:1)} km</span></div></div>`).join(""):'<div class="empty">Keine Einheiten</div>';
+  // Krankheit
+  const TL={oberhalb:["oberhalb des Halses","var(--yellow)"],unterhalb:["unterhalb des Halses","var(--red)"],verletzung:["Verletzung","var(--hrv)"]};
   const sl=D.sick.slice().sort((a,b)=>b.start.localeCompare(a.start));
-  document.getElementById("sickList").innerHTML=sl.length?`<table><tr><th>Zeitraum</th><th class="n">Tage</th><th>Art</th><th>Notiz</th><th></th></tr>`+sl.map(s=>`<tr><td>${fD(s.start)} bis ${fD(s.end)}${t>=s.start&&t<=s.end?' <span class="tag">aktuell</span>':""}</td><td class="n">${diffDays(s.start,s.end)+1}</td><td>${TL[s.type]||""}</td><td>${esc(s.note)}</td><td class="n">${t>=s.start&&t<=s.end?`<button class="small" data-heal="${esc(s.id)}">gesund ab heute</button> `:""}<button class="small" data-del="${esc(s.id)}">löschen</button></td></tr>`).join("")+"</table>":'<div class="empty">Keine Einträge</div>';
-  document.getElementById("rules").innerHTML=`
-<p><b>HRV</b><span class="tag">studienbasiert</span> Verglichen wird das Mittel der letzten 7 Nächte (logarithmierter rMSSD) mit deinem Normalbereich aus den Nächten 8 bis 60 davor (Mittelwert ± 0,5 Standardabweichungen). Liegt das Wochenmittel darunter, soll eine harte Einheit gegen eine lockere getauscht werden. Dieses Vorgehen stammt aus Studien zum HRV-gesteuerten Ausdauertraining. Zwei Meta-Analysen von 2021 (Manresa-Rocamora et al., Int J Environ Res Public Health, und eine Arbeit im J Sci Med Sport) fanden gegenüber festen Plänen nur einen kleinen, nicht signifikanten Leistungsvorteil. Der Nutzen liegt vor allem darin, harte Einheiten an schlechten Tagen zu vermeiden.</p>
-<p><b>Ruhepuls</b><span class="tag">Erfahrungswert</span> Liegt der Ruhepuls 5 oder mehr Schläge über dem Mittel der Tage 8 bis 60, wird gewarnt. Die Schwelle ist nicht durch Studien festgelegt.</p>
-<p><b>Form</b><span class="tag">Konvention</span> Fitness ist der 42-Tage-, Ermüdung der 7-Tage-Durchschnitt der Trainingslast. Form ist die Differenz. Die Warnschwelle −30 folgt der Einteilung bei intervals.icu.</p>
-<p><b>Schlaf</b><span class="tag">Erfahrungswert</span> Unter 6 Stunden in der letzten Nacht wird von neuen Höchstbelastungen abgeraten.</p>
-<p><b>Krankheit</b><span class="tag">Erfahrungswert</span> Beschwerden nur oberhalb des Halses: kurz und locker. Beschwerden unterhalb des Halses oder Fieber: Pause. Danach 7 Tage Rückkehrphase mit Warnhinweis. Der IOC-Konsens zu akuten Atemwegsinfekten bei Sportlern (Snyders et al., Br J Sports Med) hält fest, dass es für diese Regel keine evidenzbasierte Grundlage gibt. Bei Fieber, Brustschmerz oder anhaltenden Beschwerden ärztlich abklären lassen.</p>
+  $("sickList").innerHTML=sl.length?sl.map(s=>{const cur=t>=s.start&&t<=s.end,tl=TL[s.type]||TL.oberhalb;return`<div class="sick"><div class="ico" style="width:10px;height:38px;border-radius:5px;background:${tl[1]}"></div><div class="m"><b>${fD(s.start)} bis ${fD(s.end)}</b>${cur?'<span class="tag">aktuell</span>':""}<span>${diffDays(s.start,s.end)+1} Tage · ${tl[0]}${s.note?" · "+esc(s.note):""}</span></div>${cur?`<button class="btn sm" data-heal="${esc(s.id)}">Gesund ab heute</button>`:""}<button class="btn sm" data-del="${esc(s.id)}">Löschen</button></div>`}).join(""):'<div class="empty">Keine Einträge</div>';
+  $("rules").innerHTML=`
+<p><b>HRV</b><span class="tag g">studienbasiert</span><br>Verglichen wird das Mittel der letzten 7 Nächte (logarithmierter rMSSD) mit deinem Normalbereich aus den Nächten 8 bis 60 davor (Mittelwert ± 0,5 Standardabweichungen). Liegt das Wochenmittel darunter, soll eine harte Einheit gegen eine lockere getauscht werden. Zwei Meta-Analysen von 2021 (Manresa-Rocamora et al., Int J Environ Res Public Health, und eine Arbeit im J Sci Med Sport) fanden gegenüber festen Plänen nur einen kleinen, nicht signifikanten Leistungsvorteil. Der Nutzen liegt vor allem darin, harte Einheiten an schlechten Tagen zu vermeiden.</p>
+<p><b>Ruhepuls</b><span class="tag g">Erfahrungswert</span><br>Liegt der Ruhepuls 5 oder mehr Schläge über dem Mittel der Tage 8 bis 60, wird gewarnt. Die Schwelle ist nicht durch Studien festgelegt.</p>
+<p><b>Form</b><span class="tag g">Konvention</span><br>Fitness ist der 42-Tage-, Ermüdung der 7-Tage-Durchschnitt der Trainingslast. Form ist die Differenz. Die Warnschwelle −30 folgt der Einteilung bei intervals.icu.</p>
+<p><b>Schlaf</b><span class="tag g">Erfahrungswert</span><br>Unter 6 Stunden in der letzten Nacht wird von neuen Höchstbelastungen abgeraten.</p>
+<p><b>Krankheit</b><span class="tag g">Erfahrungswert</span><br>Beschwerden nur oberhalb des Halses: kurz und locker. Beschwerden unterhalb des Halses oder Fieber: Pause. Danach 7 Tage Rückkehrphase mit Warnhinweis. Der IOC-Konsens zu akuten Atemwegsinfekten bei Sportlern (Snyders et al., Br J Sports Med) hält fest, dass es für diese Regel keine evidenzbasierte Grundlage gibt. Bei Fieber, Brustschmerz oder anhaltenden Beschwerden ärztlich abklären lassen.</p>
 <p class="hint">Die Ampel ersetzt keinen Trainer und keine ärztliche Beurteilung.</p>`;
-  document.getElementById("footer").textContent=`Datenquelle: ${D.source} · Stand ${new Date().toLocaleString("de-DE",{dateStyle:"short",timeStyle:"short"})}`;
+  $("footer").textContent=`Datenquelle: ${D.source} · Stand ${new Date().toLocaleString("de-DE",{dateStyle:"short",timeStyle:"short"})}`;
+  renderCharts();
+}
+function renderCharts(){
+  const D=DATA,t=today();
+  if(TAB==="training"){
+    weekChart(D);
+    const d120=[];for(let i=119;i>=0;i--)d120.push(addDays(t,-i));
+    const g=(ds,f)=>ds.map(d=>{const w=D.wm[d];return w?f(w):null});
+    lineChart("chPmc",{dates:d120,zero:true,shade:D.sick,series:[
+      {name:"Fitness",c:"var(--ctl)",area:true,v:g(d120,w=>w.ctl)},{name:"Ermüdung",c:"var(--atl)",w:1.6,v:g(d120,w=>w.atl)},{name:"Form",c:"var(--tsb)",v:g(d120,w=>w.ctl!=null?w.ctl-w.atl:null)}]});
+  }
+  if(TAB==="erholung"){
+    const d60=[];for(let i=59;i>=0;i--)d60.push(addDays(t,-i));
+    const g=(ds,f)=>ds.map(d=>{const w=D.wm[d];return w?f(w):null});
+    const roll=d60.map(d=>{const a=[];for(let j=0;j<7;j++){const w=D.wm[addDays(d,-j)];if(w&&w.hrv>0)a.push(Math.log(w.hrv))}return a.length>=4?Math.exp(mean(a)):null});
+    lineChart("chHrv",{dates:d60,shade:D.sick,band:D.hrvStat.r?[D.hrvStat.lo,D.hrvStat.hi]:null,h:220,series:[
+      {name:"Nachtwert",c:"var(--hrv)",dots:true,unit:" ms",v:g(d60,w=>w.hrv)},{name:"7-Tage-Mittel",c:"var(--hrv)",w:2.6,unit:" ms",v:roll}]});
+    lineChart("chRhr",{dates:d60,shade:D.sick,series:[{name:"Ruhepuls",c:"var(--rhr)",area:true,unit:" /min",v:g(d60,w=>w.rhr)}]});
+    const d30=d60.slice(30);
+    lineChart("chSleep",{dates:d30,series:[{name:"Schlaf",c:"var(--sleep)",area:true,dec:1,unit:" h",v:g(d30,w=>w.sleepH)}]});
+  }
 }
 
 /* ---------- Laden ---------- */
 async function load(){
-  const btn=document.getElementById("btnRefresh");btn.disabled=true;btn.textContent="Lädt …";
+  const btn=$("btnRefresh");btn.classList.add("spin");$("banner").innerHTML="";
   try{
-    if(settings.demo||!settings.apiKey)DATA=prep(demoData());
+    if(!isLive())DATA=prep(demoData());
     else{DATA=prep(await loadLive());store.set("imCache",{t:Date.now(),d:Object.assign({},DATA,{wm:undefined})})}
     render();
   }catch(e){
     const c=store.get("imCache",null);
-    if(c&&c.d){DATA=prep(c.d);DATA.source="intervals.icu (zwischengespeichert vom "+new Date(c.t).toLocaleString("de-DE",{dateStyle:"short",timeStyle:"short"})+")";render()}
-    else{DATA=prep(demoData());render()}
-    document.getElementById("banner").innerHTML=`<div class="banner" style="border-color:var(--red)"><b>Fehler beim Laden:</b> ${esc(e.message)}</div>`+document.getElementById("banner").innerHTML;
-  }finally{btn.disabled=false;btn.textContent="Aktualisieren"}
+    if(c&&c.d){DATA=prep(c.d);DATA.source="intervals.icu (Stand "+new Date(c.t).toLocaleString("de-DE",{dateStyle:"short",timeStyle:"short"})+")"}
+    else DATA=prep(demoData());
+    $("banner").innerHTML=`<div class="banner err"><b>Fehler beim Laden:</b> ${esc(e.message)}</div>`;
+    render();
+  }finally{btn.classList.remove("spin")}
 }
 
 /* ---------- Krankheit ---------- */
-const open=id=>document.getElementById(id).classList.add("open");
-const close=id=>document.getElementById(id).classList.remove("open");
-document.getElementById("btnSick").onclick=()=>{document.getElementById("sStart").value=today();document.getElementById("sEnd").value=today();document.getElementById("sNote").value="";document.getElementById("sErr").textContent="";open("mSick")};
-document.getElementById("sCancel").onclick=()=>close("mSick");
-document.getElementById("sSave").onclick=async()=>{
-  const start=document.getElementById("sStart").value,end=document.getElementById("sEnd").value||start;
-  const type=document.querySelector('input[name="sType"]:checked').value,note=document.getElementById("sNote").value.trim();
-  const err=document.getElementById("sErr");
+const open=id=>$(id).classList.add("open"),close=id=>$(id).classList.remove("open");
+function openSick(){$("sStart").value=today();$("sEnd").value=today();$("sNote").value="";$("sErr").textContent="";open("mSick")}
+$("btnSick2").onclick=openSick;
+$("sCancel").onclick=()=>close("mSick");
+$("sSave").onclick=async()=>{
+  const start=$("sStart").value,end=$("sEnd").value||start;
+  const type=document.querySelector('input[name="sType"]:checked').value,note=$("sNote").value.trim(),err=$("sErr");
   if(!start){err.textContent="Bitte den Beginn angeben.";return}
   if(end<start){err.textContent="Das Ende liegt vor dem Beginn.";return}
   try{
-    if(DATA.source==="Beispieldaten"){const l=store.get("imDemoSick",[]);l.push({id:"d"+Date.now(),start,end,type,note});store.set("imDemoSick",l)}
+    if(!isLive()){const l=store.get("imDemoSick",[]);l.push({id:"d"+Date.now(),start,end,type,note});store.set("imDemoSick",l)}
     else await api("/events",{method:"POST",body:JSON.stringify({category:type==="verletzung"?"INJURED":"SICK",start_date_local:start+"T00:00:00",end_date_local:addDays(end,1)+"T00:00:00",name:type==="verletzung"?"Verletzt":"Krank",description:(type==="verletzung"?"":"["+type+"] ")+note})});
     close("mSick");load();
   }catch(e){err.textContent=e.message}
 };
-document.getElementById("sickList").onclick=async ev=>{
-  const del=ev.target.getAttribute("data-del"),heal=ev.target.getAttribute("data-heal");
+$("sickList").onclick=async ev=>{
+  const btn=ev.target.closest("button");if(!btn)return;
+  const del=btn.getAttribute("data-del"),heal=btn.getAttribute("data-heal");
   if(!del&&!heal)return;
+  if(del&&btn.dataset.sure!=="1"){btn.dataset.sure="1";btn.textContent="Wirklich löschen?";btn.classList.add("red");return}
   try{
-    if(DATA.source==="Beispieldaten"){
+    if(!isLive()){
       let l=store.get("imDemoSick",[]);
       if(del)l=l.filter(s=>s.id!==del);else l.forEach(s=>{if(s.id===heal)s.end=addDays(today(),-1)<s.start?s.start:addDays(today(),-1)});
       store.set("imDemoSick",l);
-    }else if(del){if(!confirm("Eintrag in intervals.icu löschen?"))return;await api("/events/"+encodeURIComponent(del),{method:"DELETE"})}
+    }else if(del)await api("/events/"+encodeURIComponent(del),{method:"DELETE"});
     else{const s=DATA.sick.find(x=>String(x.id)===heal);const e=addDays(today(),-1)<s.start?s.start:addDays(today(),-1);
       await api("/events/"+encodeURIComponent(heal),{method:"PUT",body:JSON.stringify({end_date_local:addDays(e,1)+"T00:00:00"})})}
     load();
-  }catch(e){alert(e.message)}
+  }catch(e){$("banner").innerHTML=`<div class="banner err"><b>Fehler:</b> ${esc(e.message)}</div>`}
 };
 
 /* ---------- Einstellungen ---------- */
-document.getElementById("btnSettings").onclick=()=>{
-  document.getElementById("cKey").value=settings.apiKey;document.getElementById("cRace").value=settings.raceDate;
-  document.getElementById("cStart").value=settings.planStart;document.getElementById("cWeeks").value=settings.planWeeks;
-  document.getElementById("cDemo").value=settings.demo?"demo":"live";document.getElementById("cErr").textContent="";open("mSet")};
-document.getElementById("cCancel").onclick=()=>close("mSet");
-document.getElementById("cSave").onclick=()=>{
-  const key=document.getElementById("cKey").value.trim(),demo=document.getElementById("cDemo").value==="demo";
-  if(!demo&&!key){document.getElementById("cErr").textContent="Für intervals.icu wird der API-Schlüssel benötigt.";return}
-  settings={apiKey:key,raceDate:document.getElementById("cRace").value||DEFAULTS.raceDate,planStart:document.getElementById("cStart").value||DEFAULTS.planStart,
-    planWeeks:+document.getElementById("cWeeks").value||DEFAULTS.planWeeks,demo};
+function openSettings(){
+  $("cKey").value=settings.apiKey;$("cRace").value=settings.raceDate;$("cStart").value=settings.planStart;
+  $("cWeeks").value=settings.planWeeks;$("cDemo").checked=!!settings.forceDemo;$("cErr").textContent="";open("mSet")}
+$("btnSettings").onclick=openSettings;
+$("cCancel").onclick=()=>close("mSet");
+$("cSave").onclick=()=>{
+  settings={apiKey:$("cKey").value.trim(),raceDate:$("cRace").value||DEFAULTS.raceDate,planStart:$("cStart").value||DEFAULTS.planStart,
+    planWeeks:+$("cWeeks").value||DEFAULTS.planWeeks,forceDemo:$("cDemo").checked};
   store.set("imSettings",settings);close("mSet");load();
 };
-document.getElementById("btnRefresh").onclick=load;
-let rz;window.addEventListener("resize",()=>{clearTimeout(rz);rz=setTimeout(()=>{if(DATA)render()},200)});
+$("btnRefresh").onclick=load;
+let rz;window.addEventListener("resize",()=>{clearTimeout(rz);rz=setTimeout(()=>{if(DATA)renderCharts()},200)});
 document.querySelectorAll(".modal").forEach(m=>m.addEventListener("click",e=>{if(e.target===m)m.classList.remove("open")}));
+setTab(TABS.some(x=>x[0]===TAB)?TAB:"heute");
 load();
 </script>
 </body>
