@@ -161,6 +161,7 @@ footer{color:var(--muted);font-size:12px;margin-top:20px;text-align:center}
 .plan{margin-top:12px;padding:12px;border-radius:12px;border:1px dashed var(--line);font-size:14px}
 .plan b{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
 .prio{display:grid;place-items:center;width:38px;height:38px;border-radius:12px;font-weight:800;color:#fff;flex:none}
+.coachtxt{font-size:14px;line-height:1.55;margin-top:6px}
 </style>
 </head>
 <body>
@@ -178,12 +179,21 @@ footer{color:var(--muted);font-size:12px;margin-top:20px;text-align:center}
     <div class="hero" id="hero"></div>
     <div class="grid">
       <div class="card" id="ampel"></div>
+      <div class="card" id="coachCard" style="display:none"></div>
       <div class="kpis" id="kpis"></div>
     </div>
   </section>
 
   <section data-tab="training">
     <div class="grid">
+      <div class="card"><h2>Coach und Trainingsplan</h2><div class="sub">Ziel festlegen, Daten an Claude übergeben, Plan übernehmen</div>
+        <div class="row"><div><label class="f" for="gSport">Sportart</label><select id="gSport"><option>Laufen</option><option>Radfahren</option><option>Schwimmen</option><option>Triathlon</option><option>Allgemeine Fitness</option><option>Gesundheit</option></select></div>
+        <div><label class="f" for="gDate">Zieldatum</label><input type="date" id="gDate"></div></div>
+        <div class="row"><div><label class="f" for="gDist">Distanz</label><input id="gDist" placeholder="z. B. 10 km, Langdistanz"></div><div><label class="f" for="gTime">Zielzeit</label><input id="gTime" placeholder="z. B. 50:00 oder ankommen"></div></div>
+        <div class="row"><div><label class="f" for="gHours">Stunden pro Woche</label><input type="number" id="gHours" min="1" max="30" step="0.5"></div><div><label class="f" for="gDays">Trainingstage pro Woche</label><input type="number" id="gDays" min="1" max="7"></div></div>
+        <label class="f" for="gNote">Sonstiges</label><textarea id="gNote" rows="2" placeholder="z. B. keine Zeit am Mittwoch, Knie empfindlich, Schwimmbad nur samstags"></textarea>
+        <div class="actions"><button class="btn" id="btnCopy"><svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></svg>Für Claude kopieren</button><button class="btn blue" id="btnImport">Plan übernehmen</button></div>
+        <div class="hint" id="coachHint">Claude wertet deine Daten jeden Morgen aus. Die Auswertung steht dann unter Heute. Ziel hier eintragen, dann richtet Claude den Plan danach aus.</div></div>
       <div class="card"><h2>Wettkämpfe und Ziele</h2><div class="sub">Gespeichert im intervals.icu-Kalender</div><div class="list" id="raceList"></div><button class="btn wide" id="btnRace" style="margin-top:12px"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Wettkampf oder Ziel eintragen</button></div>
       <div class="card"><h2>Wochenstunden</h2><div class="sub">Ist je Sportart und Soll aus dem Plan</div><div class="chartwrap" id="chWeeks"></div></div>
       <div class="card"><h2 id="totTitle">Summen</h2><div class="sub" id="totSub"></div><div class="sports" id="totals"></div></div>
@@ -234,6 +244,15 @@ footer{color:var(--muted);font-size:12px;margin-top:20px;text-align:center}
   <div class="actions"><button class="btn" id="sCancel">Abbrechen</button><button class="btn red" id="sSave">Speichern</button></div>
 </div></div>
 
+<div class="modal" id="mImp"><div class="sheet">
+  <h3>Plan übernehmen</h3>
+  <div class="sub">Füge hier die Antwort von Claude ein. Die Einheiten werden in deinen intervals.icu-Kalender eingetragen und gehen von dort auf die Uhr.</div>
+  <textarea id="impText" rows="8" placeholder="Antwort von Claude einfügen"></textarea>
+  <div class="hint" id="impInfo"></div>
+  <div class="err" id="impErr"></div>
+  <div class="actions"><button class="btn" id="impCancel">Abbrechen</button><button class="btn blue" id="impSave">Prüfen</button></div>
+</div></div>
+
 <div class="modal" id="mRace"><div class="sheet">
   <h3>Wettkampf oder Ziel</h3>
   <div class="sub">Wird im intervals.icu-Kalender gespeichert und erscheint im Countdown.</div>
@@ -276,7 +295,7 @@ let settings=Object.assign({},DEFAULTS,store.get("imSettings",{}));
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");
 const isLive=()=>!!settings.apiKey&&!settings.forceDemo;
-const VERSION="4";
+const VERSION="5";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -341,13 +360,14 @@ async function loadLive(){
     secs:a.moving_time||a.elapsed_time||0,km:(a.distance||0)/1000,load:a.icu_training_load||0,hr:a.average_heartrate||null}));
   const wellness=(well||[]).map(w=>({date:w.id,ctl:w.ctl,atl:w.atl,hrv:w.hrv||null,rhr:w.restingHR||null,
     sleepH:w.sleepSecs?w.sleepSecs/3600:null}));
-  const sick=[],planned=[],races=[];
+  const sick=[],planned=[],races=[],notes=[];
   (evs||[]).forEach(e=>{
+    if(e.category==="NOTE"&&/^Coach/.test(e.name||"")){notes.push({id:e.id,date:String(e.start_date_local).slice(0,10),name:e.name,text:e.description||""});return}
     if(String(e.category||"").startsWith("RACE"))races.push({id:e.id,date:String(e.start_date_local).slice(0,10),name:e.name||"Wettkampf",prio:String(e.category).slice(-1)});
     else if(e.category==="SICK"||e.category==="INJURED")sick.push(sickFromEvent(e));
-    else if(e.category==="WORKOUT"&&e.start_date_local)planned.push({date:e.start_date_local.slice(0,10),sport:sportOf(e.type),secs:e.moving_time||0,name:e.name||""});
+    else if(e.category==="WORKOUT"&&e.start_date_local)planned.push({id:e.id,date:e.start_date_local.slice(0,10),sport:sportOf(e.type),secs:e.moving_time||0,name:e.name||""});
   });
-  return{activities,wellness,sick,planned,races,source:"intervals.icu"};
+  return{activities,wellness,sick,planned,races,notes,source:"intervals.icu"};
 }
 
 /* ---------- Beispieldaten ---------- */
@@ -380,7 +400,7 @@ function demoData(){
     wellness.push({date:d,ctl,atl,hrv:Math.round(64+gauss()*5-(isSick(d)?16:0)-(after?8:0)-(load>110?4:0)),rhr:Math.round(47+gauss()*1.4+(isSick(d)?7:0)+(after?3:0)),sleepH:Math.max(4.5,7.3+gauss()*0.7)});
   }
   let races=store.get("imDemoRaces",null);if(!races){races=[{id:"r1",date:addDays(end,225),name:"Ironman Frankfurt (Beispiel)",prio:"A"},{id:"r2",date:addDays(end,90),name:"Halbmarathon (Beispiel)",prio:"B"},{id:"r3",date:addDays(end,-20),name:"Marathon (Beispiel)",prio:"A"}];store.set("imDemoRaces",races)}
-  return{activities,wellness,sick,planned,races,source:"Beispieldaten"};
+  return{activities,wellness,sick,planned,races,notes:store.get("imDemoNotes",[]),source:"Beispieldaten"};
 }
 
 /* ---------- Kennzahlen ---------- */
@@ -556,10 +576,12 @@ function render(){
   // Ampel
   const ev=evaluate(D),ic=['<path d="M5 12.5l4.5 4.5L19 7.5"/>','<path d="M12 7v6M12 17h.01"/>','<path d="M7 7l10 10M17 7L7 17"/>'][ev.L];
   $("ampel").innerHTML=`<div class="status"><div class="ic" style="background:${LV[ev.L]}"><svg viewBox="0 0 24 24">${ic}</svg></div><div><div class="t1" style="color:${LV[ev.L]}">Heute · ${ev.t1}</div><div class="t2">${ev.t2}</div></div></div>
-    ${(()=>{const pt=D.planned.filter(p=>p.date===t);return pt.length?`<div class="plan"><b>Heute im Plan</b>${pt.map(p=>`${SPORTS[p.sport].n}${p.secs?" · "+fH(p.secs)+" h":""}${p.name?" · "+esc(p.name):""}`).join("<br>")}${ev.L===1?'<div class="hint" style="margin-top:6px">Ampel Gelb: harte Anteile weglassen oder die Einheit mit einer lockeren tauschen.</div>':ev.L===2?'<div class="hint" style="margin-top:6px">Ampel Rot: Einheit heute ausfallen lassen.</div>':""}</div>`:""})()}
+    ${(()=>{const pt=D.planned.filter(p=>p.date===t);if(!pt.length){const sg=suggest(D,ev);return`<div class="plan"><b>Vorschlag für heute</b>${sg}<div class="hint" style="margin-top:6px">Einfache Regel aus Ampel und Belastung, keine Trainerauswertung.</div></div>`}return pt.length?`<div class="plan"><b>Heute im Plan</b>${pt.map(p=>`${SPORTS[p.sport].n}${p.secs?" · "+fH(p.secs)+" h":""}${p.name?" · "+esc(p.name):""}`).join("<br>")}${ev.L===1?'<div class="hint" style="margin-top:6px">Ampel Gelb: harte Anteile weglassen oder die Einheit mit einer lockeren tauschen.</div>':ev.L===2?'<div class="hint" style="margin-top:6px">Ampel Rot: Einheit heute ausfallen lassen.</div>':""}</div>`:""})()}
     <ul class="sig">${ev.S.map(s=>`<li><i style="background:${LV[s.l]}"></i><div>${esc(s.t)}${s.src?`<span class="src">${esc(s.src)}</span>`:""}</div></li>`).join("")}</ul>
     <button class="btn wide fab" id="btnSick1"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Krank oder verletzt melden</button>`;
   $("btnSick1").onclick=openSick;
+  {const ns=(D.notes||[]).filter(n=>n.date<=t&&n.date>=addDays(t,-2)).sort((a,b)=>b.date.localeCompare(a.date));const cc=$("coachCard");
+   if(ns.length){const n=ns[0];cc.style.display="";cc.innerHTML=`<h2>Coach-Auswertung</h2><div class="sub">${n.date===t?"Heute":fD(n.date)} · von Claude</div><div class="coachtxt">${esc(n.text).replace(/\n/g,"<br>")}</div>`}else cc.style.display="none"}
   // KPIs
   const mon=monday(t);let wk=0;D.activities.forEach(a=>{if(a.date>=mon&&a.date<=t)wk+=a.secs});
   let wkS=0,hasS=false,wkS2=0;D.planned.forEach(p=>{if(monday(p.date)===mon){wkS+=p.secs;hasS=true}if(p.date>=mon&&p.date<=t)wkS2+=p.secs});
@@ -675,6 +697,76 @@ $("sickList").onclick=async ev=>{
     load();
   }catch(e){$("banner").innerHTML=`<div class="banner err"><b>Fehler:</b> ${esc(e.message)}</div>`}
 };
+
+/* ---------- Tagesvorschlag ---------- */
+function suggest(D,ev){
+  const t=today();if(ev.L===2)return"Ruhetag. Erholung geht vor.";
+  if(ev.L===1)return"Locker 30 bis 45 Minuten im Grundlagenbereich oder Pause.";
+  const days=[];for(let i=1;i<=6;i++){const d=addDays(t,-i);days.push(D.activities.some(a=>a.date===d))}
+  if(days.every(Boolean))return"Ruhetag oder sehr locker. Du hast seit sechs Tagen jeden Tag trainiert.";
+  const tsb=D.pmc?D.pmc.tsb:0;
+  if(tsb<-20)return"Locker 45 bis 60 Minuten im Grundlagenbereich. Die Ermüdung ist gerade hoch.";
+  if(tsb>5)return"Du bist erholt: Eine intensive Einheit (z. B. Intervalle) oder eine lange Einheit passt heute.";
+  return"Grundlage 45 bis 90 Minuten, locker. Eine kurze Tempoeinheit ist möglich, wenn du dich gut fühlst.";
+}
+
+/* ---------- Coach ---------- */
+const GK=["gSport","gDate","gDist","gTime","gHours","gDays","gNote"];
+function loadGoal(){const g=store.get("imGoal",{});GK.forEach(k=>{if(g[k]!=null)$(k).value=g[k]})}
+function saveGoal(){const g={};GK.forEach(k=>g[k]=$(k).value);store.set("imGoal",g);return g}
+GK.forEach(k=>$(k).addEventListener("change",saveGoal));
+function coachText(){
+  const D=DATA,t=today(),g=saveGoal(),L=[];
+  L.push("Bitte werte meine Trainings- und Gesundheitsdaten aus wie ein erfahrener Trainer und erstelle mir einen Trainingsplan (oder beantworte meine Frage).");
+  L.push("","ZIEL",`Sportart: ${g.gSport||"-"}`,`Zieldatum: ${g.gDate||"-"}`,`Distanz: ${g.gDist||"-"}`,`Zielzeit: ${g.gTime||"-"}`,`Stunden pro Woche: ${g.gHours||"-"}`,`Trainingstage pro Woche: ${g.gDays||"-"}`,`Sonstiges: ${g.gNote||"-"}`);
+  L.push("",`STAND (${t})`);
+  if(D.pmc)L.push(`Fitness (CTL) ${nf(D.pmc.ctl)}, Ermüdung (ATL) ${nf(D.pmc.atl)}, Form (TSB) ${nf(D.pmc.tsb)}`);
+  const w42=D.wm[addDays(t,-42)];if(w42&&w42.ctl!=null)L.push(`Fitness vor 6 Wochen: ${nf(w42.ctl)}`);
+  if(D.hrvStat.r)L.push(`HRV 7-Tage-Mittel ${nf(D.hrvStat.r)} ms, Normalbereich ${nf(D.hrvStat.lo)} bis ${nf(D.hrvStat.hi)} ms`);
+  if(D.rhrStat.now)L.push(`Ruhepuls ${D.rhrStat.now}${D.rhrStat.base?", Mittel "+nf(D.rhrStat.base):""}`);
+  const sl=[];for(let i=0;i<7;i++){const w=D.wm[addDays(t,-i)];if(w&&w.sleepH)sl.push(w.sleepH)}if(sl.length)L.push(`Schlaf Mittel 7 Tage: ${nf(mean(sl),1)} h`);
+  L.push("Ampel heute: "+evaluate(D).t2);
+  L.push("","WOCHENSTUNDEN (letzte 12 Wochen, Montag; Schwimmen/Rad/Laufen/Sonstiges)");
+  const mon=monday(t);for(let i=11;i>=0;i--){const w=addDays(mon,-7*i),o={swim:0,bike:0,run:0,other:0};D.activities.forEach(a=>{if(monday(a.date)===w)o[a.sport]+=a.secs/3600});L.push(`${w}: ${nf(o.swim,1)} / ${nf(o.bike,1)} / ${nf(o.run,1)} / ${nf(o.other,1)} h`)}
+  L.push("","LETZTE EINHEITEN");
+  D.activities.slice().sort((a,b)=>b.date.localeCompare(a.date)).slice(0,20).forEach(a=>L.push(`${a.date} ${SPORTS[a.sport].n}: ${a.name}, ${fH(a.secs)} h, ${nf(a.km,1)} km${a.hr?", Ø HF "+Math.round(a.hr):""}${a.load?", Last "+nf(a.load):""}`));
+  const sk=D.sick.filter(s=>s.end>=addDays(t,-90));if(sk.length){L.push("","KRANKHEIT/VERLETZUNG (90 Tage)");sk.forEach(s=>L.push(`${s.start} bis ${s.end}: ${s.type}${s.note?" ("+s.note+")":""}`))}
+  const up=(D.races||[]).filter(r=>r.date>=t);if(up.length){L.push("","WETTKÄMPFE");up.forEach(r=>L.push(`${r.date} ${r.name} (Priorität ${r.prio})`))}
+  const pl=D.planned.filter(p=>p.date>=t);if(pl.length)L.push("",`Bereits geplant: ${pl.length} Einheiten ab heute im Kalender.`);
+  L.push("","ANTWORTFORMAT","Erst eine kurze Auswertung in Worten. Dann den Plan als JSON-Liste in einem Codeblock mit json, je Einheit:",'{"date":"JJJJ-MM-TT","sport":"Run|Ride|Swim|Workout","name":"kurzer Titel","minutes":60,"description":"Ablauf im intervals.icu-Workout-Format, z. B. - 15m Z1 / 4x - 4m Z4 - 3m Z1 / - 10m Z1"}');
+  return L.join("\n");
+}
+$("btnCopy").onclick=async()=>{const txt=coachText();try{await navigator.clipboard.writeText(txt);$("coachHint").textContent="Kopiert. Jetzt in einen Claude-Chat einfügen und abschicken."}catch(e){$("impText").value=txt;open("mImp");$("impInfo").textContent="Kopieren wurde blockiert. Text hier markieren und kopieren."}};
+function parsePlan(txt){
+  let m=txt.match(/```json\s*([\s\S]*?)```/i);let s=m?m[1]:txt.slice(txt.indexOf("["),txt.lastIndexOf("]")+1);
+  const arr=JSON.parse(s);if(!Array.isArray(arr))throw new Error("Keine Liste gefunden.");
+  return arr.map(x=>({date:String(x.date).slice(0,10),sport:String(x.sport||"Workout"),name:String(x.name||"Training"),minutes:+x.minutes||0,description:String(x.description||"")})).filter(x=>/^\d{4}-\d{2}-\d{2}$/.test(x.date));
+}
+async function importPlan(items){
+  let n=0;for(const p of items){
+    const body={category:"WORKOUT",start_date_local:p.date+"T00:00:00",type:p.sport,name:p.name,description:p.description};if(p.minutes)body.moving_time=Math.round(p.minutes*60);
+    if(!isLive()){const l=store.get("imDemoPlan",[]);l.push(p);store.set("imDemoPlan",l)}else await api("/events",{method:"POST",body:JSON.stringify(body)});n++}
+  return n;
+}
+let pending=null;
+$("btnImport").onclick=()=>{$("impText").value="";$("impInfo").textContent="";$("impErr").textContent="";$("impSave").textContent="Prüfen";pending=null;open("mImp")};
+$("impCancel").onclick=()=>close("mImp");
+$("impSave").onclick=async()=>{
+  try{
+    if(!pending){pending=parsePlan($("impText").value);if(!pending.length)throw new Error("Keine Einheiten erkannt.");
+      $("impInfo").textContent=`${pending.length} Einheiten erkannt, von ${pending[0].date} bis ${pending[pending.length-1].date}. Nochmal tippen zum Eintragen.`;$("impSave").textContent="Eintragen";return}
+    $("impSave").textContent="Trägt ein …";const n=await importPlan(pending);pending=null;close("mImp");$("coachHint").textContent=`${n} Einheiten eingetragen.`;load();
+  }catch(e){$("impErr").textContent="Fehler: "+e.message;$("impSave").textContent="Prüfen";pending=null}
+};
+loadGoal();
+async function writeNote(date,text){
+  const name="Coach "+date;
+  if(!isLive()){const l=store.get("imDemoNotes",[]).filter(n=>n.date!==date);l.push({id:"n"+date,date,name,text});store.set("imDemoNotes",l);await load();return 1}
+  for(const n of (DATA.notes||[]).filter(n=>n.date===date))await api("/events/"+encodeURIComponent(n.id),{method:"DELETE"});
+  await api("/events",{method:"POST",body:JSON.stringify({category:"NOTE",start_date_local:date+"T00:00:00",end_date_local:addDays(date,1)+"T00:00:00",name,description:text})});
+  await load();return 1;
+}
+window.coach={live:()=>isLive(),version:VERSION,writeNote,summary:()=>coachText(),data:()=>DATA,importPlan:async items=>{const n=await importPlan(items);await load();return n},deletePlanned:async ids=>{for(const id of ids)await api("/events/"+encodeURIComponent(id),{method:"DELETE"});await load();return ids.length}};
 
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
