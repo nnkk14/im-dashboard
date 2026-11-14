@@ -261,6 +261,7 @@ footer{color:var(--muted);font-size:12px;margin-top:20px;text-align:center}
     <div><label class="f" for="rDate">Datum</label><input type="date" id="rDate"></div>
     <div><label class="f" for="rPrio">Priorität</label><select id="rPrio"><option value="A">A · Saisonhöhepunkt</option><option value="B">B · wichtig</option><option value="C">C · Test, Training</option></select></div>
   </div>
+  <label class="f" for="rSport">Sportart</label><select id="rSport"><option value="Triathlon">Triathlon</option><option value="Run">Laufen</option><option value="Ride">Radfahren</option><option value="Swim">Schwimmen</option><option value="Other">Sonstiges</option></select>
   <div class="hint">Der Countdown oben zählt bis zum nächsten A-Wettkampf. Gibt es keinen, bis zum nächsten Termin.</div>
   <div class="err" id="rErr"></div>
   <div class="actions"><button class="btn" id="rCancel">Abbrechen</button><button class="btn blue" id="rSave">Speichern</button></div>
@@ -295,7 +296,7 @@ let settings=Object.assign({},DEFAULTS,store.get("imSettings",{}));
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");
 const isLive=()=>!!settings.apiKey&&!settings.forceDemo;
-const VERSION="5";
+const VERSION="6";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -337,7 +338,7 @@ async function api(path,opts={}){
   try{res=await fetch("https://intervals.icu/api/v1/athlete/0"+path,Object.assign({},opts,{headers}));}
   catch(e){throw new Error("intervals.icu ist nicht erreichbar. Bitte Internetverbindung prüfen.")}
   if(res.status===401||res.status===403)throw new Error("intervals.icu lehnt den API-Schlüssel ab (Status "+res.status+"). Bitte den Schlüssel in den Einstellungen prüfen.");
-  if(!res.ok)throw new Error("intervals.icu antwortet mit Status "+res.status+".");
+  if(!res.ok){let m="";try{const b=await res.text();try{const j=JSON.parse(b);m=(Array.isArray(j)?j[0]:j)?.error||(Array.isArray(j)?j[0]:j)?.message||b}catch(_){m=b}}catch(_){}const er=new Error("intervals.icu antwortet mit Status "+res.status+(m?": "+String(m).slice(0,160):"")+".");er.status=res.status;throw er}
   const t=await res.text();return t?JSON.parse(t):null;
 }
 function sickFromEvent(e){
@@ -564,7 +565,7 @@ function render(){
   if(!main){$("hero").innerHTML=`<div class="lbl">Nächstes Ziel</div><div class="big" style="font-size:30px">Noch kein Termin</div><div class="lbl">Trag einen Wettkampf oder ein Ziel ein, dann zählt hier der Countdown.</div>
     <button class="btn" id="heroRace">${settings.raceDate&&!D.races.length&&isLive()?"Wettkampf am "+fDY(settings.raceDate)+" übernehmen":"Wettkampf oder Ziel eintragen"}</button>
     <div class="meta"><div><b>${D.pmc?nf(D.pmc.ctl):"–"}</b>Fitness</div><div><b>${D.pmc?nf(D.pmc.tsb):"–"}</b>Form</div></div>`;
-    $("heroRace").onclick=()=>openRace(settings.raceDate&&!D.races.length?{name:"Ironman Frankfurt",date:settings.raceDate,prio:"A"}:null);}
+    $("heroRace").onclick=()=>openRace(settings.raceDate&&!D.races.length?{name:"Ironman Frankfurt",date:settings.raceDate,prio:"A",sport:"Triathlon"}:null);}
   else{const toRace=diffDays(t,main.date);
   $("hero").innerHTML=`<div class="lbl">Bis ${esc(main.name)}</div>
     <div class="big">${toRace}<small>${toRace===1?"Tag":"Tage"}</small></div>
@@ -769,7 +770,7 @@ async function writeNote(date,text){
 window.coach={live:()=>isLive(),version:VERSION,writeNote,summary:()=>coachText(),data:()=>DATA,importPlan:async items=>{const n=await importPlan(items);await load();return n},deletePlanned:async ids=>{for(const id of ids)await api("/events/"+encodeURIComponent(id),{method:"DELETE"});await load();return ids.length}};
 
 /* ---------- Wettkämpfe ---------- */
-function openRace(pre){$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
+function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
 $("btnRace").onclick=()=>openRace(null);
 $("rCancel").onclick=()=>close("mRace");
 $("rSave").onclick=async()=>{
@@ -777,7 +778,10 @@ $("rSave").onclick=async()=>{
   if(!name||!date){$("rErr").textContent="Bitte Name und Datum angeben.";return}
   try{
     if(!isLive()){const l=store.get("imDemoRaces",[]);l.push({id:"r"+Date.now(),name,date,prio});store.set("imDemoRaces",l)}
-    else await api("/events",{method:"POST",body:JSON.stringify({category:"RACE_"+prio,start_date_local:date+"T00:00:00",name})});
+    else{const sp=$("rSport").value,base={category:"RACE_"+prio,start_date_local:date+"T00:00:00",end_date_local:addDays(date,1)+"T00:00:00",name};
+      const tries=[sp==="Triathlon"?"Triathlon":sp,"Other","Run",null];let last;
+      for(const ty of [...new Set(tries)]){try{await api("/events",{method:"POST",body:JSON.stringify(ty?Object.assign({type:ty},base):base)});last=null;break}catch(e){last=e;if(e.status!==422)break}}
+      if(last)throw last}
     if(settings.raceDate){delete settings.raceDate;store.set("imSettings",settings)}
     close("mRace");load();
   }catch(e){$("rErr").textContent=e.message}
