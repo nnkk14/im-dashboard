@@ -767,9 +767,30 @@ label.f b{color:var(--acc);font-weight:600;margin-left:6px}
 .whuge small{white-space:nowrap}
 .chkask .btn{white-space:nowrap}
 .obrow{opacity:.11}
+/* v23 */
+#splash{position:fixed;inset:0;z-index:500;background:var(--bg,#101318);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;transition:opacity .45s ease;animation:spAuto .4s ease 5.5s forwards}
+#splash.out{opacity:0;pointer-events:none}
+@keyframes spAuto{to{opacity:0;visibility:hidden}}
+#splash svg{width:112px;height:112px;overflow:visible}
+#splash .sbg{fill:var(--lg1,#0C447C);transform-origin:32px 32px;animation:spPop .45s cubic-bezier(.2,.9,.3,1.3) both}
+#splash .swave{stroke:var(--lg2,#85B7EB);stroke-dasharray:24;stroke-dashoffset:24;animation:spDraw .45s ease .35s forwards}
+#splash .swheel{stroke:#fff;transform-origin:34px 34px;stroke-dasharray:51;stroke-dashoffset:51;animation:spDraw .5s ease .6s forwards,spRoll .9s ease .6s both}
+#splash .sarrow{stroke:var(--lg3,#EF9F27);stroke-dasharray:15;stroke-dashoffset:15;animation:spDraw .3s ease 1s forwards}
+#splash .sdot{fill:var(--lg3,#EF9F27);transform-origin:54px 22px;transform:scale(0);animation:spPop .3s cubic-bezier(.2,.9,.3,1.6) 1.22s forwards}
+#splash .sname{font:700 22px "Barlow Semi Condensed",system-ui,sans-serif;color:var(--ink,#fff);opacity:0;transform:translateY(6px);animation:spName .4s ease 1.05s forwards}
+@keyframes spPop{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes spDraw{to{stroke-dashoffset:0}}
+@keyframes spRoll{from{transform:rotate(-200deg)}to{transform:rotate(0)}}
+@keyframes spName{to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){#splash *{animation-duration:.01s!important;animation-delay:0s!important}}
+.banner.off{background:color-mix(in srgb,var(--acc) 14%,var(--card));border:1px solid color-mix(in srgb,var(--acc) 40%,transparent)}
+#btnFb svg{fill:none;stroke:currentColor;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.seg3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:12px 0}.seg3 button{padding:10px;border-radius:12px;background:var(--card2);font-weight:600;font-size:14px}.seg3 button.on{background:var(--acc);color:#fff}
+#fbTxt{width:100%;resize:vertical;font:inherit;padding:12px;border-radius:14px;background:var(--card2);color:var(--ink);border:0}
 </style>
 </head>
 <body>
+<div id="splash" aria-hidden="true"><svg viewBox="0 0 64 64"><rect class="sbg" width="64" height="64" rx="14"/><path class="swave" d="M8 40 q4 -5 8 0 t8 0" stroke-width="4" fill="none" stroke-linecap="round"/><circle class="swheel" cx="34" cy="34" r="8" stroke-width="4" fill="none"/><path class="sarrow" d="M42 34 L52 24" stroke-width="4.5" stroke-linecap="round"/><circle class="sdot" cx="54" cy="22" r="3"/></svg><div class="sname">Mein Training</div></div>
 <div class="wrap">
   <div class="top">
     <h1 id="appTitle">Mein Training</h1>
@@ -946,7 +967,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="22";
+const VERSION="23";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -1235,7 +1256,7 @@ function render(){
     <button class="btn wide fab" id="btnSick1"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Krank oder verletzt melden</button>`;
   $("btnSick1").onclick=openSick;$("ampel").classList.toggle("compact",!!(DATA.notes||[]).find(n=>n.name==="Coach "+t));$("ampMore").onclick=()=>$("ampel").classList.toggle("open");
   {const ns=(D.notes||[]).filter(n=>/^Coach \d/.test(n.name||"")&&n.date<=t&&n.date>=addDays(t,-2)).sort((a,b)=>b.date.localeCompare(a.date));const cc=$("coachCard");
-   const ai=hasAi()&&isLive(),btn=ai?`<button class="btn wide" id="btnAiRun" style="margin-top:12px">${aiBusy?"Die KI wertet aus …":ns.length&&ns[0].date===t?"Neu auswerten":"Auswertung jetzt starten"}</button><div class="err" id="aiErr">${esc(aiErrMsg)}</div>${settings.dev?`<div class="hint">KI-Verbrauch dieses Monats: ${spend().usd.toFixed(2).replace(".",",")} $ von ${AI_LIMIT} $</div>`:""}`:"";
+   const ai=hasAi()&&isLive(),btn=ai?`<button class="btn wide" id="btnAiRun" style="margin-top:12px">${aiBusy?"Die KI wertet aus …":ns.length&&ns[0].date===t?"Neu auswerten":"Auswertung jetzt starten"}</button><div class="err" id="aiErr">${esc(aiErrMsg)}</div>${""}`:"";
    if(ns.length){const n=ns[0];cc.style.display="";cc.innerHTML=coachHTML(n,D,t)+btn}
    else if(ai){cc.style.display="";cc.innerHTML=`<h2>Coach-Auswertung</h2><div class="sub">Für heute noch keine Auswertung</div>${btn}`}else cc.style.display="none";
    if($("btnAiRun"))$("btnAiRun").onclick=()=>aiDaily(true)}
@@ -1317,7 +1338,7 @@ async function load(){
     const c=store.get("imCache",null);
     if(c&&c.d){DATA=prep(c.d);DATA.source="intervals.icu (Stand "+new Date(c.t).toLocaleString("de-DE",{dateStyle:"short",timeStyle:"short"})+")"}
     else DATA=prep(demoData());
-    $("banner").innerHTML=`<div class="banner err"><b>Fehler beim Laden:</b> ${esc(e.message)}</div>`;
+    $("banner").innerHTML=!navigator.onLine||/fetch|network|load/i.test(e.message)?"":`<div class="banner err"><b>Fehler beim Laden:</b> ${esc(e.message)}</div>`;
     render();
   }finally{btn.classList.remove("spin")}
 }
@@ -2721,7 +2742,7 @@ function coachHTML(n,D,t){
 $("coachCard").addEventListener("click",e=>{const b=e.target.closest("[data-choose]");if(!b)return;const i=+b.dataset.choose,W=window.__cw||[];setChoice(i>=0?W[i]:null);
   const on=$("coachCard").querySelector(".cx-tabs .on"),idx=on?+on.dataset.w:0;$("cxW").innerHTML=wcard(W[idx],idx)});
 function renderCoach17(D){const t=today(),cc=$("coachCard");if(!cc)return;const ai=hasAi()&&isLive(),n=noteBy("Coach "+t);
-  const btn=ai?`<button class="btn wide" id="btnAiRun" style="margin-top:12px">${aiBusy?"Die KI wertet aus …":n?"Neu auswerten":"Auswertung von der KI starten"}</button><div class="err" id="aiErr">${esc(aiErrMsg)}</div>${settings.dev?`<div class="hint">KI-Verbrauch dieses Monats: ${spend().usd.toFixed(2).replace(".",",")} $ von ${AI_LIMIT} $</div>`:""}`:"";
+  const btn=ai?`<button class="btn wide" id="btnAiRun" style="margin-top:12px">${aiBusy?"Die KI wertet aus …":n?"Neu auswerten":"Auswertung von der KI starten"}</button><div class="err" id="aiErr">${esc(aiErrMsg)}</div>${""}`:"";
   cc.style.display="";cc.innerHTML=coachHTML(n?n:{o:ruleNote(D),date:t},D,t)+btn;if($("btnAiRun"))$("btnAiRun").onclick=()=>aiDaily(true);
   $("ampel").style.display="none";const ak=$("askCard");if(ak)ak.style.display=ai?"":"none"}
 
@@ -3633,6 +3654,50 @@ Fasse die Gemeinsamkeiten in höchstens 12 kurzen Stichpunkten zusammen: Wochenu
 
 function renderV14(D){renderPlanTab(D);renderErholung(D);renderWeekNew(D);renderV15(D);renderCoach17(D);thrDecor();renderTotals(D);renderReviews(D);pmcSum(D);
   [renderErh20,renderChkCard,renderAds,renderLocks,heroRing,hideNW,renderPlanLock,aiRunTime].forEach(f=>{try{f(D)}catch(e){console.error(e)}})}
+
+
+/* ---------- v23 ---------- */
+/* Startanimation ausblenden, sobald Daten da sind */
+(function(){const t0=performance.now(),iv=setInterval(()=>{const s=$("splash");if(!s){clearInterval(iv);return}if((DATA&&performance.now()-t0>2000)||performance.now()-t0>6000){clearInterval(iv);s.classList.add("out");setTimeout(()=>s.remove(),450)}},100)})();
+
+/* Offline: App aus dem Speicher starten */
+if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});
+function offlineBanner(){const b=$("banner");if(!b)return;const c=store.get("imCache",null);
+  if(!navigator.onLine)b.innerHTML=`<div class="banner off"><b>Keine Internetverbindung.</b> ${c?`Du siehst den Stand vom ${new Date(c.t).toLocaleString("de-DE",{dateStyle:"short",timeStyle:"short"})}. Sobald du wieder online bist, lädt die App neu.`:"Sobald du wieder online bist, lädt die App deine Daten."}</div>`}
+addEventListener("offline",offlineBanner);addEventListener("online",()=>{const b=$("banner");if(b)b.innerHTML="";load()});
+
+/* Auswertung: automatisch beim ersten Start und nach Abo-Wechsel, Fehlversuch erneut */
+var LASTTK="";
+function autoOnUpgrade(){const k=tierNow()+"|"+hasAi();if(LASTTK&&k!==LASTTK&&hasAi()){store.set("imAiDay","");setTimeout(()=>{if(typeof aiAuto==="function")aiAuto()},400)}LASTTK=k}
+aiDaily=(o=>async function(m){await o(m);if(aiErrMsg)store.set("imAiDay","")})(aiDaily);
+
+/* Frag deinen Coach: dieselbe Empfehlung wie Heute und Kalender */
+function todayRec(){const t=today();try{const n=noteBy("Coach "+t),o=n?parseNote(n.text||n.description||""):ruleNote(DATA),c=typeof choiceOf==="function"?choiceOf(t):null,w=c||o.wo;
+  return w?`${w.title||""} (${w.sport||""}${w.minutes?", "+w.minutes+" min":""})${c?", vom Nutzer gewählt":""}`:""}catch(e){return""}}
+var askCtx0=askCtx;
+askCtx=function(){const t=today(),m=addDays(t,1),tm=(DATA&&DATA.planned||[]).filter(p=>p.date===m).map(p=>`${SPORTS[p.sport].n}: ${p.name}${p.secs?", "+fH(p.secs)+" h":""}`).join("; ");
+  const done=(DATA&&DATA.activities||[]).filter(a=>a.date===t).map(a=>`${a.name||SPORTS[a.sport].n} ${fH(a.secs)} h`).join("; ");
+  return`\n\nHEUTIGE EMPFEHLUNG DER APP: ${todayRec()||"keine"}\nHEUTE SCHON ERLEDIGT: ${done||"nichts"}\nMORGEN IM KALENDER: ${tm||"nichts geplant"}\nWIDERSPRUCHSFREI ANTWORTEN: Für heute nennst du genau die Empfehlung der App, für kommende Tage die Einheiten aus dem Kalender. Etwas anderes schlägst du nur vor, wenn ich ausdrücklich nach einer Alternative frage oder mich krank, verletzt oder sehr müde fühle. Sag dann klar, dass es eine Abweichung vom Plan ist und warum.`+askCtx0()};
+
+/* Feedback */
+(function(){const st=$("btnSettings");if(st&&!$("btnFb")){const b=document.createElement("button");b.className="ib";b.id="btnFb";b.title="Feedback geben";b.setAttribute("aria-label","Feedback geben");
+  b.innerHTML='<svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/></svg>';st.before(b);b.onclick=openFb}
+  const m=document.createElement("div");m.className="modal";m.id="mFb";m.innerHTML='<div class="sheet"><div class="mh"><h3>Feedback geben</h3><button class="ib" data-fbx="1" aria-label="Schließen"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div><div id="fbBody"></div></div>';document.body.appendChild(m)})();
+var FB={k:"idee"};
+function openFb(){FB={k:"idee"};$("fbBody").innerHTML=`<p class="hint">Was ist dir aufgefallen? Jede Rückmeldung hilft, die App besser zu machen.</p>
+  <div class="seg3">${[["fehler","Fehler"],["idee","Idee"],["lob","Lob"]].map(([k,n])=>`<button data-fbk="${k}" class="${FB.k===k?"on":""}">${n}</button>`).join("")}</div>
+  <textarea id="fbTxt" rows="5" maxlength="1500" placeholder="Beschreib kurz, was passiert ist oder was du dir wünschst"></textarea>
+  <label class="switch">Infos zur App anhängen (Version, Bereich, Abo)<input type="checkbox" id="fbInfo" checked></label>
+  <button class="btn blue wide" id="fbSend" style="margin-top:14px">Senden</button><div class="hint" id="fbMsg"></div>`;open("mFb");setTimeout(()=>$("fbTxt").focus(),300)}
+$("mFb").addEventListener("click",async e=>{if(e.target.closest("[data-fbx]")){close("mFb");return}const k=e.target.closest("[data-fbk]");if(k){FB.k=k.dataset.fbk;k.parentNode.querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===k));return}
+  if(e.target.closest("#fbSend")){const tx=$("fbTxt").value.trim();if(!tx){$("fbMsg").textContent="Bitte schreib kurz etwas dazu.";return}
+    const lab={fehler:"Fehler",idee:"Idee",lob:"Lob"}[FB.k],info=$("fbInfo").checked?`\n\nVersion ${VERSION} · Bereich ${TAB} · Abo ${TIERN[tierNow()]} · Daten ${settings.apiKey?"Sportuhr":settings.noWatch?"ohne Uhr":"Beispiel"} · ${navigator.userAgent.replace(/\s+/g," ").slice(0,140)}`:"",text=`Mein Training, ${lab}:\n${tx}${info}`;
+    const L=store.get("imFeedback",[]);L.push({t:Date.now(),k:FB.k,tx});store.set("imFeedback",L.slice(-30));
+    try{if(navigator.share){await navigator.share({title:"Feedback Mein Training",text});close("mFb");return}}catch(err){if(err&&err.name==="AbortError")return}
+    try{await navigator.clipboard.writeText(text)}catch(err){}location.href="mailto:?subject="+encodeURIComponent("Feedback Mein Training: "+lab)+"&body="+encodeURIComponent(text);close("mFb")}});
+
+function renderV14(D){renderPlanTab(D);renderErholung(D);renderWeekNew(D);renderV15(D);renderCoach17(D);thrDecor();renderTotals(D);renderReviews(D);pmcSum(D);
+  [renderErh20,renderChkCard,renderAds,renderLocks,heroRing,hideNW,renderPlanLock,aiRunTime,autoOnUpgrade,offlineBanner].forEach(f=>{try{f(D)}catch(e){console.error(e)}})}
 
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
