@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Design-Vorschläge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=Big+Shoulders+Display:wght@700;800;900&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#d9d9d9;font:15px/1.45 -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;color:#111}
+.intro{max-width:1240px;margin:0 auto;padding:28px 20px 8px}
+.intro h1{margin:0 0 6px;font-size:24px}
+.intro p{margin:0;color:#444;max-width:640px}
+.row{display:flex;gap:28px;overflow-x:auto;padding:24px 20px 40px;max-width:1300px;margin:0 auto;scroll-snap-type:x mandatory}
+.col{flex:none;scroll-snap-align:center}
+.col h2{font-size:18px;margin:0 0 4px}
+.col p{margin:0 0 12px;color:#444;font-size:14px;max-width:375px}
+.phone{width:375px;height:780px;border-radius:44px;overflow:hidden;position:relative;box-shadow:0 0 0 10px #1a1a1a,0 30px 60px -20px rgba(0,0,0,.5);overflow-y:auto}
+.phone::-webkit-scrollbar{display:none}
+
+/* ===== A: Sportuhr ===== */
+.a{background:#000;color:#fff;font-family:"Barlow",sans-serif;padding:54px 18px 30px}
+.a .hd{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:18px}
+.a .hd b{font:700 22px "Barlow Semi Condensed"}
+.a .hd span{color:#8a8a8a;font-size:14px}
+.a .dial{position:relative;width:250px;height:250px;margin:4px auto 10px}
+.a .dial svg{width:100%;height:100%;transform:rotate(-90deg)}
+.a .dial .c{position:absolute;inset:0;display:grid;place-items:center;text-align:center}
+.a .dial .n{font:700 76px/1 "Barlow Semi Condensed";letter-spacing:-1px}
+.a .dial .u{color:#9a9a9a;font-size:14px;margin-top:-4px}
+.a .dial .r{font:600 15px "Barlow Semi Condensed";color:#3db2ff;margin-top:6px}
+.a .rec{border-radius:22px;background:#141414;padding:16px 16px 14px;margin:14px 0}
+.a .rec .k{display:flex;align-items:center;gap:8px;color:#ffcc33;font:600 14px "Barlow Semi Condensed"}
+.a .rec .k i{width:10px;height:10px;border-radius:50%;background:#ffcc33}
+.a .rec h3{margin:6px 0 4px;font:700 25px/1.15 "Barlow Semi Condensed"}
+.a .rec p{margin:0;color:#b5b5b5;font-size:14.5px}
+.a .tabs{display:flex;gap:6px;margin-top:12px}
+.a .tabs span{flex:1;text-align:center;padding:8px 0;border-radius:12px;background:#232323;font:600 13px "Barlow Semi Condensed";color:#aaa}
+.a .tabs span.on{background:#fff;color:#000}
+.a .g{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.a .w{background:#141414;border-radius:22px;padding:14px;display:flex;gap:12px;align-items:center}
+.a .w svg{width:52px;height:52px;flex:none;transform:rotate(-90deg)}
+.a .w b{display:block;font:700 26px/1 "Barlow Semi Condensed"}
+.a .w span{color:#8f8f8f;font-size:12.5px}
+.a .act{display:flex;align-items:center;gap:12px;background:#141414;border-radius:22px;padding:14px;margin-top:10px}
+.a .act .ic{width:42px;height:42px;border-radius:50%;background:#00c27a;display:grid;place-items:center;font:700 13px "Barlow Semi Condensed";color:#000}
+.a .act b{display:block;font:600 17px "Barlow Semi Condensed"}
+.a .act span{color:#8f8f8f;font-size:13px}
+
+/* ===== B: Wie iPhone-Apps ===== */
+.b{background:#f2f2f7;color:#000;padding:54px 16px 30px}
+.b .lt{font-size:34px;font-weight:700;letter-spacing:.2px;margin:6px 4px 2px}
+.b .dt{color:#8e8e93;font-size:15px;margin:0 4px 14px;font-weight:500}
+.b .sec{background:#fff;border-radius:14px;margin-bottom:18px;overflow:hidden}
+.b .cap{font-size:13px;color:#6d6d72;margin:0 16px 6px;text-transform:none}
+.b .cd{display:flex;align-items:center;gap:16px;padding:16px}
+.b .cd .n{font-size:48px;font-weight:700;letter-spacing:-1px;line-height:1;color:#007aff}
+.b .cd b{display:block;font-size:17px}
+.b .cd span{color:#8e8e93;font-size:14px}
+.b .rings{width:64px;height:64px;transform:rotate(-90deg);flex:none;margin-left:auto}
+.b .co{padding:14px 16px}
+.b .co .t{display:flex;align-items:center;gap:8px;font-size:13px;color:#8e8e93;font-weight:600}
+.b .co .t i{width:9px;height:9px;border-radius:50%;background:#ff9f0a}
+.b .co h3{font-size:20px;margin:4px 0 6px;line-height:1.25}
+.b .co p{margin:0;color:#3c3c43;font-size:15px}
+.b .segc{display:flex;background:#eeeef0;border-radius:9px;padding:2px;margin-top:12px}
+.b .segc span{flex:1;text-align:center;font-size:13px;font-weight:500;padding:6px 0;border-radius:7px}
+.b .segc span.on{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.b .li{display:flex;align-items:center;padding:12px 16px;border-top:.5px solid #d1d1d6;font-size:16px}
+.b .li:first-child{border-top:0}
+.b .li i{width:28px;height:28px;border-radius:7px;margin-right:12px;display:grid;place-items:center;color:#fff;font-style:normal;font-size:13px;font-weight:700}
+.b .li span{flex:1}
+.b .li b{font-weight:600}
+.b .li small{color:#8e8e93;margin-left:6px;font-size:14px}
+
+/* ===== C: Poster ===== */
+.c{background:#fff;color:#0a0a0a;font-family:"Instrument Sans",sans-serif;padding:0 0 30px}
+.c .top{background:#ffd23f;padding:58px 20px 22px}
+.c .top .s{font-weight:600;font-size:14px}
+.c .top h3{font:900 64px/.88 "Big Shoulders Display";margin:10px 0 12px;text-transform:uppercase;letter-spacing:.5px}
+.c .top p{margin:0;font-size:15.5px;max-width:300px}
+.c .opts{display:flex;gap:0;margin:16px -20px -22px;border-top:2px solid #0a0a0a}
+.c .opts span{flex:1;text-align:center;padding:11px 0;font-weight:700;font-size:13px;border-right:2px solid #0a0a0a}
+.c .opts span:last-child{border-right:0}
+.c .opts span.on{background:#0a0a0a;color:#ffd23f}
+.c .cnt{display:flex;align-items:flex-end;gap:12px;padding:22px 20px 18px;border-bottom:2px solid #0a0a0a}
+.c .cnt .n{font:900 96px/.8 "Big Shoulders Display"}
+.c .cnt b{display:block;font-size:16px}
+.c .cnt span{font-size:14px;color:#555}
+.c .m{display:grid;grid-template-columns:1fr 1fr;border-bottom:2px solid #0a0a0a}
+.c .m div{padding:14px 20px;border-right:2px solid #0a0a0a;border-top:2px solid #0a0a0a}
+.c .m div:nth-child(2n){border-right:0}
+.c .m div:nth-child(-n+2){border-top:0}
+.c .m b{display:block;font:800 40px/1 "Big Shoulders Display"}
+.c .m span{font-size:13px;color:#444}
+.c .why{padding:16px 20px;font-size:15px}
+.c .why p{margin:0 0 10px}
+.c .act{margin:0 20px;display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:#0a0a0a;color:#fff}
+.c .act b{font:800 24px "Big Shoulders Display";text-transform:uppercase}
+</style>
+</head>
+<body>
+<div class="intro">
+<h1>Drei Richtungen für „Mein Training“</h1>
+<p>Gleicher Inhalt, drei verschiedene Gestaltungen des Heute-Bildschirms. Auf dem iPhone seitlich wischen. Sag mir, welche dir am besten gefällt oder was du von welcher übernehmen willst.</p>
+</div>
+<div class="row">
+
+<div class="col">
+<h2>A · Sportuhr</h2>
+<p>Schwarz wie das Display deiner Forerunner. Ringe und große Ziffern wie auf der Uhr, jede Messgröße mit eigener Farbe.</p>
+<div class="phone a">
+ <div class="hd"><b>Samstag, 14. Nov.</b><span>Ironman Frankfurt</span></div>
+ <div class="dial">
+  <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="none" stroke="#1d1d1d" stroke-width="7"/><circle cx="50" cy="50" r="45" fill="none" stroke="#3db2ff" stroke-width="7" stroke-linecap="round" stroke-dasharray="40 283"/></svg>
+  <div class="c"><div><div class="n">225</div><div class="u">Tage bis zum Start</div><div class="r">Plan startet Montag</div></div></div>
+ </div>
+ <div class="rec">
+  <div class="k"><i></i>Locker trainieren</div>
+  <h3>Lauf 30 bis 40 min, rein aerob</h3>
+  <p>HRV am unteren Rand deines Normalbereichs. Ruhepuls und Schlaf sind in Ordnung.</p>
+  <div class="tabs"><span class="on">Empfohlen</span><span>Rad</span><span>Schwimmen</span><span>Kombi</span></div>
+ </div>
+ <div class="g">
+  <div class="w"><svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="15" fill="none" stroke="#2a2a2a" stroke-width="5"/><circle cx="18" cy="18" r="15" fill="none" stroke="#ffcc33" stroke-width="5" stroke-linecap="round" stroke-dasharray="40 95"/></svg><div><b>58</b><span>HRV ms</span></div></div>
+  <div class="w"><svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="15" fill="none" stroke="#2a2a2a" stroke-width="5"/><circle cx="18" cy="18" r="15" fill="none" stroke="#ff4d5e" stroke-width="5" stroke-linecap="round" stroke-dasharray="60 95"/></svg><div><b>50</b><span>Ruhepuls</span></div></div>
+  <div class="w"><svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="15" fill="none" stroke="#2a2a2a" stroke-width="5"/><circle cx="18" cy="18" r="15" fill="none" stroke="#a674ff" stroke-width="5" stroke-linecap="round" stroke-dasharray="80 95"/></svg><div><b>7,6</b><span>Schlaf h</span></div></div>
+  <div class="w"><svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="15" fill="none" stroke="#2a2a2a" stroke-width="5"/><circle cx="18" cy="18" r="15" fill="none" stroke="#00c27a" stroke-width="5" stroke-linecap="round" stroke-dasharray="70 95"/></svg><div><b>+16</b><span>Form</span></div></div>
+ </div>
+ <div class="act"><div class="ic">LAUF</div><div><b>Heilbronn Laufen</b><span>Sa., 7. Nov. · 6,2 km · 0:27 h</span></div></div>
+</div>
+</div>
+
+<div class="col">
+<h2>B · Wie eine iPhone-App</h2>
+<p>Hell und schlicht, aufgebaut wie Apples eigene Apps (Fitness, Health). Fühlt sich auf iPhone und Mac wie eine echte App an.</p>
+<div class="phone b">
+ <div class="lt">Heute</div>
+ <div class="dt">Samstag, 14. November</div>
+ <div class="cap">Wettkampf</div>
+ <div class="sec"><div class="cd"><div class="n">225</div><div><b>Tage</b><span>bis Ironman Frankfurt<br>27. Juni 2027</span></div>
+  <svg class="rings" viewBox="0 0 36 36"><circle cx="18" cy="18" r="15" fill="none" stroke="#e5e5ea" stroke-width="4"/><circle cx="18" cy="18" r="15" fill="none" stroke="#007aff" stroke-width="4" stroke-linecap="round" stroke-dasharray="6 95"/><circle cx="18" cy="18" r="10" fill="none" stroke="#e5e5ea" stroke-width="4"/><circle cx="18" cy="18" r="10" fill="none" stroke="#34c759" stroke-width="4" stroke-linecap="round" stroke-dasharray="30 63"/></svg></div></div>
+ <div class="cap">Dein Coach</div>
+ <div class="sec"><div class="co"><div class="t"><i></i>Locker trainieren</div><h3>Lauf 30 bis 40 min, rein aerob</h3><p>HRV am unteren Rand deines Normalbereichs. Ruhepuls und Schlaf sind in Ordnung.</p>
+  <div class="segc"><span class="on">Empfohlen</span><span>Laufen</span><span>Rad</span><span>Schwimmen</span><span>Kombi</span></div></div></div>
+ <div class="cap">Erholung</div>
+ <div class="sec">
+  <div class="li"><i style="background:#ff9f0a">H</i><span>HRV</span><b>58 ms</b><small>unterer Rand</small></div>
+  <div class="li"><i style="background:#ff3b30">R</i><span>Ruhepuls</span><b>50</b><small>normal</small></div>
+  <div class="li"><i style="background:#5856d6">S</i><span>Schlaf</span><b>7,6 h</b><small>normal</small></div>
+  <div class="li"><i style="background:#34c759">F</i><span>Form</span><b>+16</b><small>frisch</small></div>
+ </div>
+</div>
+</div>
+
+<div class="col">
+<h2>C · Poster</h2>
+<p>Laut und sportlich wie ein Wettkampfplakat. Die ganze obere Fläche zeigt die Ampel in Farbe, darunter klare Zahlenblöcke mit kräftigen Linien.</p>
+<div class="phone c">
+ <div class="top">
+  <div class="s">Samstag, 14. November</div>
+  <h3>Heute<br>locker<br>laufen</h3>
+  <p>30 bis 40 Minuten, rein aerob. Deine HRV liegt am unteren Rand.</p>
+  <div class="opts"><span class="on">Lauf</span><span>Rad</span><span>Schwimmen</span><span>Kombi</span></div>
+ </div>
+ <div class="cnt"><div class="n">225</div><div><b>Tage bis Ironman Frankfurt</b><span>27. Juni 2027 · Plan startet Montag</span></div></div>
+ <div class="m">
+  <div><b>58</b><span>HRV ms</span></div>
+  <div><b>50</b><span>Ruhepuls</span></div>
+  <div><b>7,6</b><span>Schlaf h</span></div>
+  <div><b>+16</b><span>Form</span></div>
+ </div>
+ <div class="why"><p>Seit dem Marathon am 25. Oktober bist du ausgeruht, die Fitness ist aber von 40 auf 27 gesunken.</p><p>Bis Montag locker bewegen, dann startet der Plan.</p></div>
+ <div class="act"><b>Letzte Einheit</b><span>Tennis · 1:07 h</span></div>
+</div>
+</div>
+
+</div>
+</body>
+</html>
