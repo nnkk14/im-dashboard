@@ -1042,7 +1042,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="30";
+const VERSION="31";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -4077,7 +4077,7 @@ function extraTiles(D){const us=userSports(),T=[],t=today(),avg=a=>a.length?a.re
   if(lv){const old=W.filter(w=>w.date<=addDays(t,-90)).slice(-1)[0];T.push(tile("vo2","VO2max",Math.round(lv.vo2),"ml pro kg und Minute, geschätzt von deiner Uhr",dl(lv.vo2,old?old.vo2:null,""),mSeries(W,w=>w.vo2),"var(--hrv)"))}
   [["run","cadr","Kadenz Laufen",2,"Schritte pro Minute, Schnitt der letzten 4 Wochen","var(--run)"],["bike","cadb","Kadenz Rad",1,"Umdrehungen pro Minute, Schnitt der letzten 4 Wochen","var(--bike)"]].forEach(([s,k,lab,f,sub,c])=>{if(!us.includes(s))return;
     const R=D.activities.filter(a=>a.sport===s&&a.cad>0),now=avg(R.filter(a=>a.date>addDays(t,-28)).map(a=>a.cad*f)),old=avg(R.filter(a=>a.date>addDays(t,-118)&&a.date<=addDays(t,-90)).map(a=>a.cad*f));
-    if(now)T.push(tile(k,lab,Math.round(now),sub,dl(now,old," "),mSeries(R,a=>a.cad*f),c))});
+    if(now)T.push(tile(k,lab,Math.round(now),sub,dl(now,old,""),mSeries(R,a=>a.cad*f),c))});
   return T.join("")}
 const EXB={vo2:["VO2max","Die VO2max schätzt, wie viel Sauerstoff dein Körper bei voller Belastung höchstens verwerten kann, in Millilitern pro Kilogramm Körpergewicht und Minute. Je höher, desto besser ist deine Ausdauer-Grundlage. Deine Uhr schätzt den Wert aus Puls und Tempo oder Leistung. Er schwankt etwas und ist kein Labormesswert. Wichtiger als die genaue Zahl ist, wie er sich über Monate entwickelt."],
  cadr:["Kadenz Laufen","Wie viele Schritte du pro Minute machst. Viele Läufer liegen etwa zwischen 160 und 180. Eine etwas höhere Kadenz bei gleichem Tempo heißt kürzere Schritte und meist weniger Stoß pro Schritt. Einen Idealwert für alle gibt es nicht, große Sprünge solltest du langsam angehen."],
@@ -4174,6 +4174,27 @@ var RINGT=0;
   const rm=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   setInterval(()=>{if(rm||!DATA||TAB!=="heute"||document.hidden||Date.now()-RINGT<15000||document.querySelector(".modal.open"))return;const r=$("heroRing");if(!r)return;const b=r.getBoundingClientRect();if(b.bottom<0||b.top>innerHeight)return;
     const n=ringData(DATA).length;if(n<2)return;RINGM=(RINGM+1)%n;heroRing(DATA)},7000)})();
+
+/* ---------- v31 ---------- */
+/* Trainings für intervals.icu und die Uhr richtig formatieren */
+function wkFix(desc,type){if(!desc)return desc;const t=String(type||""),str=/weight|strength/i.test(t),hr=/run|swim|walk|hike/i.test(t)||(/ride/i.test(t)&&!(DATA&&DATA.zones&&DATA.zones.bike&&DATA.zones.bike.ftp));
+  const L=String(desc).split("\n").map(s=>s.trim()),O=[];
+  L.forEach((l,i)=>{if(!l){if(O.length&&O[O.length-1]!=="")O.push("");return}
+    if(!l.startsWith("-")){if(O.length&&O[O.length-1]!=="")O.push("");O.push(l);return}
+    if(str){const m=/^-\s*(.+?)\s+(\d+)x(\d+)(s)?\b(.*)$/i.exec(l);if(m){const[,name,S,R,sec,rest]=m,sets=+S,rep=+R,side=/je Seite/i.test(rest),p=/Pause\s*(\d+)\s*s\b/i.exec(rest),pause=p?+p[1]:0;
+        const work=(sec?rep:rep*3.5)*(side?2:1),min=Math.max(1,Math.ceil((sets*(work+pause)+30)/60));
+        O.push(`- ${min}m ${name} ${sets} ${sets===1?"Satz":"Sätze"} à ${rep}${sec?" Sekunden":""}${rest.replace(/(\d+)\s*s\b/g,"$1 Sekunden")}`);return}}
+    else if(hr)l=l.replace(/\b(Z[1-7](?:\s*-\s*Z?[1-7])?)\b(?!\s*(?:HR|Pace|LTHR|%))/gi,"$1 HR");
+    O.push(l)});
+  while(O.length&&O[O.length-1]==="")O.pop();return O.join("\n")}
+function unFix(desc){return String(desc||"").split("\n").map(l=>{const m=/^-\s*\d+m\s+(.+?)\s+(\d+)\s+S(?:ä|a)tze?\s+à\s+(\d+)( Sekunden)?(.*)$/.exec(l.trim());return m?`- ${m[1]} ${m[2]}x${m[3]}${m[4]?"s":""}${m[5].replace(/(\d+) Sekunden/g,"$1s")}`:l}).join("\n")}
+parseStr=(f=>function(desc){return f.call(this,unFix(desc))})(parseStr);
+api=(f=>async function(path,opts){try{if(opts&&opts.body&&/^\/events/.test(path)&&/POST|PUT/i.test(opts.method||"")){const b=JSON.parse(opts.body),fx=o=>{if(o&&o.category==="WORKOUT"&&o.description&&o.type)o.description=wkFix(o.description,o.type);return o};
+    opts=Object.assign({},opts,{body:JSON.stringify(Array.isArray(b)?b.map(fx):fx(b))})}}catch(e){}return f.call(this,path,opts)})(api);
+async function wkRepair(){if(!DATA||!isLive()||!settings.apiKey||store.get("imWkFix1",false))return;const t=today(),P=DATA.planned.filter(p=>p.coach&&p.date>=t&&p.id);let n=0;
+  for(const p of P){try{const ev=await api(`/events/${p.id}`),d=wkFix(ev.description||"",ev.type);if(d&&d!==ev.description){await api(`/events/${p.id}`,{method:"PUT",body:JSON.stringify({description:d})});n++}}catch(e){console.error(e);return}}
+  store.set("imWkFix1",true);if(n){toast(`${n} geplante Einheiten für die Uhr korrigiert`);load()}}
+setTimeout(()=>wkRepair().catch(()=>{}),8000);
 
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
