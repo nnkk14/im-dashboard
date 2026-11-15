@@ -1079,7 +1079,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="46";
+const VERSION="47";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -4586,6 +4586,12 @@ planRules=(f=>function(){let s=f.apply(this,arguments);const g=store.get("imGoal
   s+=`\n- START: Die erste Woche beginnt etwa beim bisherigen Wochenumfang der letzten 4 bis 6 Wochen, und die Einheiten sind mindestens so lang wie bisher üblich. Weniger nur nach einem Wettkampf, einer Krankheit oder einer Pause, dann mit kurzer Begründung in der note. Reicht die Zeit bis zum Ziel bei dieser Steigerung nicht, um die Richtwerte zu erreichen, plane trotzdem nach den Regeln und schreibe es in die Zielprüfung.`;
   if(!endGoal())s+=`\n- AUSDAUER BEI ALLGEMEINEN ZIELEN: Auch bei Fitness- oder Kraftzielen mindestens 150 Minuten lockere bis mittlere Ausdauer pro Woche (WHO), vom bisherigen Stand schrittweise dorthin aufbauen.${h?" Hat der Nutzer weniger Zeit angegeben, so viel wie in seiner Zeit möglich.":""}`;
   return s})(planRules);
+
+/* ---------- v47 ---------- */
+/* Kraft nur mit Körpergewicht: Zugübungen nicht vergessen (Fund aus dem Plan-Test 15.11.) */
+kraftRules=(f=>function(){let s=f.apply(this,arguments);if(!userSports().includes("kraft"))return s;
+  const eq=equipList();if(eq.length===1&&eq[0]==="body")s+=` Nur Körpergewicht: Plane trotzdem Zugübungen für Rücken und Schultern ein, zum Beispiel umgekehrtes Rudern unter einem stabilen Tisch, Handtuch-Rudern an einer geschlossenen Tür oder Y-T-W-Heben in Bauchlage. Ziehen und Drücken sollen im Wochenverlauf ausgeglichen sein.${userSports().includes("swim")?" Für Schwimmer ist der Rücken besonders wichtig.":""}`;
+  return s})(kraftRules);
 
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
