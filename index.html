@@ -808,6 +808,24 @@ label.f b{color:var(--acc);font-weight:600;margin-left:6px}
 .calback{display:block;margin:0 auto 6px}
 .cday.did{background:color-mix(in srgb,var(--green) 18%,var(--card2))}
 .exwu .exf{opacity:.85}
+/* v27 */
+.tag{white-space:nowrap}
+h3>.tag,.cx-h>.tag{display:table;margin:8px 0 2px;font-size:12px}
+.tapc{cursor:pointer}
+.tapmore{display:block;margin-top:10px;font-size:13px}
+#moreCard details.more>summary{list-style:none;cursor:pointer;display:flex;flex-direction:column;gap:3px;padding-right:28px;position:relative}
+#moreCard details.more>summary::-webkit-details-marker{display:none}
+#moreCard details.more>summary::before{display:none!important;content:none!important}
+#moreCard details.more>summary::after{content:"";position:absolute;right:6px;top:6px;width:9px;height:9px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);transition:transform .2s}
+#moreCard details.more[open]>summary::after{transform:rotate(-135deg);top:10px}
+#moreCard summary b{font-size:17px}
+#moreCard summary span{font-size:13px;color:var(--muted)}
+#moreCard .hint{margin-top:12px}
+#estBox{margin-top:12px}
+#estBox:empty{display:none}
+#moreCard .incard{background:none;border:0;box-shadow:none;padding:0;margin:22px 0 0;border-top:1px solid var(--line,rgba(127,127,127,.2));padding-top:16px;border-radius:0}
+#mHelp #wikiQ{margin:12px 0}
+#sgHelp .devb{margin-top:8px}
 </style>
 </head>
 <body>
@@ -989,7 +1007,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="26";
+const VERSION="27";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -3793,6 +3811,115 @@ planFmt=(o=>function(){return o()+" Bei Kraft- und Stabieinheiten das Aufwärmen
 
 function renderV14(D){renderPlanTab(D);renderErholung(D);renderWeekNew(D);renderV15(D);renderCoach17(D);thrDecor();renderTotals(D);renderReviews(D);pmcSum(D);
   [renderErh20,renderChkCard,renderAds,renderLocks,heroRing,hideNW,renderPlanLock,aiRunTime,autoOnUpgrade,offlineBanner,renderDone].forEach(f=>{try{f(D)}catch(e){console.error(e)}})}
+
+/* ---------- v27 ---------- */
+/* KI schreibt in einfacher Sprache */
+coachText=(o=>function(){const s=o.apply(this,arguments),r="SPRACHE\nSchreibe alle Texte für den Nutzer in einfacher, freundlicher Sprache in Du-Form, verständlich ohne Vorwissen. Beziehe Überschriften und Punkte auf seine Situation (z. B. „für deinen Aufbau gerade etwas viel“ statt „zu hart für die Basisphase“). In Überschriften und Punkten keine Abkürzungen oder Fachwörter wie CTL, ATL, TSB, TSS, NP, IF, FTP, HRV, Entkopplung, Z1 bis Z5, Basisphase. Wenn eine Zahl wichtig ist, erkläre sie in einfachen Worten. Kurze Sätze.";return /\nANTWORTFORMAT/.test(s)?s.replace(/\nANTWORTFORMAT/,"\n"+r+"\n\nANTWORTFORMAT"):s+"\n\n"+r})(coachText);
+kv=(o=>function(){const r=o.apply(this,arguments),M={"zu hart":"etwas zu hart","zu locker":"etwas zu locker"};if(r&&M[r.rating])r.rating=M[r.rating];return r})(kv);
+
+/* Ermunterung nach dem Training */
+const DM={
+ planH:["Erledigt, genau nach Plan!","Haken dran!","Sauber abgehakt!","Plan erfüllt!","Genau richtig!","Das sitzt!","Training geschafft!","Wieder ein Baustein mehr!"],
+ planB:["Volles Programm. Dein Körper passt sich jetzt an, und Erholung gehört zum Training dazu.","Genau das, was heute dran war. Jetzt in Ruhe essen und trinken.","So entsteht Form: eine passende Einheit nach der anderen.","Alles gemacht, was geplant war. Gönn dir jetzt Ruhe.","Plan und Umsetzung passen zusammen. Genau das bringt dich über Wochen voran.","Wieder einen Tag deines Plans geschafft. Dein Ziel rückt näher."],
+ shortH:["Gut gemacht!","Erledigt!","Haken dran!","Training geschafft!","Dran geblieben!"],
+ shortB:["Nicht ganz die volle Dauer, aber das Wichtigste ist gemacht.","Etwas kürzer als geplant und trotzdem ein guter Reiz für deinen Körper.","Auch eine kürzere Einheit hält dich im Rhythmus.","Lieber kürzer als gar nicht. Das zählt."],
+ otherH:["Gut gemacht!","Bewegung zählt!","Stark, dass du trainiert hast!","Anders, aber gut!","Flexibel bleiben lohnt sich!","Hauptsache bewegt!"],
+ otherB:["Nicht ganz der Vorschlag, aber jede Einheit hilft. Der Coach berücksichtigt das morgen.","Du hast etwas anderes gemacht als vorgeschlagen. Kein Problem, der Plan passt sich an.","Abwechslung tut gut. Morgen stimmt der Coach die Einheit darauf ab.","Training ist Training. Die App rechnet das für morgen mit ein.","Manchmal passt etwas anderes besser in den Tag. Gut, dass du dich bewegt hast."],
+ multiH:["Starker Tag!","Doppelt erledigt!","Fleißig heute!","Doppelschicht geschafft!","Was für ein Tag!","Zweimal abgehakt!"],
+ multiB:[(n,h)=>`${n} Einheiten, zusammen ${h} h. Jetzt zählt die Erholung.`,(n)=>`${n} Einheiten an einem Tag. Iss heute genug, damit morgen wieder Kraft da ist.`,(n,h)=>`Zusammen ${h} h Training. Guter Schlaf ist heute dein bester Helfer.`,(n)=>`${n} Einheiten erledigt. Morgen darf es ruhig leichter sein, wenn der Coach das vorschlägt.`],
+ restH:["Eigentlich war Ruhetag","Ruhetag mit Bewegung","Aktiv am Ruhetag"],
+ restB:["Bewegung tut trotzdem gut. Gönn dir heute Abend genug Schlaf und Essen, damit du morgen erholt bist.","Locker bewegen ist an Ruhetagen in Ordnung. Achte darauf, dass es wirklich locker war.","Ruhetage helfen deinem Körper, stärker zu werden. Nimm dir den nächsten bewusst.","Schön, dass du Lust auf Bewegung hast. Morgen geht es mit frischen Beinen weiter."],
+ freeH:["Gut gemacht!","Training geschafft!","Stark!","Erledigt!","Haken dran!","Weiter so!"],
+ freeB:["Jede Einheit bringt dich weiter. Gönn dir jetzt Erholung.","Schön, dass du dir die Zeit genommen hast.","Regelmäßigkeit ist der wichtigste Teil des Trainings. Heute hat es geklappt.","Gut für Kopf und Körper. Jetzt etwas trinken und essen.","Ein Tag mehr, an dem du etwas für dich getan hast."]};
+var PVN=0,PVREC;
+function dmStreak(D){const s=new Set(D.activities.map(a=>a.date));let k=0,d=today();while(s.has(d)){k++;d=addDays(d,-1)}return k}
+function doneMsg(D,dn){const t=today(),r=recSport(),n=Math.floor(Date.parse(t)/864e5)+PVN,ks=dn.map(actKey),tot=dn.reduce((s,a)=>s+(a.secs||0),0),pl=(D.planned||[]).filter(p=>p.date===t).reduce((s,p)=>s+(p.secs||0),0),P=(a,o)=>a[((n+(o||0))%a.length+a.length)%a.length];
+  let H,B;
+  if(r==="rest"){H=DM.restH;B=DM.restB}
+  else if(dn.length>=2){H=DM.multiH;B=DM.multiB.map(f=>f(dn.length,fH(tot)))}
+  else if(r&&ks.includes(r)){const full=!pl||tot>=pl*.9;H=full?DM.planH:DM.shortH;B=full?DM.planB:DM.shortB}
+  else if(r){H=DM.otherH;B=DM.otherB}
+  else{H=DM.freeH;B=DM.freeB}
+  const st=dmStreak(D),hr=dn[0]&&dn[0].tm?+String(dn[0].tm).slice(0,2):null;let x="";
+  if(st>=3)x=P([`${st} Tage in Folge aktiv. Starke Serie!`,`Tag ${st} deiner Serie. Bleib dran!`,`${st} Tage am Stück. Das ist Gewohnheit, kein Zufall.`],1);
+  else if(tot>=7200)x=P(["Lange Einheit: Denk heute an genug Kohlenhydrate und Flüssigkeit.","Mehr als zwei Stunden unterwegs. Iss und trink heute bewusst mehr."],1);
+  else if(ks.includes("kraft"))x=P(["Krafttraining stärkt Muskeln und Sehnen und schützt so vor Verletzungen.","Kraft ist eine gute Grundlage für jede andere Sportart."],1);
+  else if(hr!=null&&hr<8)x=P(["Früh erledigt. Der Rest des Tages gehört dir.","Schon vor acht Uhr fertig. Stark!"],1);
+  else if(hr!=null&&hr>=20)x="Spät am Tag trainiert. Gönn dir jetzt ruhigen Schlaf.";
+  return[P(H),P(B,2)+(x?" "+x:"")]}
+recSport=(f=>function(){return PVREC!==undefined?PVREC:f.apply(this,arguments)})(recSport);
+
+/* Erholung und Belastung antippbar */
+function recExplain(){const R=DATA&&recovery(DATA),ck=R&&R.chk;
+  info(`<h3>Erholungswert</h3>${R?`<div class="ibig">${R.v}<small style="font-size:15px;color:var(--muted)"> von 100</small></div>`:""}
+   <p>Der Wert zeigt, wie bereit dein Körper heute für Training ist. Ab 60 bist du gut erholt. Zwischen 40 und 60 geht Training, aber lieber nicht zu hart. Unter 40 ist heute ein lockerer Tag oder Pause sinnvoll.</p>
+   ${ck?`<p>Weil keine Sportuhr verbunden ist, kommt der Wert aus deinem Morgen-Check-in: wie du geschlafen hast, wie viel Energie du hast, ob du Muskelkater hast und wie du dich fühlst.</p>`
+   :`<p>Die App nutzt drei Werte aus der Nacht und vergleicht sie mit deinen eigenen üblichen Werten, nicht mit anderen Menschen:</p>
+   <ul class="cx-why"><li><b>HRV</b>: wie stark der Abstand zwischen deinen Herzschlägen schwankt. Höher als sonst heißt meist: gut erholt.</li><li><b>Ruhepuls</b>: Ist er höher als sonst, arbeitet dein Körper noch an etwas, zum Beispiel an hartem Training, Stress oder einem Infekt.</li><li><b>Schlaf</b>: Mehr als etwa siebeneinhalb Stunden geben Pluspunkte, weniger ziehen ab.</li></ul>
+   <p>Die Zahlen neben den Werten zeigen, wie viele Punkte jeder Wert heute dazugibt oder abzieht.</p>`}
+   <p class="hint">Eigene Kennzahl der App, kein medizinischer Wert. Fühlst du dich krank, zählt dein Gefühl.</p>`)}
+function loadExplain(){info(`<h3>Belastung</h3>
+   <p>Jede Einheit bekommt eine Belastungszahl. Sie wächst mit der Dauer und mit der Anstrengung. Eine Stunde an deiner Leistungsgrenze ergibt etwa 100, eine lockere Stunde ungefähr die Hälfte.</p>
+   <ul class="cx-why"><li><b>Last 7 Tage</b>: alles zusammen, was du in der letzten Woche trainiert hast.</li><li><b>Wochenschnitt 28 Tage</b>: deine übliche Woche der letzten vier Wochen.</li><li><b>Verhältnis</b>: letzte Woche geteilt durch deine übliche Woche. Um 1 heißt: so viel wie gewohnt. Ab 1,3 war es mehr als gewohnt, ab 1,5 deutlich mehr. Dann solltest du besonders auf Erholung achten. Unter 0,6 war es eine ruhige Woche, zum Beispiel Entlastung oder Pause.</li><li><b>Ruhetage</b>: Tage ohne Training in den letzten zwei Wochen.</li></ul>
+   <p class="hint">Steigere deine Belastung lieber in kleinen Schritten als in großen Sprüngen.</p>`)}
+function tapCards(){[["recCard",recExplain],["loadCard",loadExplain]].forEach(([id,fn])=>{const c=$(id);if(!c)return;c.classList.add("tapc");
+  c.querySelectorAll("p.hint").forEach(p=>{p.innerHTML=p.innerHTML.replace(/\s*Erklärung im Wiki( unter Belastungsverhältnis)?\.?/,"")});
+  if(!c.querySelector(".tapmore"))c.insertAdjacentHTML("beforeend",'<button class="lnk tapmore">Was bedeutet das?</button>');
+  if(!c.dataset.tb){c.dataset.tb=1;c.addEventListener("click",e=>{if(e.target.closest("button:not(.tapmore),input,select,a"))return;fn()})}})}
+
+/* Fortschritt: echte Bestwerte oben, Schätzungen eingeklappt */
+(function(){const fort=document.querySelector('[data-sub="fort"]');if(!fort)return;const mc=document.createElement("div");mc.className="card wide";mc.id="moreCard";
+  mc.innerHTML='<details class="more"><summary><b>Schätzungen, Schwellenwerte und Zonen</b><span>Hochrechnungen aus deinem Training. Antippen zum Aufklappen.</span></summary><p class="hint">Oben stehen deine echten Bestwerte. Hier rechnet die App aus deinem Training hoch, was ungefähr möglich wäre. Das sind Richtwerte, keine Garantie.</p><div class="bench" id="estBox"></div><div id="moreBody"></div></details>';
+  fort.appendChild(mc);const body=mc.querySelector("#moreBody");
+  [$("progList")&&$("progList").closest(".card"),$("thrCard"),$("wZones")].forEach(c=>{if(c){c.classList.add("incard");c.classList.remove("wide");c.style.marginBottom="";body.appendChild(c)}});
+  const pt=$("progList")&&$("progList").closest(".card");if(pt){const s=pt.querySelector(".sub");if(s)s.textContent="Was du bei deinen Wettkämpfen ungefähr schaffen kannst, wenn du so weitertrainierst"}})();
+renderBench=(f=>function(D){f.apply(this,arguments);const el=$("bench"),eb=$("estBox");if(!el)return;
+  const us=userSports(),has=k=>us.includes(k),rm=s=>el.querySelectorAll(s).forEach(n=>n.remove());
+  const nob=el.querySelector(".nob");if(eb){eb.innerHTML="";if(nob&&has("run")&&tierOk("plus")){eb.appendChild(nob);const k=nob.querySelector(".bk");if(k)k.textContent="Laufen: geschätzte Zeiten";const s=nob.querySelector(".bs");if(s)s.textContent="Hochgerechnet aus deinem schnellsten Lauf der letzten 90 Tage. Läufst du meist locker, liegen deine echten Möglichkeiten oft darüber."}}
+  rm(".nob");if(!has("run"))rm('[data-b="r5"],[data-b="econ"]');if(!has("swim"))rm('[data-b="swim"]');if(!has("bike"))rm('[data-b="bike"],[data-b="ftp"]');
+  el.querySelectorAll(".bt .bk").forEach(k=>{if(k.textContent==="Fitness (CTL)")k.textContent="Fitness"});
+  if(!el.querySelector(".bt"))el.innerHTML='<div class="empty">Für deine Sportarten gibt es hier noch keine Bestwerte.</div>'})(renderBench);
+
+/* Wiki auflösen: Begriffe in die Einstellungen */
+(function(){const i=TABS.findIndex(t=>t[0]==="wiki");if(i>=0)TABS.splice(i,1);
+  $("seg").innerHTML=TABS.map(([k,n])=>`<button data-t="${k}">${n}</button>`).join("");
+  $("tabbar").innerHTML=TABS.map(([k,n,ic])=>`<button data-t="${k}"><svg viewBox="0 0 24 24">${ic}</svg>${n}</button>`).join("");
+  document.querySelectorAll("#seg button,#tabbar button").forEach(b=>{b.onclick=()=>setTab(b.dataset.t);b.classList.toggle("on",b.dataset.t===TAB)});
+  if(TAB==="wiki")setTab("heute");
+  for(let j=TOUR.length-1;j>=0;j--)if(TOUR[j][0]==="wiki")TOUR.splice(j,1);
+  const m=document.createElement("div");m.className="modal";m.id="mHelp";m.innerHTML='<div class="sheet"><button class="ib sx" id="hClose" title="Schließen"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button><h3>Begriffe erklärt</h3><div class="sub">Was die Wörter und Werte in der App bedeuten</div></div>';document.body.appendChild(m);
+  const sh=m.querySelector(".sheet");sh.append($("wikiQ"),$("wikiList"));const rb=document.querySelector(".rulesbox");if(rb)sh.appendChild(rb);
+  $("hClose").onclick=()=>close("mHelp");m.addEventListener("click",e=>{if(e.target===m)close("mHelp")});
+  const g=document.createElement("div");g.className="sgrp";g.id="sgHelp";g.innerHTML='<div class="sgh"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .8-1 1.5V14M12 17.5v.01"/></svg><b>Hilfe</b></div><div class="devb"><button class="btn sm" id="btnHelp">Begriffe erklärt</button><button class="btn sm" data-fuel="{}">Verpflegung berechnen</button></div>';
+  const dv=$("sgDev");if(dv)dv.before(g);
+  $("btnHelp").onclick=()=>{close("mSet");$("wikiQ").value="";renderWiki();open("mHelp")};
+  document.addEventListener("click",e=>{if(e.target.closest("#mSet [data-fuel]"))close("mSet")},true)})();
+
+/* Entwickleroptionen: Vorschau */
+var PVTIER=null,PVLOCK=false;
+tierNow=(f=>function(){return PVTIER||f.apply(this,arguments)})(tierNow);
+trialInfo=(f=>function(){return PVLOCK?{tier:"plus",start:addDays(today(),-10),left:0,active:false,ended:true}:f.apply(this,arguments)})(trialInfo);
+planLocked=(f=>function(){return PVLOCK||f.apply(this,arguments)})(planLocked);
+const PV=[["plan","Erledigt nach Plan"],["short","Kürzer als geplant"],["other","Anderer Sport"],["multi","Zwei Einheiten"],["rest","Training am Ruhetag"],["free","Ohne Vorschlag"],["next","Nächster Text"],["chk","Morgen-Check-in"],["trial","Testphase abgelaufen"],["nw","Ohne Uhr"],["off","Offline-Hinweis"],["end","Vorschau beenden"]];
+drawDev=(f=>function(){f.apply(this,arguments);if(!settings.dev)return;const d=$("sgDevDyn");if(!d||d.querySelector(".pvbox"))return;const o=d.querySelector('[data-dev="off"]');
+  const h=`<h4 class="cx-sh">Vorschau</h4><div class="hint">Zeigt Zustände, die gerade nicht eintreten. Gilt bis zum Neuladen, deine Daten bleiben unverändert.</div><div class="devb pvbox">${PV.map(([k,n])=>`<button class="btn sm" data-pv="${k}">${n}</button>`).join("")}</div>`;
+  if(o)o.insertAdjacentHTML("beforebegin",h);else d.insertAdjacentHTML("beforeend",h)})(drawDev);
+var PVS="plan";
+function pvDone(s){if(!DATA)return;PVS=s;const t=today(),mk=(sport,name,secs,km,tm,i)=>({id:"pv"+i,date:t,sport,name,secs,km,tm,load:Math.round(secs/60),type:""});
+  PVREC=s==="other"?"bike":s==="rest"?"rest":s==="free"?null:"run";
+  const pl=(DATA.planned||[]).filter(p=>p.date===t).reduce((a,p)=>a+(p.secs||0),0),A=s==="multi"?[mk("swim","Schwimmen",2700,2,"06:30",1),mk("run","Lauf am Abend",3600,10,"18:00",2)]:[mk("run","Lauf",s==="short"?1500:Math.max(3600,pl),s==="short"?4:9,"17:45",1)];
+  const D=Object.assign({},DATA,{activities:A.concat(DATA.activities.filter(a=>a.date!==t)),planned:s==="short"?[{date:t,sport:"run",name:"Lauf",secs:3600}].concat((DATA.planned||[]).filter(p=>p.date!==t)):DATA.planned});
+  renderDone(D)}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-pv]");if(!b)return;let a=b.dataset.pv;close("mSet");
+  if(a==="end"){location.reload();return}
+  if(a==="chk"){openChk();return}
+  if(a==="trial"){PVTIER="free";PVLOCK=true;render();setTab("training");return}
+  if(a==="nw"){const sv=settings;settings=Object.assign({},sv,{apiKey:"",noWatch:true});try{renderV14(Object.assign({},DATA,{hrvStat:{},rhrStat:{},sleepNow:null}));hideNW(DATA)}finally{settings=sv}setTab("erholung");return}
+  if(a==="off"){$("banner").innerHTML='<div class="banner off"><b>Keine Internetverbindung.</b> Du siehst den zuletzt geladenen Stand. Sobald du wieder online bist, lädt die App neu.</div>';setTab("heute");return}
+  if(a==="next"){PVN++;a=PVS}
+  setTab("heute");pvDone(a);window.scrollTo({top:0})});
+
+renderV14=(f=>function(){f.apply(this,arguments);try{tapCards()}catch(e){console.error(e)}})(renderV14);
 
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
