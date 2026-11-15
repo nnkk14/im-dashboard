@@ -4902,7 +4902,8 @@ function todayPlan(D){const t=today();return(D.planned||[]).filter(p=>p.date===t
 function sameWo(p,w){return p&&w&&cleanT(p.name)===cleanT(w.title||"")&&spKey(p.name+" "+(SPAPI[p.sport]||p.sport))===spKey(w.sport)}
 function watchBlock(w,i){if(!w||w.old||w.fromAsk&&!w.description)return"";const D=DATA,t=today(),wi=watchInfo(),live=isLive(),tp=todayPlan(D),sw=swapAll()[t],rest=spKey(w.sport)==="rest";
   if(live&&wi.known&&!wi.up)return i?"":`<div class="wwat off"><span>${WATCH_I}Einheiten kommen noch nicht auf die Uhr</span><button class="lnk" data-winfo="setup">So geht es ›</button></div>`;
-  const onW=tp[0]||null,same=onW&&sameWo(onW,w),err=onW&&onW.pe;
+  const onW=tp[0]||null,same=onW&&sameWo(onW,w),err=onW&&onW.pe,doneT=(D.activities||[]).filter(a=>a.date===t);
+  if(onW&&doneT.some(a=>a.sport===onW.sport))return"";if(rest&&doneT.length)return"";
   if(same)return`<div class="wwat"><span>${WATCH_I}Auf der Uhr: <b>${esc(cleanT(onW.name))}</b></span><button class="lnk" data-winfo="on">ⓘ</button>${err?`<div class="wwerr">Übertragung an die Uhr hat nicht geklappt: ${esc(String(err).slice(0,120))}</div>`:""}${sw&&sw.orig?`<button class="lnk" data-wundo="1">Plan-Einheit zurück auf die Uhr</button>`:""}</div>`;
   if(!live)return onW?`<div class="wwat"><span>${WATCH_I}Auf der Uhr: <b>${esc(cleanT(onW.name))}</b></span></div>`:"";
   if(rest)return onW?`<div class="wwat"><span>${WATCH_I}Auf der Uhr ist noch: <b>${esc(cleanT(onW.name))}</b></span><button class="btn sm" data-wswap="${i}">Von der Uhr nehmen</button><button class="lnk" data-winfo="swap">ⓘ</button></div>`:(sw&&sw.orig?`<div class="wwat"><span>${WATCH_I}Heute ist nichts auf der Uhr.</span><button class="lnk" data-wundo="1">Plan-Einheit zurück auf die Uhr</button></div>`:"");
