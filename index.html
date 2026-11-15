@@ -791,6 +791,23 @@ label.f b{color:var(--acc);font-weight:600;margin-left:6px}
 #toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 84px);transform:translate(-50%,20px);max-width:calc(100% - 32px);background:var(--ink);color:var(--bg);padding:11px 16px;border-radius:14px;font-size:14px;font-weight:500;box-shadow:0 8px 24px rgba(0,0,0,.3);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:600;text-align:center}
 #toast.on{opacity:1;transform:translate(-50%,0)}
 #apperr{position:fixed;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom) + 84px);z-index:650;background:#5c1d1d;color:#fff;padding:12px 14px;border-radius:14px;font-size:13px}
+/* v25 */
+.cki{width:18px;height:18px;fill:none;stroke:#fff;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.donecard{background:linear-gradient(135deg,color-mix(in srgb,var(--green) 22%,var(--card)),var(--card));border:1px solid color-mix(in srgb,var(--green) 35%,transparent)}
+.dnh{display:flex;gap:12px;align-items:center}.dnh b{display:block;font:700 20px "Barlow Semi Condensed",sans-serif}.dnh span{font-size:14px;color:var(--muted)}
+.dnck{flex:none;width:44px;height:44px;border-radius:50%;background:var(--green);display:grid;place-items:center;animation:dnPop .5s cubic-bezier(.2,.9,.3,1.5) both}
+.dnck .cki{width:24px;height:24px}
+@keyframes dnPop{from{transform:scale(.3);opacity:0}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.dnck{animation:none}}
+.dnl{display:grid;gap:6px;margin-top:12px}
+.pidone{border-left-color:var(--green)!important}.pidone .pic{background:var(--green)!important}
+.pi .chev{margin-left:auto;color:var(--muted);font-size:20px;padding-right:4px}
+.piok{opacity:.65}.piok .m b{text-decoration:line-through;text-decoration-color:var(--muted)}
+.pimiss{opacity:.5}
+.dday.past .ddh{color:var(--muted)}
+.calback{display:block;margin:0 auto 6px}
+.cday.did{background:color-mix(in srgb,var(--green) 18%,var(--card2))}
+.exwu .exf{opacity:.85}
 </style>
 </head>
 <body>
@@ -972,7 +989,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="25";
+const VERSION="26";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -3714,6 +3731,68 @@ document.addEventListener("touchend",()=>{if(!navigator.onLine&&scrollY<=0){cons
 /* Morgen-Check-in nur morgens anbieten */
 renderChkCard=(o=>function(D){o(D);const c=$("chkCard"),h=new Date().getHours();if(!c||chkToday())return;if(h>=4&&h<14)return;
   if(NW()){c.style.display="";c.innerHTML='<button class="btn wide" data-man="1">Training eintragen</button>'}else c.style.display="none"})(renderChkCard);
+
+
+/* ---------- v25 ---------- */
+/* Heute erledigt: sofort sichtbar, mit Ermunterung */
+const CKI='<svg viewBox="0 0 24 24" class="cki"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+function recSport(){try{const t=today(),n=noteBy("Coach "+t),o=n?parseNote(n.text||n.description||""):ruleNote(DATA),c=typeof choiceOf==="function"?choiceOf(t):null,w=c||o.wo;if(!w)return null;const s=String(w.sport||"");return/rest/i.test(s)?"rest":/strength|weight|kraft/i.test(s)?"kraft":sportOf(s)}catch(e){return null}}
+function actKey(a){return/weight|strength/i.test(a.type||"")?"kraft":a.sport}
+function doneMsg(D,dn){const t=today(),r=recSport(),seed=+t.replace(/-/g,"")%3,pick=a=>a[seed%a.length],ks=dn.map(actKey),tot=dn.reduce((s,a)=>s+a.secs,0),pl=D.planned.filter(p=>p.date===t).reduce((s,p)=>s+(p.secs||0),0);
+  if(r==="rest")return["Eigentlich war Ruhetag","Bewegung tut trotzdem gut. Gönn dir heute Abend genug Schlaf und Essen, damit du morgen erholt bist."];
+  if(dn.length>=2)return[pick(["Starker Tag!","Doppelt erledigt!","Fleißig heute!"]),`${dn.length} Einheiten, zusammen ${fH(tot)} h. Jetzt zählt die Erholung.`];
+  if(r&&ks.includes(r))return[pick(["Erledigt, genau nach Plan!","Training geschafft!","Sauber abgehakt!"]),pl&&tot>=pl*.9?"Volles Programm. Dein Körper passt sich jetzt an, Erholung ist Teil des Trainings.":"Jede Einheit bringt dich deinem Ziel näher. Gut gemacht."];
+  if(r)return[pick(["Gut gemacht!","Bewegung zählt!","Stark, dass du trainiert hast!"]),"Nicht ganz der Vorschlag, aber jede Einheit hilft. Der Coach berücksichtigt das morgen."];
+  return[pick(["Gut gemacht!","Training geschafft!","Stark!"]),"Jede Einheit bringt dich weiter. Gönn dir jetzt Erholung."]}
+function doneRow(a){const c=a.manual?"var(--acc)":SPORTS[a.sport].c;return`<div class="pi pidone" data-act="${esc(String(a.id||""))}" style="--wc:${c}"><i class="pic">${CKI}</i><div class="m"><b>${esc(a.name||SPORTS[a.sport].n)}</b><span>${fH(a.secs)} h${a.km?" · "+nf(a.km,a.km<20?1:0)+" km":""}${a.tm?" · "+a.tm+" Uhr":""}</span></div><span class="chev">›</span></div>`}
+function renderDone(D){const t=today(),dn=D.activities.filter(a=>a.date===t).sort((a,b)=>String(a.tm).localeCompare(String(b.tm)));let c=$("doneCard");
+  if(!dn.length){if(c)c.style.display="none";return}
+  if(!c){c=document.createElement("div");c.className="card donecard";c.id="doneCard";const h=$("hero");(h.closest(".card")||h).after(c)}
+  const[m1,m2]=doneMsg(D,dn);c.style.display="";c.innerHTML=`<div class="dnh"><div class="dnck">${CKI}</div><div><b>${m1}</b><span>${m2}</span></div></div><div class="dnl">${dn.map(doneRow).join("")}</div>`}
+
+/* Kalender: erledigte Einheiten anzeigen und antippen, auch vergangene Tage */
+CAL.back=0;
+function ddayHTML(D,d,lab){const t=today(),ps=D.planned.filter(p=>p.date===d),dn=d<=t?D.activities.filter(a=>a.date===d):[],dk=dn.map(actKey);
+  const pl=ps.map(p=>{const ok=dk.includes(p.sport)||(/weight|strength|kraft/i.test(p.type||p.name||"")&&dk.includes("kraft")),past=d<t;
+    return`<div class="pi${ok?" piok":past?" pimiss":""}" data-pl="${esc(String(p.id))}" style="--wc:${SPORTS[p.sport].c}">${p.id&&d>=t?'<span class="grip" title="Ziehen zum Verschieben" aria-label="Verschieben">⠿</span>':""}<i class="pic">${svgI(p.sport,"#fff")}</i><div class="m"><b>${esc(p.name||SPORTS[p.sport].n)}</b><span>${p.secs?fH(p.secs)+" h":""}${p.coach?"":" · eigener Plan"}${ok?" · erledigt":past?" · nicht gemacht":""}</span></div></div>`}).join("");
+  return`<div class="dday${d<t?" past":""}" data-day="${d}"><div class="ddh">${lab}</div><div class="ddl">${pl}${dn.map(doneRow).join("")}${!ps.length&&!dn.length?'<div class="dfree">frei</div>':""}</div></div>`}
+function renderNext(D){const box=$("nextList");if(!box)return;const card=box.closest(".card"),t=today();
+  const h2=card.querySelector("h2");if(h2)h2.textContent="Kalender";const sub=card.querySelector(".sub");if(sub)sub.style.display="none";
+  let bar=$("calBar");if(!bar){bar=document.createElement("div");bar.id="calBar";bar.className="calbar";h2.after(bar)}
+  bar.innerHTML=`<div class="seg2"><button data-calv="list" class="${CAL.v==="list"?"on":""}">Liste</button><button data-calv="month" class="${CAL.v==="month"?"on":""}">Monat</button></div>`;
+  if(CAL.v==="list"){let h=CAL.back<56?`<button class="lnk calback" data-calback="1">Vergangene Tage anzeigen</button>`:"";
+    for(let i=-CAL.back;i<CAL.n;i++){const d=addDays(t,i);h+=ddayHTML(D,d,i===0?"Heute":i===1?"Morgen":i===-1?"Gestern":fDL(d))}
+    const last=D.planned.map(p=>p.date).sort().pop()||t;box.innerHTML=h+(CAL.n<112?`<button class="btn wide calmore" data-calmore="1">${last>addDays(t,CAL.n-1)?"Weitere 7 Tage zeigen":"Weitere 7 Tage zeigen (noch nichts geplant)"}</button>`:"");return}
+  const m=CAL.m,first=m+"-01",start=monday(first),lastD=addDays(addDays(first,32).slice(0,8)+"01",-1),cells=[];for(let d=start;d<=lastD||cells.length%7;d=addDays(d,1))cells.push(d);
+  box.innerHTML=`<div class="calm"><div class="calh"><button class="ib" data-calm="-1" aria-label="Vorheriger Monat"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button><b>${MON[+m.slice(5,7)-1]} ${m.slice(0,4)}</b><button class="ib" data-calm="1" aria-label="Nächster Monat"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button></div>
+   <div class="calg">${["Mo","Di","Mi","Do","Fr","Sa","So"].map(x=>`<span class="cwd">${x}</span>`).join("")}${cells.map(d=>{const ps=D.planned.filter(p=>p.date===d),dn=D.activities.filter(a=>a.date===d),out=d.slice(0,7)!==m;
+     return`<button class="cday${out?" out":""}${d===t?" today":""}${d===CAL.sel?" sel":""}${dn.length&&d<=t?" did":""}" data-cday="${d}"><b>${+d.slice(8)}</b><span class="cdots">${d<=t&&dn.length?'<em>✓</em>':ps.slice(0,3).map(p=>`<i style="background:${SPORTS[p.sport].c}"></i>`).join("")}</span></button>`}).join("")}</div></div>
+   ${ddayHTML(D,CAL.sel,CAL.sel===t?"Heute":CAL.sel===addDays(t,-1)?"Gestern":fDL(CAL.sel))}`}
+document.addEventListener("click",e=>{if(e.target.closest("[data-calback]")){CAL.back=Math.min(56,CAL.back+7);renderNext(DATA)}});
+
+/* Krafttraining: Aufwärmen und Abschluss mit konkreten Übungen */
+EXL.unshift([/armkreis/i,"Armkreisen","stand","stand","Aufrecht stehen, Arme seitlich ausstrecken. Große, langsame Kreise nach vorne, nach der Hälfte der Zeit nach hinten. Schultern locker lassen."]);
+const WU=[["Marschieren mit Knieheben",null,60,"Auf der Stelle gehen, Knie im Wechsel bis etwa Hüfthöhe heben, Arme mitschwingen. Langsam beginnen, dann etwas zügiger."],
+ ["Armkreisen",null,40,""],["Kniebeuge ohne Gewicht",10,null,"Langsam und kontrolliert, nur so tief, wie es angenehm ist. Bringt Knie und Hüfte auf Temperatur."],
+ ["Ausfallschritt im Wechsel",8,null,"Abwechselnd links und rechts nach vorne steigen, ruhiges Tempo. Bereitet Beine und Gleichgewicht vor."],
+ ["Good Morning ohne Gewicht",10,null,"Knie leicht gebeugt, Hüfte nach hinten schieben, Rücken gerade, Hände an der Hüfte. Wärmt Rücken und Beinrückseite auf."]];
+const CD=[["Dehnen Beine und Hüfte",null,120,"Je Seite etwa 30 Sekunden: Oberschenkel vorne und hinten sowie Hüftbeuger im Ausfallschritt. Ruhig atmen, nicht wippen."],["Dehnen Rücken und Schultern",null,60,"Arme nach vorne strecken und den Rücken rund machen, dann Arme hinter dem Rücken verschränken und die Brust öffnen."]];
+parseStr=(o=>function(desc){const X=o(desc),real=X.filter(x=>!x.warm);if(real.length<2)return X;const out=[],mk=(a,blk,side)=>({name:a[0],sets:1,reps:a[1],secs:a[2],rest:0,side:!!side,block:blk,rounds:1,wu:true,how:a[3]});
+  let wDone=false;X.forEach((x,i)=>{if(x.warm&&!wDone&&i<X.indexOf(real[0])&&(/aufwärm|warm|locker|einlauf/i.test(x.block+" "+x.name)||!x.block)){WU.forEach((a,j)=>out.push(mk(a,"Aufwärmen",j===3)));wDone=true;return}
+    if(x.warm&&i>X.indexOf(real[real.length-1])&&/dehn|cool|abschluss|locker|auslauf/i.test(x.block+" "+x.name)){CD.forEach(a=>out.push(mk(a,"Abschluss")));return}out.push(x)});
+  if(!wDone)out.unshift(...WU.map((a,j)=>mk(a,"Aufwärmen",j===3)));if(!out.some(x=>x.block==="Abschluss"))CD.forEach(a=>out.push(mk(a,"Abschluss")));
+  return out})(parseStr);
+function strHTML(desc,title){const X=parseStr(desc);let cur=null,h="";
+  X.forEach(x=>{const bk=x.block+"|"+x.rounds;if(bk!==cur){cur=bk;if(x.block||x.rounds>1)h+=`<div class="exb">${esc(x.block||"Block")}${x.rounds>1?`<span>${x.rounds} Runden</span>`:""}${x.block==="Aufwärmen"?"<span>etwa 5 Minuten, ohne Pause</span>":x.block==="Abschluss"?"<span>etwa 3 Minuten</span>":""}</div>`}
+    const e=x.warm?null:exFind(x.name),how=x.how||(e&&e.how)||"";
+    h+=x.warm?`<div class="exw"><i></i><div><b>${esc(x.name)}</b><span>${exDose(x)}</span></div></div>`:
+     `<div class="exi${x.wu?" exwu":""}"><div class="exf" data-exname="${esc(x.name)}">${exArt(x.name)}</div><div><b>${esc(x.name)}</b><span>${x.wu?(x.reps?x.reps+" Wdh"+(x.side?" je Seite":""):fDur(x.secs)):exDose(x)}</span>${how?`<p>${esc(how)}</p>`:`<p class="hint">Darstellung folgt${hasAi()?", die KI erstellt sie":""}.</p>`}${x.wu?"":`<a href="https://www.youtube.com/results?search_query=${encodeURIComponent(x.name+" Übung richtig ausführen")}" target="_blank" rel="noopener">Video ansehen</a>`}</div></div>`});
+  setTimeout(()=>ensureExArt(X.filter(x=>!x.warm&&!x.wu)),50);
+  return`<div class="exsum">${X.filter(x=>!x.warm&&!x.wu).length} Übungen plus Aufwärmen und Abschluss · etwa ${fDur(Math.round(strDur(X)/60)*60)}</div>${h}`}
+planFmt=(o=>function(){return o()+" Bei Kraft- und Stabieinheiten das Aufwärmen nicht als \"5m locker\" schreiben, sondern als eigene Übungszeilen, z. B. \"Aufwärmen\\n- Marschieren mit Knieheben 1x60s\\n- Armkreisen 1x40s\\n- Kniebeuge ohne Gewicht 1x10\", und am Ende \"Abschluss\\n- Dehnen Beine und Hüfte 1x120s\"."})(planFmt);
+
+function renderV14(D){renderPlanTab(D);renderErholung(D);renderWeekNew(D);renderV15(D);renderCoach17(D);thrDecor();renderTotals(D);renderReviews(D);pmcSum(D);
+  [renderErh20,renderChkCard,renderAds,renderLocks,heroRing,hideNW,renderPlanLock,aiRunTime,autoOnUpgrade,offlineBanner,renderDone].forEach(f=>{try{f(D)}catch(e){console.error(e)}})}
 
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
