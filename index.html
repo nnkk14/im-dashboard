@@ -896,6 +896,8 @@ h3>.tag,.cx-h>.tag{display:table;margin:8px 0 2px;font-size:12px}
 .plannote b{font-size:14px}.plannote span{color:var(--ink);line-height:1.4}.plannote small{color:var(--muted)}
 .plannote.realistisch{border-color:color-mix(in srgb,var(--green) 55%,transparent)}.plannote.ehrgeizig{border-color:color-mix(in srgb,var(--yellow) 60%,transparent)}.plannote.unrealistisch{border-color:color-mix(in srgb,var(--red) 60%,transparent)}
 #mGoal .tchips{margin-top:4px}
+/* v45 */
+#mKraft .sheet p{line-height:1.45}
 </style>
 </head>
 <body>
@@ -1077,7 +1079,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="44";
+const VERSION="45";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -4539,6 +4541,37 @@ planRules=(f=>function(){let s=f.apply(this,arguments);const g=store.get("imGoal
   s=s.replace(/Richtwerte Langdistanz:[^\n]*?Kürzere Ziele entsprechend weniger\./,"Richtwerte siehe RICHTWERTE UMFANG.");
   return s+`\n- RICHTWERTE UMFANG: ${ref} Die Richtwerte gelten für die Spitzenwochen. Davor wird schrittweise aufgebaut, vor dem Wettkampf reduziert.${h?` Höchstgrenze des Nutzers: ${h} h pro Woche, sie hat Vorrang.`:""}
 - GANZHEITLICH: Der Plan muss als Ganzes zum Ziel führen: spezifische Einheiten für die Zieldistanz (lange Einheiten in Richtung Wettkampfdauer, Wettkampftempo in der Aufbau- und Spitzenphase, bei Triathlon Koppeleinheiten), Kraft zur Verletzungsvorbeugung, ausreichend Erholung.`})(planRules);
+
+/* ---------- v45 ---------- */
+/* Kraft im KI-Plan: Regeln nach Studienlage, Hinweis vor der Planerstellung, wenn Kraft nicht gewählt ist.
+   Quellen: Projekt-Datei claude/quellen-kraft.md */
+var KRT=0,KRNO=false;
+function endGoal(){const g=store.get("imGoal",{});return !!goalDist()||/laufen|rad|schwimm|triathlon/i.test(g.gSport||"")||!!(goalInfo(DATA).race)}
+(function(){if($("mKraft"))return;const m=document.createElement("div");m.className="modal";m.id="mKraft";m.innerHTML='<div class="sheet"><button class="ib sx" data-krx="1" title="Schließen"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button><h3>Kraft mit einplanen?</h3><div id="krBody"></div></div>';document.body.appendChild(m)})();
+var KREQ=[];
+function drawKraftAsk(){const e=endGoal();
+  $("krBody").innerHTML=`<p>${e?"Krafttraining hilft auch bei Ausdauerzielen. In Studien sank die Zahl der Sportverletzungen mit Krafttraining auf unter ein Drittel, und man läuft und fährt Rad bei gleichem Tempo sparsamer.":"Für die Gesundheit empfiehlt die WHO Krafttraining an mindestens 2 Tagen pro Woche. Es stärkt Muskeln, Sehnen und Knochen und beugt Verletzungen vor."}</p>
+   <p class="hint">Dafür reichen ${e?"1 bis 2":"2"} Einheiten von 30 bis 45 Minuten pro Woche, auch ohne Geräte zu Hause.</p>
+   <label class="f">Kraft mit</label><div class="tchips">${EQ.map(([k,n])=>`<button data-kreq="${k}" class="${KREQ.includes(k)?"on":""}">${n}</button>`).join("")}</div>
+   <button class="btn blue wide" data-kryes="1" style="margin-top:14px">Kraft einplanen</button>
+   <button class="btn wide" data-krno="1" style="margin-top:8px">Ohne Kraft planen</button>`}
+function openKraftAsk(){KREQ=(settings.equip||[]).slice();if(!KREQ.length)KREQ=["body"];drawKraftAsk();open("mKraft")}
+$("mKraft").addEventListener("click",ev=>{const b=ev.target.closest("button");if(!b)return;
+  if(b.dataset.krx){close("mKraft");return}
+  if(b.dataset.kreq){const k=b.dataset.kreq;KREQ=KREQ.includes(k)?KREQ.filter(x=>x!==k):KREQ.concat(k);if(!KREQ.length)KREQ=["body"];drawKraftAsk();return}
+  if(b.dataset.kryes){const s=rawSports();if(!s.includes("kraft"))s.push("kraft");settings.sports=s;settings.equip=KREQ.slice();store.set("imSettings",settings);KRNO=false;KRT=Date.now();close("mKraft");setTimeout(()=>{if(DATA)render();aiPlan(true)},250);return}
+  if(b.dataset.krno){KRNO=true;KRT=Date.now();close("mKraft");setTimeout(()=>aiPlan(true),250)}});
+aiPlan=(f=>async function(manual){
+  if(manual&&!userSports().includes("kraft")&&Date.now()-KRT>10*60*1000){openKraftAsk();return}
+  return f.apply(this,arguments)})(aiPlan);
+function kraftRules(){const us=userSports(),g=store.get("imGoal",{}),e=endGoal(),by=+settings.birthYear||0,age=by?new Date().getFullYear()-by:0,eq=equipText(),beg=g.gExp==="neu";
+  if(!us.includes("kraft"))return`\n- KRAFT: Der Nutzer möchte keine Krafteinheiten. Plane keine.${age>=65?" Baue dafür kurze Gleichgewichtsübungen in lockere Einheiten ein.":""}`;
+  const sp=[us.includes("run")?"Laufen: Kniebeuge, Ausfallschritt, Bulgarische Kniebeuge, einbeiniges Kreuzheben, Wadenheben gestreckt und mit gebeugtem Knie":"",us.includes("bike")?"Rad: Kniebeuge oder Beinpresse, einbeinige Beinübungen, Hüftbeugen":"",us.includes("swim")?"Schwimmen: Rudern, Latziehen oder Klimmzug, Außenrotation der Schulter mit Band oder Kurzhantel":""].filter(Boolean).join(". ");
+  return`\n- KRAFT (verbindlich, Ausstattung: ${eq}): ${e?`Ausdauerziel. In Grundlage und Aufbau 2 Krafteinheiten pro Woche, in der Spitzen- und Wettkampfphase 1 Einheit zur Erhaltung. Die letzte Krafteinheit etwa 7 Tage vor dem Hauptwettkampf, in der Wettkampfwoche höchstens kurze leichte Stabi bis 4 Tage vorher. Übungen passend zur Sportart (${sp||"Beine, Hüfte und Rumpf"}), dazu Rumpf.`:`Allgemeines Ziel. Alle großen Muskelgruppen (Beine, Hüfte, Rücken, Brust, Schultern, Rumpf) an mindestens 2 Tagen pro Woche. Für Kraft schwerere Lasten mit 2 bis 3 Sätzen pro Übung. Für Muskelaufbau etwa 10 Sätze pro Muskelgruppe und Woche.${g.gFocus==="kraft"?" Schwerpunkt Kraft: 3 Krafteinheiten pro Woche, wenn die Trainingstage es erlauben.":""}`}
+  Steigerung: ${beg?"Einsteiger: ":""}Die ersten 3 bis 4 Wochen Gewöhnung mit 2 bis 3 Sätzen zu 10 bis 15 Wiederholungen und leichtem Gewicht oder Körpergewicht. Danach mit Gewichten schwerer: 3 Sätze zu 4 bis 8 Wiederholungen, Pause etwa 2 Minuten. Mit Körpergewicht schwierigere Varianten (einbeinig, langsamer, mit Sprung) statt immer mehr Wiederholungen. Dieselben Hauptübungen 3 bis 4 Wochen beibehalten und von Woche zu Woche leicht steigern. In leichteren Wochen Sätze etwa halbieren.
+  Last: nie bis zum Versagen. Beim Gewicht als Hinweis anhängen, wie viele Wiederholungen noch möglich wären, z. B. "2 bis 3 Wdh in Reserve". 4 bis 6 Hauptübungen, 30 bis 45 Minuten, zählt zum Wochenumfang.
+  Platzierung: an Tagen mit harter Ausdauereinheit nach dieser, möglichst mit mindestens 3 Stunden Abstand, oder an lockeren Tagen. Nie am Tag vor einer langen oder harten Einheit, nie an Ruhetagen.${age>=65?" Ab 65: an 3 Tagen pro Woche Kraft mit Gleichgewichtsübungen kombinieren (z. B. Einbeinstand, Tandemstand).":""} Dehnen schützt nicht vor Verletzungen, Mobilität nur als Ergänzung.`}
+planRules=(f=>function(){let s=f.apply(this,arguments);s=s.replace(" Dazu 1 bis 2 Krafteinheiten.","");return s+kraftRules()})(planRules);
 
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
