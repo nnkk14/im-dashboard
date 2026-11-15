@@ -4933,7 +4933,11 @@ coachText=(f=>function(){const s=f.apply(this,arguments),sw=swapAll()[today()];i
 /* Laufbestwerte nur aus Läufen draußen (Laufband liefert oft falsche Tempowerte). KI-Prognose bekommt dieselben Bestwerte wie die Anzeige. */
 const OUTF=encodeURIComponent(JSON.stringify([{field_id:"indoor",value:"outdoor"}]));
 api=(f=>function(path,opts){if(typeof path==="string"&&/^\/pace-curves\.json\?/.test(path)&&/[?&]type=Run(&|$)/.test(path)&&!/filters=/.test(path))path+="&filters="+OUTF;return f.call(this,path,opts)})(api);
-if(store.get("imPBFix","")!=="55"){store.set("imPB",null);store.set("imPBPrev",null);store.set("imPBFix","55")}
+if(store.get("imPBFix","")!=="55b"){store.set("imPB",null);store.set("imPB2",null);store.set("imPBPrev",null);store.set("imPBFix","55b")}
+/* Hochrechnung: auch aus längeren Strecken rechnen (z. B. 5 km aus 10 km), das schnellere Ergebnis zählt. Kürzere Strecken nicht, sie überschätzen */
+runEst=(f=>function(D){const L=f.apply(this,arguments),c=D&&D.pb90;if(!c)return L;const X=[[5000,"e5"],[10000,"e10"],[21097.5,"e21"],[42195,"e42"]],lab={5000:"5 km",10000:"10 km",21097.5:"Halbmarathon",42195:"Marathon"};
+  return L.map(e=>{const d=(X.find(x=>x[1]===e.k)||[])[0];if(!d)return e;let best=null;X.forEach(([x])=>{if(x<=d||x>d*4.5)return;const i=c.distance.findIndex(z=>Math.abs(z-x)<=x*.002);if(i<0||!c.values[i])return;const v=c.values[i]*Math.pow(d/x,1.06);if(!best||v<best.v)best={v,x}});
+    return best&&best.v<e.v?Object.assign({},e,{v:best.v,src:`hochgerechnet aus deinen besten ${lab[best.x]} der letzten 90 Tage`}):e})})(runEst);
 function pbRunText(D){const L=[],fd=d=>d?d.split("-").reverse().join("."):"";
   const all=(D.pb&&D.pb.run)||[];if(all.length)L.push("Laufen, beste Zeiten draußen insgesamt (auch Abschnitte aus längeren Läufen): "+all.map(x=>`${x.lab} ${fT(x.v)} (${fd(x.date)})`).join(", "));
   const c=D.pb90;if(c){const act=id=>(D.activities||[]).find(a=>String(a.id)===String(id));const pts=[[5000,"5 km"],[10000,"10 km"],[21097.5,"Halbmarathon"],[42195,"Marathon"]].map(([x,lab])=>{const i=c.distance.findIndex(d=>Math.abs(d-x)<=x*.002);if(i<0||!c.values[i])return null;const a=act(c.activity_id&&c.activity_id[i]);return`${lab} ${fT(c.values[i])}${a?" ("+fd(a.date)+")":""}`}).filter(Boolean);if(pts.length)L.push("Laufen, beste Zeiten draußen letzte 90 Tage: "+pts.join(", "))}
