@@ -1042,7 +1042,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="31";
+const VERSION="32";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -4195,6 +4195,19 @@ async function wkRepair(){if(!DATA||!isLive()||!settings.apiKey||store.get("imWk
   for(const p of P){try{const ev=await api(`/events/${p.id}`),d=wkFix(ev.description||"",ev.type);if(d&&d!==ev.description){await api(`/events/${p.id}`,{method:"PUT",body:JSON.stringify({description:d})});n++}}catch(e){console.error(e);return}}
   store.set("imWkFix1",true);if(n){toast(`${n} geplante Einheiten für die Uhr korrigiert`);load()}}
 setTimeout(()=>wkRepair().catch(()=>{}),8000);
+
+/* ---------- v32 ---------- */
+/* Planregeln für einen sinnvollen Trainingsplan */
+function planRules(){const us=userSports(),tri=["swim","bike","run"].every(k=>us.includes(k)),n={run:"Laufen",bike:"Rad",swim:"Schwimmen",kraft:"Kraft"};
+  return `\n\nPLANREGELN (verbindlich, vor der Ausgabe selbst prüfen)
+- Jede Woche enthält alle Sportarten, die der Nutzer gewählt hat (${us.map(k=>n[k]||k).join(", ")}), von der ersten Woche an.${tri?" Triathlon: Schwimmen, Rad und Laufen jeweils 2 bis 3 Einheiten pro Woche, in Erholungs- oder Wiederaufbauphasen mindestens je 1 bis 2 lockere Einheiten.":""}${us.includes("kraft")?" Dazu 1 bis 2 Krafteinheiten.":""}
+- Etwa 80 Prozent der Trainingszeit locker (Z1 bis Z2), höchstens etwa 20 Prozent intensiv. Höchstens 2 harte Einheiten pro Woche, nie an zwei Tagen hintereinander, mindestens 1 Ruhetag.
+- Nach einem Wettkampf ab Halbmarathon oder Mitteldistanz in den letzten 4 Wochen: keine harten Laufeinheiten bis etwa 4 Wochen nach dem Wettkampf. Ausdauer in dieser Zeit vor allem über lockeres Rad und Schwimmen halten, weil das die Beine schont. Laufumfang nur langsam steigern.
+- Umfang steigt schrittweise. Nach 2 bis 3 Aufbauwochen folgt eine leichtere Woche mit etwa 30 Prozent weniger Umfang.
+- Pro Sportart eine lange Einheit pro Woche, die über die Wochen länger wird.
+- Schwimmen in der Grundlagenphase mit Technikanteil.
+- Wochenumfang passend zum Ziel und zur Zeit, die der Nutzer hat. Ist sie unbekannt, realistisch für Berufstätige planen (Ironman-Grundlage etwa 6 bis 10 Stunden, Marathon etwa 4 bis 7 Stunden).`}
+planResearch=(f=>async function(D){const r=await f.apply(this,arguments);return(r||"")+planRules()})(planResearch);
 
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
