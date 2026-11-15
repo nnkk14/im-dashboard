@@ -1072,7 +1072,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="41";
+const VERSION="42";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -4445,8 +4445,8 @@ function drawProf(){const P=PF,on=(c)=>c?"on":"",kr=P.sports.includes("kraft")||
   $("pfBody").innerHTML=`<p class="hint" style="margin-top:0">Tippe an, was sich geändert hat, und speichere unten.</p>
    <label class="f">Ziel</label><div class="tchips">${[["race","Wettkampf"],["fit","Fitter werden"],["health","Gesund bleiben"]].map(([k,n])=>`<button data-pfpur="${k}" class="${on(P.purpose===k)}">${n}</button>`).join("")}</div>
    <label class="f">Sportarten</label><div class="tchips">${SPOPT.map(([k,n])=>`<button data-pfsp="${k}" class="${on(P.sports.includes(k))}">${n}</button>`).join("")}</div>
-   ${kr?`<label class="f">Kraft mit</label><div class="tchips">${EQ.map(([k,n])=>`<button data-pfeq="${k}" class="${on(P.equip.includes(k))}">${n}</button>`).join("")}</div>`:""}
    <label class="f" for="pfExtra">Weitere Sportarten</label><input id="pfExtra" value="${esc(P.extra)}" placeholder="z. B. Tennis, Wandern" autocomplete="off">
+   ${kr?`<label class="f">Kraft mit</label><div class="tchips">${EQ.map(([k,n])=>`<button data-pfeq="${k}" class="${on(P.equip.includes(k))}">${n}</button>`).join("")}</div>`:""}
    <div class="row2"><div><label class="f" for="pfBy">Geburtsjahr</label><select id="pfBy">${byOpts(P.by)}</select></div><div><label class="f">Geschlecht</label><div class="tchips">${Object.entries(SEXN).map(([k,n])=>`<button data-pfsex="${k}" class="${on(P.sex===k)}">${n}</button>`).join("")}</div></div></div>
    <label class="f">Zeit pro Woche</label><div class="tchips">${HRS.map(([h,n])=>`<button data-pfhrs="${h}" class="${on(P.hrs===h||(h===0&&!P.hrs&&P.hrs!==null))}">${n}</button>`).join("")}</div>
    <label class="f">Trainingstage</label><p class="hint" style="margin-top:0">Tippen wechselt zwischen frei, Training und lang.</p><div class="days">${P.days.map((x,i)=>`<button data-pfday="${i}" class="d${x}">${DAYN[i]}<small>${["frei","Training","lang"][x]}</small></button>`).join("")}</div>
