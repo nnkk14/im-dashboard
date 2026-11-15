@@ -909,6 +909,11 @@ h3>.tag,.cx-h>.tag{display:table;margin:8px 0 2px;font-size:12px}
 /* v52 */
 .rcbar{height:6px;border-radius:3px;background:var(--card2);margin-top:10px;overflow:hidden}.rcbar i{display:block;height:100%;background:var(--acc)}
 .rclist{margin:6px 0 0;padding-left:16px;font-size:13px;line-height:1.5;color:var(--sub,#999)}.rclist li.on{color:var(--text,#fff)}.rclist li.done{opacity:.55}
+/* v53 */
+.fbx{margin-top:12px;padding:12px;border-radius:12px;background:var(--card2)}.fbq{font-weight:600;font-size:15px}.fbq span{display:block;font-weight:400;font-size:13px;color:var(--muted);margin-top:3px}
+.fbb{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}.fbbtn{padding:11px 4px;border-radius:10px;border:1px solid var(--line,#333);background:transparent;color:inherit;font:inherit;font-size:14px;cursor:pointer}
+.fbbtn.on{background:var(--acc);border-color:var(--acc);color:#fff}.fbl{font-size:13px;color:var(--muted)}.fbl b{color:var(--text,#fff);font-weight:600}.fbl em{font-style:normal;font-size:12px}
+.fbd{margin-top:10px;font-size:13px;display:flex;flex-direction:column;gap:3px}.fbd b{font-weight:600}.fbd span{color:var(--muted)}
 </style>
 </head>
 <body>
@@ -1090,7 +1095,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="52";
+const VERSION="53";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -1156,7 +1161,7 @@ async function loadLive(){
   const activities=(acts||[]).filter(a=>a&&a.start_date_local).map(a=>({
     date:a.start_date_local.slice(0,10),tm:a.start_date_local.slice(11,13),sport:sportOf(a.type),name:a.name||a.type||"",
     secs:a.moving_time||a.elapsed_time||0,km:(a.distance||0)/1000,load:a.icu_training_load||0,hr:a.average_heartrate||null,
-    id:a.id,type:a.type,np:a.icu_weighted_avg_watts||null,ftp:a.icu_ftp||null,elev:a.total_elevation_gain||0,dec:a.decoupling!=null?a.decoupling:null,if:a.icu_intensity!=null?a.icu_intensity/100:null,maxhr:a.max_heartrate||null,hz:a.icu_hr_zone_times||null,is:a.interval_summary||null,trainer:!!a.trainer,cad:a.average_cadence||null}));
+    id:a.id,type:a.type,np:a.icu_weighted_avg_watts||null,ftp:a.icu_ftp||null,elev:a.total_elevation_gain||0,dec:a.decoupling!=null?a.decoupling:null,if:a.icu_intensity!=null?a.icu_intensity/100:null,maxhr:a.max_heartrate||null,hz:a.icu_hr_zone_times||null,is:a.interval_summary||null,trainer:!!a.trainer,cad:a.average_cadence||null,rpe:a.icu_rpe!=null?a.icu_rpe:null,feel:a.feel||null}));
   const wellness=(well||[]).map(w=>({date:w.id,ctl:w.ctl,atl:w.atl,hrv:w.hrv||null,rhr:w.restingHR||null,
     sleepH:w.sleepSecs?w.sleepSecs/3600:null,sleepS:w.sleepScore||null,sleepQ:w.sleepQuality||null,steps:w.steps||null,weight:w.weight||null,vo2:w.vo2max||null}));
   const sick=[],planned=[],races=[],notes=[];
@@ -4816,6 +4821,73 @@ render=(f=>function(){const r=f.apply(this,arguments);try{renderRaceCard(DATA)}c
 coachText=(f=>function(){const s=f.apply(this,arguments),rc=raceRecent(DATA);if(!rc)return s;const x=`\nLETZTER WETTKAMPF: ${rc.R.n} am ${rc.date} (Tag ${rc.day} danach). Erholungsphase jetzt: ${rc.ph[2]} Harte Einheiten frühestens ab Tag ${rc.R.hard}, normales Training ab Tag ${rc.R.end}. Halte dich daran.`;const i=s.indexOf("\nANTWORTFORMAT");return i<0?s+x:s.slice(0,i)+x+s.slice(i)})(coachText);
 
 askCtx=(f=>function(){const s=f.apply(this,arguments),rc=raceRecent(DATA);return s+"\n\nREGEL BEI KRANKHEIT (wie in der App): Beschwerden nur oberhalb des Halses (Schnupfen, verstopfte Nase, leichte Halsschmerzen): höchstens kurz und locker, keine Intervalle. Fieber oder Beschwerden unterhalb des Halses (Husten aus der Brust, Gliederschmerzen, Magen-Darm): kein Training, bei Bedarf Arzt. Danach 7 Tage locker zurückkehren."+(rc?`\nLETZTER WETTKAMPF: ${rc.R.n} am ${rc.date}, heute Tag ${rc.day}. Jetzt: ${rc.ph[2]} Harte Einheiten frühestens ab Tag ${rc.R.hard}, normales Training ab Tag ${rc.R.end}.`:"")})(askCtx);
+/* ---------- v53 ---------- */
+/* Rückmeldung nach jeder Einheit: zu leicht, passend, zu schwer, dazu Anstrengung 0 bis 10 (Session-RPE nach Foster 2001). Quellen: claude/quellen-rueckmeldung.md */
+const RPEL=["Ruhe","sehr, sehr leicht","leicht","mittel","etwas schwer","schwer","schwer","sehr schwer","sehr schwer","sehr schwer","maximal"];
+const fbAll=()=>store.get("imFeel",{});
+function fbSet(id,o){const m=fbAll();if(o)m[id]=Object.assign({},m[id]||{},o,{ts:Date.now()});else delete m[id];const ks=Object.keys(m);if(ks.length>200)ks.sort((a,b)=>m[a].ts-m[b].ts).slice(0,ks.length-200).forEach(k=>delete m[k]);store.set("imFeel",m)}
+function planOf(a){return(DATA.planned||[]).filter(p=>p.date===a.date&&(p.sport===a.sport||(SPAPI[p.sport]||"")===a.type)).sort((x,y)=>Math.abs((x.secs||0)-a.secs)-Math.abs((y.secs||0)-a.secs))[0]||null}
+function expOf(a){const p=planOf(a),d=p?String(p.desc||p.name||""):"";
+  if(a.sport==="kraft"||/kraft|strength|weight/i.test((a.type||"")+" "+(p?p.name:"")))return{lo:6,hi:8,n:"Kraft mit 2 bis 3 Wiederholungen Reserve",p};
+  if(p){if(/Z[4-7]|VO2|Schwelle|Intervall/i.test(d))return{lo:6,hi:9,n:"harte Einheit",p};if(/Z3|Tempo|Sweet/i.test(d))return{lo:4,hi:6,n:"mittlere Einheit",p};return{lo:2,hi:4,n:"lockere Einheit",p}}
+  const z=a.hz||[],tot=z.reduce((s,x)=>s+(x||0),0),hi=tot?z.slice(3).reduce((s,x)=>s+(x||0),0)/tot:0;
+  if(hi>0.15||(a.if||0)>=0.88)return{lo:6,hi:9,n:"harte Einheit",p:null};if((a.if||0)>=0.78)return{lo:4,hi:6,n:"mittlere Einheit",p:null};return{lo:2,hi:4,n:"lockere Einheit",p:null}}
+function fbOf(a){const f=fbAll()[a.id]||{},rpe=f.rpe!=null?f.rpe:(a.rpe||null),e=expOf(a);let r=f.r;
+  if(r==null&&rpe!=null)r=rpe>e.hi+1?1:rpe<e.lo-1?-1:0;return{r:r==null?null:r,rpe,e,own:f.r!=null,src:f.rpe!=null?"app":a.rpe?"uhr":""}}
+function fbData(a){const e=expOf(a),z=a.hz||[],tot=z.reduce((s,x)=>s+(x||0),0),hi=tot?z.slice(3).reduce((s,x)=>s+(x||0),0)/tot:0,out=[];
+  if(e.p&&e.lo<=2&&hi>0.1&&tot>900)out.push(`${Math.round(hi*100)} % der Zeit im Bereich Z4 oder höher, geplant war locker`);
+  if(e.p&&e.p.secs&&a.secs<e.p.secs*0.7)out.push(`${Math.round(a.secs/60)} von ${Math.round(e.p.secs/60)} geplanten Minuten`);
+  if(a.dec!=null&&a.dec>5&&a.secs>=3600&&e.lo<=4)out.push(`Puls driftet um ${nf(a.dec,1)} % (über 5 % deutet auf fehlende Grundlage oder Ermüdung)`);
+  return out}
+function fbState(D){const t=today(),acts=(D.activities||[]).filter(a=>a.id&&a.date>=addDays(t,-14)&&a.date<=t).map(a=>Object.assign({a},fbOf(a))).filter(x=>x.r!=null).sort((x,y)=>y.a.date.localeCompare(x.a.date));
+  const w7=acts.filter(x=>x.a.date>=addDays(t,-7)),hard=w7.filter(x=>x.r===1).length,last5=acts.slice(0,5),easy=last5.filter(x=>x.r===-1).length,L=(()=>{try{return evaluate(D).L}catch(e){return 0}})();
+  let st="ok";if(hard>=2||(hard>=1&&L>=1))st="schwer";else if(last5.length>=3&&easy>=3&&!last5.some(x=>x.r===1)&&L===0)st="leicht";
+  return{st,hard,easy,n:acts.length,acts,L}}
+async function fbPushRpe(a,rpe){if(!isLive()||!a.id||!settings.apiKey)return;try{await fetch("https://intervals.icu/api/v1/activity/"+encodeURIComponent(a.id),{method:"PUT",headers:{"Authorization":"Basic "+btoa("API_KEY:"+settings.apiKey),"Content-Type":"application/json"},body:JSON.stringify({icu_rpe:rpe})});a.rpe=rpe}catch(e){}}
+function fbCard(a){const f=fbOf(a),dat=fbData(a),R=[[-1,"Zu leicht"],[0,"Passend"],[1,"Zu schwer"]];
+  return`<div class="fbx" id="fbx"><div class="fbq">${f.own?"Deine Rückmeldung":"Wie war die Einheit für dich?"}<span>${f.e.p?`Geplant war eine ${esc(f.e.n)} (${esc(cleanT(f.e.p.name))})`:`Nach deinen Daten war das eine ${esc(f.e.n)}`}, passend wäre etwa ${f.e.lo} bis ${f.e.hi} von 10.</span></div>
+   <div class="fbb">${R.map(([v,l])=>`<button class="fbbtn${f.own&&f.r===v?" on":""}" data-fb="${v}">${l}</button>`).join("")}</div>
+   <label class="fbl">Anstrengung <b id="fbRv">${f.rpe!=null?f.rpe+" · "+RPEL[f.rpe]:"noch nicht angegeben"}</b>${f.src==="uhr"?" <em>von der Uhr</em>":""}</label>
+   <input type="range" min="0" max="10" step="1" class="rpe" id="fbR" value="${f.rpe!=null?f.rpe:5}"><div class="rpel"><span>0 Ruhe</span><span>5 schwer</span><span>10 maximal</span></div>
+   ${dat.length?`<div class="fbd"><b>Aus den Daten</b>${dat.map(x=>`<span>${esc(x)}</span>`).join("")}</div>`:""}</div>`}
+function bindFb(a){const box=$("fbx");if(!box)return;const r=$("fbR");
+  r.oninput=()=>{$("fbRv").textContent=r.value+" · "+RPEL[+r.value]};
+  r.onchange=()=>{const v=+r.value;fbSet(a.id,{rpe:v});fbPushRpe(a,v);renderFbAdj(DATA)};
+  box.querySelectorAll("[data-fb]").forEach(b=>b.onclick=()=>{const v=+b.dataset.fb,cur=fbAll()[a.id]||{};const o={r:v};if(cur.rpe==null&&a.rpe==null){o.rpe=v===1?Math.min(10,expOf(a).hi+2):v===-1?Math.max(0,expOf(a).lo-2):Math.round((expOf(a).lo+expOf(a).hi)/2);fbPushRpe(a,o.rpe)}fbSet(a.id,o);renderExtra(DATA);renderFbAdj(DATA)})}
+renderExtra=(f=>function(D){const r=f.apply(this,arguments);try{const t=today(),last=D.activities.filter(a=>a.id).sort((x,y)=>y.date.localeCompare(x.date))[0],ac=$("actCard");
+  if(last&&last.date>=addDays(t,-3)&&ac&&ac.style.display!=="none"){const old=$("fbx");if(old)old.remove();const h=ac.querySelector(".act");h.insertAdjacentHTML("afterend",fbCard(last));bindFb(last)}renderFbAdj(D)}catch(e){console.log("fb",e)}return r})(renderExtra);
+/* Automatische Anpassung und Knopf „Plan anpassen“ */
+let FAR=null;
+function renderFbAdj(D){let el=$("fbAdj");const s=fbState(D),ac=$("actCard");if(!ac)return;
+  if(s.st==="ok"&&!FAR){if(el)el.remove();return}
+  if(!el){el=document.createElement("div");el.id="fbAdj";el.className="card";ac.parentNode.insertBefore(el,ac.nextSibling)}
+  const ai=hasAi()&&isLive(),t=today(),fut=(D.planned||[]).filter(p=>p.coach&&p.date>t&&p.date<=addDays(t,14));
+  if(FAR){const o=FAR;el.innerHTML=`<div class="cx-k" style="color:var(--acc)">Plan anpassen</div><div class="cx-h" style="font-size:17px">${o.changes.length?"Die KI schlägt Änderungen vor":"Plan passt so"}</div><p class="sub" style="margin:6px 0">${esc(o.comment||"")}</p>
+    ${o.changes.length?`<ul class="pcl">${o.changes.map(c=>{const p=D.planned.find(x=>String(x.id)===String(c.id));return p?`<li><b>${esc(cleanT(p.name))}</b> ${c.action==="delete"?"löschen":c.action==="move"?"auf "+fDL(c.date):"ändern: "+esc(c.name||"")+(c.minutes?", "+c.minutes+" min":"")}<span>${esc(c.reason||"")}</span></li>`:""}).join("")}</ul><div class="btnrow"><button class="btn blue" id="faApply">Übernehmen</button><button class="btn" id="faNo">Nein danke</button></div>`:`<button class="btn sm" id="faNo">Ausblenden</button>`}<div class="err" id="faErr"></div>`;
+    if($("faApply"))$("faApply").onclick=applyFA;$("faNo").onclick=()=>{FAR=null;store.set("imFbSeen",{st:s.st,d:t});renderFbAdj(DATA)};return}
+  const seen=store.get("imFbSeen",{});if(seen.st===s.st&&seen.d>=addDays(t,-6)){el.remove();return}
+  const hd=s.st==="schwer"?"Deine Einheiten waren zuletzt zu schwer":"Deine Einheiten waren zuletzt zu leicht";
+  const tx=s.st==="schwer"?`${s.hard} von ${s.acts.filter(x=>x.a.date>=addDays(t,-7)).length} bewerteten Einheiten der letzten 7 Tage waren dir zu schwer${s.L?", und deine Erholungswerte sind nicht im grünen Bereich":""}. Die Tagesempfehlung nimmt harte Einheiten deshalb automatisch etwas zurück.`:`${s.easy} deiner letzten ${Math.min(5,s.n)} bewerteten Einheiten waren dir zu leicht, und deine Erholungswerte passen. Eine kleine Steigerung ist möglich.`;
+  el.innerHTML=`<div class="cx-k" style="color:${s.st==="schwer"?"var(--yellow)":"var(--green)"}">Rückmeldungen</div><div class="cx-h" style="font-size:17px">${hd}</div><p class="sub" style="margin:6px 0 10px">${tx}</p>
+   <div class="btnrow">${ai&&fut.length?'<button class="btn blue" id="faBtn">Plan anpassen</button>':""}<button class="btn" id="faNo">Ausblenden</button></div>${ai&&!fut.length?'<p class="hint">In den nächsten zwei Wochen gibt es keine KI-Einheiten zum Anpassen.</p>':""}<div class="err" id="faErr"></div>`;
+  if($("faBtn"))$("faBtn").onclick=aiFbAdjust;$("faNo").onclick=()=>{store.set("imFbSeen",{st:s.st,d:t});el.remove()}}
+async function aiFbAdjust(){const b=$("faBtn");b.disabled=true;b.textContent="Die KI passt an …";const D=DATA,t=today(),s=fbState(D);
+  const pl=D.planned.filter(p=>p.date>t&&p.date<=addDays(t,14)).sort((a,b)=>a.date.localeCompare(b.date));
+  const pr=coachText().replace(/\nANTWORTFORMAT[\s\S]*$/,"")+`\n\nPLAN NÄCHSTE 2 WOCHEN (id | Datum | Sportart | Titel | Minuten | von der KI | Ablauf)\n${pl.map(p=>`${p.id} | ${p.date} ${DAYN[(P(p.date).getDay()+6)%7]} | ${SPORTS[p.sport].n} | ${p.name} | ${Math.round((p.secs||0)/60)} | ${p.coach?"ja":"nein"} | ${String(p.desc||"").replace(/\n/g," / ").slice(0,220)}`).join("\n")}\n\nAUFGABE\nDer Nutzer hat seine letzten Einheiten als ${s.st==="schwer"?"zu schwer":"zu leicht"} bewertet (Rückmeldungen oben). ${s.st==="schwer"?"Nimm die Belastung der nächsten 7 bis 10 Tage maßvoll zurück: bei harten Einheiten eine Wiederholung weniger oder kürzere Belastungsabschnitte, bei Bedarf eine harte Einheit durch eine lockere ersetzen. Lange lockere Einheiten höchstens um 15 % kürzen. Keine zusätzlichen Ruhetage, außer die Erholungswerte sind rot.":"Steigere maßvoll: bei harten Einheiten eine Wiederholung mehr oder Belastungsabschnitte etwa 10 % länger. Lockere Einheiten bleiben locker, Wochenumfang höchstens 10 % mehr. Keine zusätzlichen harten Tage."} Phasen, Ruhetage, Trainingstage und Wettkampftermine bleiben. Ändere nur, was nötig ist. Antworte nur mit JSON in einem json-Codeblock: {"comment":"max. 250 Zeichen","changes":[{"id":"…","action":"edit|move|delete","date":"JJJJ-MM-TT","name":"…","minutes":60,"description":"Ablauf im intervals.icu-Workout-Format wie oben","reason":"max. 90 Zeichen"}]}. Nur Einheiten mit "von der KI: ja" ändern, höchstens 6 Änderungen.`;
+  try{const o=jsonFrom(await claude(pr,4000));o.changes=(o.changes||[]).filter(c=>D.planned.some(p=>String(p.id)===String(c.id)&&p.coach)&&(c.action==="delete"||(c.action==="move"&&/^\d{4}-\d{2}-\d{2}$/.test(c.date||""))||(c.action==="edit"&&c.description)));
+    if(typeof planGate==="function"){const items=pl.map(p=>{const c=o.changes.find(x=>String(x.id)===String(p.id));if(c&&c.action==="delete")return null;const it={date:c&&c.action==="move"?c.date:p.date,sport:SPAPI[p.sport]||p.sport,name:c&&c.name||p.name,minutes:c&&c.minutes||Math.round((p.secs||0)/60),description:c&&c.description||p.desc||""};return it}).filter(Boolean);
+      try{const orig=pl.map(p=>({date:p.date,sport:SPAPI[p.sport]||p.sport,name:p.name,minutes:Math.round((p.secs||0)/60),description:p.desc||""})),b0=planGate(orig).issues.map(x=>x.t),nw=planGate(items).issues.map(x=>x.t).filter(x=>!b0.includes(x));if(nw.length){o.changes=[];o.comment="Der Vorschlag hätte Planregeln verletzt ("+nw.slice(0,2).join(" ")+"). Bitte noch einmal versuchen."}}catch(e){}}
+    FAR=o;renderFbAdj(DATA)}catch(e){b.disabled=false;b.textContent="Plan anpassen";$("faErr").textContent=e.message}}
+async function applyFA(){const b=$("faApply");b.disabled=true;b.textContent="Übernehme …";
+  try{for(const c of FAR.changes){const u="/events/"+encodeURIComponent(c.id);if(c.action==="delete")await api(u,{method:"DELETE"});else if(c.action==="move")await api(u,{method:"PUT",body:JSON.stringify({start_date_local:c.date+"T00:00:00"})});else{const bd={description:c.description};if(c.name)bd.name=c.name;if(c.minutes)bd.moving_time=Math.round(c.minutes*60);await api(u,{method:"PUT",body:JSON.stringify(bd)})}}
+    FAR=null;store.set("imFbSeen",{st:fbState(DATA).st,d:today()});await load()}catch(e){b.disabled=false;b.textContent="Übernehmen";$("faErr").textContent=e.message}}
+/* Tagesempfehlung: bei „zu schwer“ harte Plan-Einheit automatisch etwas zurücknehmen */
+ruleNote=(f=>function(D){const o=f.apply(this,arguments),s=fbState(D);if(s.st!=="schwer"||!o.ps||o.ps.status!=="wie geplant"||!o.wo||!/Z[4-7]/.test(o.wo.description||""))return o;
+  o.ps={status:"angepasst",original:o.wo.title,change:"Eine Wiederholung weniger und die Pausen etwas länger. Deine letzten Einheiten waren dir zu schwer."};o.wo.reason="Wie geplant, aber etwas leichter, weil du deine letzten Einheiten als zu schwer bewertet hast.";return o})(ruleNote);
+/* KI kennt die Rückmeldungen */
+actLine=(f=>function(a){const s=f.apply(this,arguments),x=a&&a.id?fbOf(a):null;if(!x||(x.r==null&&x.rpe==null))return s;return s+` · Rückmeldung: ${x.r===1?"zu schwer":x.r===-1?"zu leicht":x.r===0?"passend":"keine"}${x.rpe!=null?", Anstrengung "+x.rpe+"/10":""} (passend wäre ${x.e.lo} bis ${x.e.hi})`})(actLine);
+coachText=(f=>function(){const s=f.apply(this,arguments),st=fbState(DATA);if(!st.n)return s;const x=`\nRÜCKMELDUNGEN DES NUTZERS (14 Tage, Anstrengung 0 bis 10)\n${st.acts.slice(0,10).map(y=>`${y.a.date} ${SPORTS[y.a.sport].n} ${y.a.name}: ${y.r===1?"zu schwer":y.r===-1?"zu leicht":"passend"}${y.rpe!=null?", "+y.rpe+"/10":""} (erwartet ${y.e.lo} bis ${y.e.hi})`).join("\n")}\nGesamt: ${st.st==="schwer"?"zuletzt zu schwer, Belastung maßvoll zurücknehmen":st.st==="leicht"?"zuletzt zu leicht, maßvolle Steigerung möglich":"passt"}. Berücksichtige das bei Empfehlungen und Plänen.`;const i=s.indexOf("\nANTWORTFORMAT");return i<0?s+x:s.slice(0,i)+x+s.slice(i)})(coachText);
+
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
 $("btnRace").onclick=()=>openRace(null);
