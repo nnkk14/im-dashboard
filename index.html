@@ -906,6 +906,9 @@ h3>.tag,.cx-h>.tag{display:table;margin:8px 0 2px;font-size:12px}
 #tsOut{margin-top:8px;color:var(--text,#fff)}
 /* v50 */
 .tslist{margin:8px 0 0;padding-left:18px;font-size:14px;line-height:1.6}.tslist span{color:var(--sub,#999)}
+/* v52 */
+.rcbar{height:6px;border-radius:3px;background:var(--card2);margin-top:10px;overflow:hidden}.rcbar i{display:block;height:100%;background:var(--acc)}
+.rclist{margin:6px 0 0;padding-left:16px;font-size:13px;line-height:1.5;color:var(--sub,#999)}.rclist li.on{color:var(--text,#fff)}.rclist li.done{opacity:.55}
 </style>
 </head>
 <body>
@@ -1087,7 +1090,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="51";
+const VERSION="52";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -1604,7 +1607,7 @@ async function claude(prompt,maxTokens){
   if(j.usage){const u=spend();u.usd+=(j.usage.input_tokens||0)*2e-6+(j.usage.output_tokens||0)*10e-6;store.set("imAiSpend",u)}
   return (j.content||[]).filter(c=>c.type==="text").map(c=>c.text).join("");
 }
-const COACH_SYS="Du bist ein erfahrener, sachlicher Ausdauertrainer (Laufen, Rad, Schwimmen, Triathlon) und wertest Trainings- und Gesundheitsdaten aus. Schreibe Deutsch, kurz, konkret, ohne Füllwörter, ohne Gedankenstriche und ohne Semikolons. Erfinde keine Werte. Nenne fehlende Daten. Nenne keine Gerätehersteller oder Plattformen. Keine Diagnosen. Bei Krankheitszeichen Pause empfehlen, bei Fieber oder Beschwerden unterhalb des Halses kein Training und ggf. Arzt. Respektiere bestehende Planeinheiten (z. B. aus TrainingPeaks), empfiehl nur, ob sie wie geplant, gekürzt, ohne Intensität oder gar nicht gemacht werden sollen.";
+const COACH_SYS="Du bist ein erfahrener, sachlicher Ausdauertrainer (Laufen, Rad, Schwimmen, Triathlon) und wertest Trainings- und Gesundheitsdaten aus. Schreibe Deutsch, kurz, konkret, ohne Füllwörter, ohne Gedankenstriche und ohne Semikolons. Erfinde keine Werte. Nenne fehlende Daten. Nenne keine Gerätehersteller oder Plattformen. Keine Diagnosen. Bei Beschwerden nur oberhalb des Halses (Schnupfen, leichte Halsschmerzen) höchstens kurz und locker, keine Intervalle. Bei Fieber oder Beschwerden unterhalb des Halses kein Training und ggf. Arzt. Respektiere bestehende Planeinheiten (z. B. aus TrainingPeaks), empfiehl nur, ob sie wie geplant, gekürzt, ohne Intensität oder gar nicht gemacht werden sollen.";
 const HEALTH_SYS="Du bist ein freundlicher, sachlicher Gesundheits- und Bewegungscoach. Schreibe Deutsch in einfacher, verständlicher Sprache, ohne Fachbegriffe, ohne Gedankenstriche und ohne Semikolons. Schwerpunkt: Alltagsbewegung, Schritte, Spaziergänge, leichte Ausdauer, Kraft und Beweglichkeit, Schlaf und Ruhepuls. Erfinde keine Werte. Keine Diagnosen. Bei auffälligen Werten oder Beschwerden zum Arzt raten. Die Feldnamen im JSON bleiben gleich, Alternativen dürfen auch Spazierengehen, Radfahren, Schwimmen oder Gymnastik sein.";
 function jsonFrom(txt){const m=txt.match(/```(?:json)?\s*([\s\S]*?)```/i),s=m?m[1]:txt,a=s.indexOf("{"),b=s.lastIndexOf("}");if(a<0||b<a)throw new Error("Die KI hat kein lesbares Ergebnis geliefert. Bitte nochmal tippen.");try{return JSON.parse(s.slice(a,b+1))}catch(e){throw new Error("Das Ergebnis von der KI war unvollständig. Bitte nochmal tippen.")}}
 function planFmt(){return 'description im intervals.icu-Workout-Format, jede Zeile ein Schritt, z. B. "Warm-up\n- 15m Z2\nMain Set 4x\n- 4m Z4\n- 3m Z1\nCooldown\n- 10m Z1". sport ist Run, Ride, Swim oder WeightTraining.'}
@@ -4769,6 +4772,50 @@ kraftRules=(f=>function(){let s=f.apply(this,arguments);if(!userSports().include
   return s+`\n- KRAFTPLAN (Ziel ist Krafttraining, verbindlich): Schwerpunkt ${fo.map(k=>FN[k]).join(", ")}, Ziel ${AN[art]}. Jede große Muskelgruppe (Beine, Hüfte und Po, Rücken, Brust, Schultern, Rumpf) mindestens 2-mal pro Woche. Aufteilung nach Zahl der Trainingstage: 2 Tage Ganzkörper A und B, 3 Tage Ganzkörper A, B und C, ab 4 Tagen Oberkörper und Unterkörper im Wechsel. Dieselbe Muskelgruppe nicht an zwei Tagen hintereinander schwer. ${AR[art]} ${fo.filter(k=>k!=="ganz").map(k=>FX[k]).join(" ")}${fo.some(k=>k!=="ganz")?" Die übrigen Muskelgruppen bleiben im Plan, Ziehen und Drücken im Gleichgewicht.":""} Steigerung: erst die Wiederholungen bis zum oberen Ende des Bereichs, dann mehr Gewicht oder eine schwerere Variante. Alle 4 bis 6 Wochen eine leichtere Woche mit etwa halb so vielen Sätzen. Einsteiger: die ersten 2 bis 4 Wochen Technik mit leichten Lasten. Je Einheit 45 bis 60 Minuten mit Aufwärmen. Ohne Zieldatum einen Block von 12 Wochen planen, als target_date das Ende des Blocks.`})(kraftRules);
 planRules=(f=>function(){let s=f.apply(this,arguments);if(!userSports().some(k=>["run","bike","swim"].includes(k)))s=s.replace(/\n- AUSDAUER BEI ALLGEMEINEN ZIELEN:[^\n]*/,"\n- AUSDAUER: Der Nutzer hat keine Ausdauersportart gewählt. Plane keine Ausdauereinheiten, empfiehl aber in der note kurz 150 Minuten Bewegung pro Woche (WHO), z. B. zügiges Gehen oder Radfahren im Alltag.");return s})(planRules);
 
+/* ---------- v52 ---------- */
+/* Erholung nach Wettkämpfen auch ohne KI-Plan. Quellen: claude/quellen-erholung.md */
+const RECOV={
+ "5 km":{n:"5 km",ph:[[1,"easy","Locker bewegen oder Ruhetag."],[5,"easy","Nur locker, keine harten Einheiten."]],hard:6,end:7},
+ "10 km":{n:"10 km",ph:[[2,"rest","Ruhetag oder ein lockerer Spaziergang."],[7,"easy","Nur locker, keine harten Einheiten."]],hard:8,end:10},
+ "Halbmarathon":{n:"Halbmarathon",ph:[[2,"rest","Ruhetag oder Spaziergang."],[7,"easy","Kurz und locker, gern Rad oder Schwimmen statt Laufen."],[14,"light","Locker, erste kurze flotte Abschnitte möglich."]],hard:8,end:14},
+ "Marathon":{n:"Marathon",ph:[[2,"rest","Ruhetag oder Spaziergang."],[7,"low","Kurz und sehr locker, am besten Rad oder Schwimmen."],[14,"easy","Nur lockere Einheiten mit etwa halbem Umfang."],[21,"light","Locker, erste kurze flotte Abschnitte möglich."]],hard:15,end:28},
+ "Ultra":{n:"Ultralauf",ph:[[3,"rest","Ruhetag oder Spaziergang."],[10,"low","Kurz und sehr locker, am besten Rad oder Schwimmen."],[21,"easy","Nur lockere Einheiten."],[28,"light","Locker, erste kurze flotte Abschnitte möglich."]],hard:22,end:35},
+ "Sprint":{n:"Sprint-Triathlon",ph:[[1,"easy","Locker bewegen oder Ruhetag."],[4,"easy","Nur locker."]],hard:5,end:6},
+ "Olympisch":{n:"Olympische Distanz",ph:[[1,"rest","Ruhetag oder Spaziergang."],[6,"easy","Nur locker."]],hard:7,end:8},
+ "70.3":{n:"Mitteldistanz",ph:[[2,"rest","Ruhetag oder Spaziergang."],[7,"low","Kurz und sehr locker, Schwimmen oder lockeres Rad."],[14,"easy","Nur lockere Einheiten."]],hard:10,end:14},
+ "Langdistanz":{n:"Langdistanz",ph:[[3,"rest","Ruhetag oder Spaziergang."],[10,"low","Kurz und sehr locker, Schwimmen oder lockeres Rad."],[21,"easy","Nur lockere Einheiten, Laufen zuletzt."],[35,"light","Locker, erste kurze flotte Abschnitte möglich."]],hard:22,end:42},
+ "Rad lang":{n:"Radmarathon",ph:[[1,"rest","Ruhetag oder lockere Bewegung."],[5,"easy","Nur locker."]],hard:6,end:8}};
+function raceKind(as){const run=as.find(a=>a.sport==="run"),bike=as.find(a=>a.sport==="bike"),swim=as.find(a=>a.sport==="swim"),nm=as.map(a=>a.name||"").join(" "),tot=as.reduce((s,a)=>s+a.secs,0)/3600;
+  if((run&&bike&&swim)||/triathlon|ironman|70[.,]3|challenge/i.test(nm)){if(/70[.,]3|mitteldistanz|half/i.test(nm)||(tot>=3.5&&tot<8))return"70.3";if(/ironman|langdistanz/i.test(nm)||tot>=8)return"Langdistanz";if(/olymp|kurzdistanz/i.test(nm)||tot>=1.6)return"Olympisch";return"Sprint"}
+  if(run){const k=run.km;if(k>=44)return"Ultra";if(k>=38)return"Marathon";if(k>=18)return"Halbmarathon";if(k>=8.5)return"10 km";if(k>=4.5)return"5 km"}
+  if(bike&&bike.km>=140)return"Rad lang";return null}
+function raceRecent(D){if(!D||!D.activities)return null;const t=today(),ign=store.get("imRaceIgnore",[]),byDay={};D.activities.filter(a=>a.date>=addDays(t,-42)&&a.date<=t).forEach(a=>{(byDay[a.date]=byDay[a.date]||[]).push(a)});
+  const std=[5,10,21.1,42.2],near=k=>std.some(s=>Math.abs(k-s)/s<0.08);
+  const days=Object.keys(byDay).sort().reverse();
+  for(const d of days){if(ign.includes(d))continue;const as=byDay[d],cal=(D.races||[]).find(r=>r.date===d),nm=as.map(a=>a.name||"").join(" "),run=as.find(a=>a.sport==="run");
+    const isRace=!!cal||/marathon|wettkampf|\brace\b|rennen|triathlon|ironman|70[.,]3|ultra|trail|volkslauf|stadtlauf|silvesterlauf|\b10 ?k\b|\b5 ?k\b|radmarathon|gran fondo/i.test(nm)||(run&&run.km>=40)||(run&&run.km>=4.5&&near(run.km)&&(run.if||0)>=0.93)||(as.some(a=>a.sport==="run")&&as.some(a=>a.sport==="bike")&&as.some(a=>a.sport==="swim"));
+    if(!isRace)continue;const k=raceKind(as);if(!k)continue;const R=RECOV[k],day=diffDays(d,t);if(day>R.end)continue;
+    const ph=R.ph.find(p=>day<=p[0])||[R.end,"light","Locker, flotte Abschnitte wieder möglich."];return{date:d,kind:k,R,day,ph,name:(cal&&cal.name)||as.map(a=>a.name).find(n=>/marathon|triathlon|ironman|rennen|race|wettkampf|volkslauf|stadtlauf/i.test(n||""))||R.n}}
+  return null}
+ruleNote=(f=>function(D){const o=f.apply(this,arguments),rc=raceRecent(D);if(!rc)return o;const [_,lv,txt]=rc.ph,ok=allowedKeys(),wd=`Tag ${rc.day} nach ${rc.R.n==="Marathon"||rc.R.n==="Halbmarathon"?"dem "+rc.R.n:"deinem Wettkampf ("+rc.R.n+")"}`;
+  const low=["swim","bike"].find(k=>ok.includes(k)&&TPL[k]),hardPlan=o.ps&&o.ps.status!=="kein Plan"&&o.wo&&/Z[4-6]/.test(o.wo.description||"");
+  if(lv==="rest"){o.wo={sport:"Rest",title:"Ruhetag nach dem Wettkampf",minutes:0,reason:`${wd}. ${txt}`};o.alts=[];if(o.ps.status!=="kein Plan")o.ps={status:"angepasst",original:o.ps.original||o.wo.title,change:"Nach dem Wettkampf zuerst Ruhe."}}
+  else if(lv==="low"){const k=low||"run";o.wo=Object.assign({},TPL[k][1],{reason:`${wd}. ${txt}`});o.wo.minutes=Math.min(o.wo.minutes||30,40);o.alts=(o.alts||[]).filter(a=>spKey(a.sport)!=="run"||!low)}
+  else if(lv==="easy"){if(hardPlan||!o.wo||o.wo.sport==="Rest"||/Z[4-6]/.test(o.wo.description||"")){const k=spKey(o.wo&&o.wo.sport);const kk=TPL[k]?k:(low||"run");o.wo=Object.assign({},TPL[kk][1],{reason:`${wd}. ${txt}`})}else o.wo.reason=`${wd}. ${txt} ${o.wo.reason||""}`;if(hardPlan)o.ps={status:"angepasst",original:o.ps.original||"",change:"Nach dem Wettkampf nur locker, harte Abschnitte weglassen."}}
+  else if(o.wo)o.wo.reason=`${wd}. ${txt} ${o.wo.reason||""}`;
+  o.goal="Erholen nach dem Wettkampf";return o})(ruleNote);
+function renderRaceCard(D){let el=$("raceCard");const rc=raceRecent(D);if(!rc){if(el)el.remove();return}
+  if(!el){el=document.createElement("div");el.className="card";el.id="raceCard";const w=$("weekNew");if(!w)return;w.parentNode.insertBefore(el,w)}
+  const P=rc.R.ph.concat([[rc.R.end,"light","Wieder normales Training."]]);let from=0;
+  el.innerHTML=`<div class="cx-k" style="color:var(--acc)">Erholung nach dem Wettkampf</div><div class="cx-h">${esc(rc.name)} · Tag ${rc.day} von ${rc.R.end}</div>
+   <div class="rcbar"><i style="width:${Math.min(100,Math.round(rc.day/rc.R.end*100))}%"></i></div><p style="margin:8px 0 4px"><b>Jetzt:</b> ${esc(rc.ph[2])}</p>
+   <ul class="rclist">${rc.R.ph.map(p=>{const li=`<li class="${rc.day>from&&rc.day<=p[0]||(from===0&&rc.day===0&&p===rc.R.ph[0])?"on":rc.day>p[0]?"done":""}"><b>Tag ${from+1===p[0]||from===p[0]?p[0]:(from+1)+" bis "+p[0]}</b> ${esc(p[2])}</li>`;from=p[0];return li}).join("")}<li class="${rc.day>=rc.R.hard?"done":""}"><b>Ab Tag ${rc.R.hard}</b> harte Einheiten wieder möglich, ab Tag ${rc.R.end} normales Training.</li></ul>
+   <button class="lnk" id="rcNo" style="margin-top:6px">Das war kein Wettkampf</button>`;
+  $("rcNo").onclick=()=>{const l=store.get("imRaceIgnore",[]);l.push(rc.date);store.set("imRaceIgnore",l.slice(-20));el.remove();try{render()}catch(e){}}}
+render=(f=>function(){const r=f.apply(this,arguments);try{renderRaceCard(DATA)}catch(e){}return r})(render);
+coachText=(f=>function(){const s=f.apply(this,arguments),rc=raceRecent(DATA);if(!rc)return s;const x=`\nLETZTER WETTKAMPF: ${rc.R.n} am ${rc.date} (Tag ${rc.day} danach). Erholungsphase jetzt: ${rc.ph[2]} Harte Einheiten frühestens ab Tag ${rc.R.hard}, normales Training ab Tag ${rc.R.end}. Halte dich daran.`;const i=s.indexOf("\nANTWORTFORMAT");return i<0?s+x:s.slice(0,i)+x+s.slice(i)})(coachText);
+
+askCtx=(f=>function(){const s=f.apply(this,arguments),rc=raceRecent(DATA);return s+"\n\nREGEL BEI KRANKHEIT (wie in der App): Beschwerden nur oberhalb des Halses (Schnupfen, verstopfte Nase, leichte Halsschmerzen): höchstens kurz und locker, keine Intervalle. Fieber oder Beschwerden unterhalb des Halses (Husten aus der Brust, Gliederschmerzen, Magen-Darm): kein Training, bei Bedarf Arzt. Danach 7 Tage locker zurückkehren."+(rc?`\nLETZTER WETTKAMPF: ${rc.R.n} am ${rc.date}, heute Tag ${rc.day}. Jetzt: ${rc.ph[2]} Harte Einheiten frühestens ab Tag ${rc.R.hard}, normales Training ab Tag ${rc.R.end}.`:"")})(askCtx);
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
 $("btnRace").onclick=()=>openRace(null);
