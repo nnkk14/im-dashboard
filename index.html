@@ -891,6 +891,11 @@ h3>.tag,.cx-h>.tag{display:table;margin:8px 0 2px;font-size:12px}
 #mSet .hint a,#mOnb .hint a{color:var(--acc);text-decoration:underline}
 /* v41 */
 #mProf .tchips{margin-top:4px}#mProf .days{margin-top:4px}#mProf select,#mOnb select#obBy{width:100%}
+/* v43 */
+.plannote{margin:12px 0 4px;padding:10px 12px;border-radius:12px;border:1px solid var(--line);display:flex;flex-direction:column;gap:3px;font-size:14px}
+.plannote b{font-size:14px}.plannote span{color:var(--ink);line-height:1.4}.plannote small{color:var(--muted)}
+.plannote.realistisch{border-color:color-mix(in srgb,var(--green) 55%,transparent)}.plannote.ehrgeizig{border-color:color-mix(in srgb,var(--yellow) 60%,transparent)}.plannote.unrealistisch{border-color:color-mix(in srgb,var(--red) 60%,transparent)}
+#mGoal .tchips{margin-top:4px}
 </style>
 </head>
 <body>
@@ -1072,7 +1077,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="42";
+const VERSION="43";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -1770,7 +1775,7 @@ function avgHours(D,w=6){const t=today(),mon=monday(t);let s=0;D.activities.forE
 function renderDays(){const g=store.get("imGoal",{}),a=weekArr(g);$("dayPick").innerHTML=a.map((v,i)=>`<button data-i="${i}" class="d${v}">${DAYN[i]}<small>${["frei","Training","lang"][v]}</small></button>`).join("")}
 $("dayPick").onclick=e=>{const b=e.target.closest("button");if(!b)return;const g=store.get("imGoal",{}),a=weekArr(g);a[+b.dataset.i]=(a[+b.dataset.i]+1)%3;$("gDays").value=a.join(",");saveGoal();renderDays()};
 function openGoal(){loadGoal();if(!$("gDays").value)$("gDays").value=weekArr({}).join(",");renderDays();
-  const h=DATA?avgHours(DATA):0;$("gHoursHint").textContent=`Leer lassen: die KI leitet den Umfang aus deinen Daten ab (zuletzt im Schnitt ${nf(h,1)} h pro Woche) und steigert ihn passend.`;open("mGoal")}
+  const h=DATA?avgHours(DATA):0;$("gHoursHint").textContent=`Leer lassen: Die KI plant den Umfang, der für dein Ziel sinnvoll ist, und steigert ihn schrittweise vom aktuellen Stand aus (zuletzt im Schnitt ${nf(h,1)} h pro Woche). Mit Angabe plant sie höchstens so viel.`;open("mGoal")}
 $("gClose").onclick=$("gDone").onclick=()=>{saveGoal();close("mGoal");if(DATA)render()};
 /* Unterbereiche Training */
 let TSUB=store.get("imTsub","plan");
@@ -1877,7 +1882,7 @@ async function aiPlan(manual){
   if(b){b.disabled=true;b.textContent="Die KI plant …"}
   try{
     const ov=noteBy("Coach Plan Übersicht");
-    const pr=coachText().replace(/\nANTWORTFORMAT[\s\S]*$/,"")+`\n\nZIELDATUM: ${goalInfo(D).date?goalInfo(D).date+" ("+goalInfo(D).name+")":"offen, bitte realistisch vorschlagen"}\nDURCHSCHNITT LETZTE 6 WOCHEN: ${nf(avgHours(D),1)} h pro Woche\n${ov&&!manual?"BESTEHENDE PHASEN:\n"+ov.text+"\n":""}\nAUFGABE\n${manual?"Plane den Weg bis zum Zieldatum in Phasen (Grundlage, Aufbau, Spitze, Tapering usw.) und ":"Setze den bestehenden Plan fort und "}erstelle konkrete Einheiten für 14 Tage ab ${from}. Arbeite nach diesen Grundsätzen: Periodisierung in Phasen (Grundlage, Aufbau, Spitze, Tapering). Etwa 80 Prozent der Trainingszeit locker (Z1 bis Z2), etwa 20 Prozent intensiv (polarisiertes Training nach Seiler). Leite den Wochenumfang aus meinen bisherigen Stunden ab und steigere ihn höchstens um etwa 10 Prozent pro Woche, nach 2 bis 3 Aufbauwochen eine Entlastungswoche mit etwa 60 bis 70 Prozent Umfang. Harte Schlüsseleinheiten nicht an aufeinanderfolgenden Tagen. Tapering vor dem Hauptwettkampf 1 bis 3 Wochen je nach Distanz, Umfang sinkt, Intensität bleibt. Lange Einheiten wachsen schrittweise in Richtung Wettkampfdauer. Halte die Trainingstage ein, lange Einheiten an den markierten Tagen. Berücksichtige die Wettkampf-Infos (Strecke, Höhenmeter, Hitze, Wasser) mit passenden Einheiten, zum Beispiel Hitzeanpassung in den letzten Wochen oder Bergintervalle. Höchstens eine Ausdauereinheit pro Tag, außer bei Koppeleinheiten. Plane nur meine Sportarten (${sportsText()}). ${extraText()?"Zusatztraining: "+extraText():""} Antworte nur mit JSON in einem json-Codeblock: {"target_date":"JJJJ-MM-TT","phases":[{"from":"JJJJ-MM-TT","to":"JJJJ-MM-TT","name":"kurz","focus":"ein Satz"}],"note":"max. 400 Zeichen","workouts":[{"date","sport","name","minutes","description"}]}. ${planFmt()}`;
+    const pr=coachText().replace(/\nANTWORTFORMAT[\s\S]*$/,"")+`\n\nZIELDATUM: ${goalInfo(D).date?goalInfo(D).date+" ("+goalInfo(D).name+")":"offen, bitte realistisch vorschlagen"}\nDURCHSCHNITT LETZTE 6 WOCHEN: ${nf(avgHours(D),1)} h pro Woche\n${ov&&!manual?"BESTEHENDE PHASEN:\n"+ov.text+"\n":""}\nAUFGABE\n${manual?"Plane den Weg bis zum Zieldatum in Phasen (Grundlage, Aufbau, Spitze, Tapering usw.) und ":"Setze den bestehenden Plan fort und "}erstelle konkrete Einheiten für 14 Tage ab ${from}. Arbeite nach diesen Grundsätzen: Periodisierung in Phasen (Grundlage, Aufbau, Spitze, Tapering). Etwa 80 Prozent der Trainingszeit locker (Z1 bis Z2), etwa 20 Prozent intensiv (polarisiertes Training nach Seiler). Starte beim bisherigen Wochenumfang und steigere ihn höchstens um etwa 10 Prozent pro Woche in Richtung des Zielumfangs (siehe UMFANG), nach 2 bis 3 Aufbauwochen eine Entlastungswoche mit etwa 60 bis 70 Prozent Umfang. Harte Schlüsseleinheiten nicht an aufeinanderfolgenden Tagen. Tapering vor dem Hauptwettkampf 1 bis 3 Wochen je nach Distanz, Umfang sinkt, Intensität bleibt. Lange Einheiten wachsen schrittweise in Richtung Wettkampfdauer. Halte die Trainingstage ein, lange Einheiten an den markierten Tagen. Berücksichtige die Wettkampf-Infos (Strecke, Höhenmeter, Hitze, Wasser) mit passenden Einheiten, zum Beispiel Hitzeanpassung in den letzten Wochen oder Bergintervalle. Höchstens eine Ausdauereinheit pro Tag, außer bei Koppeleinheiten. Plane nur meine Sportarten (${sportsText()}). ${extraText()?"Zusatztraining: "+extraText():""} Antworte nur mit JSON in einem json-Codeblock: {"target_date":"JJJJ-MM-TT","phases":[{"from":"JJJJ-MM-TT","to":"JJJJ-MM-TT","name":"kurz","focus":"ein Satz"}],"note":"max. 400 Zeichen","workouts":[{"date","sport","name","minutes","description"}]}. ${planFmt()}`;
     const rs=await planResearch(D);const o=jsonFrom(await claude(pr+rs,32000));const items=parsePlan(JSON.stringify(o.workouts||[])).filter(x=>x.date>=from);
     if(!items.length)throw new Error("Die KI hat keine Einheiten geliefert.");
     if(o.phases&&o.phases.length)await writeNote(t,[...o.phases.map(p=>`Phase: ${p.from} | ${p.to} | ${p.name} | ${p.focus||""}`),`Zieldatum: ${o.target_date||g.gDate||""}`].join("\n"),"Coach Plan Übersicht");
@@ -2166,7 +2171,7 @@ function goalUI(){const own=$("gRace").value==="";$("gOwn").style.display=own?""
 function openGoal(){fillRaceSel();loadGoal();const g=store.get("imGoal",{}),gi=goalInfo(DATA);
   $("gRace").value=g.gRace!==undefined&&g.gRace!==null&&(g.gRace===""||[...$("gRace").options].some(o=>o.value===String(g.gRace)))?String(g.gRace):(gi.race?String(gi.race.id):"");
   $("gSrc").value=g.gSrc||"claude";if(!$("gDays").value)$("gDays").value=weekArr({}).join(",");renderDays();goalUI();
-  const h=DATA?avgHours(DATA):0;$("gHoursHint").textContent=`Leer lassen: die KI leitet den Umfang aus deinen Daten ab (zuletzt im Schnitt ${nf(h,1)} h pro Woche) und steigert ihn passend.`;open("mGoal")}
+  const h=DATA?avgHours(DATA):0;$("gHoursHint").textContent=`Leer lassen: Die KI plant den Umfang, der für dein Ziel sinnvoll ist, und steigert ihn schrittweise vom aktuellen Stand aus (zuletzt im Schnitt ${nf(h,1)} h pro Woche). Mit Angabe plant sie höchstens so viel.`;open("mGoal")}
 $("gRace").addEventListener("change",()=>{goalUI();saveGoal()});$("gSrc").addEventListener("change",()=>{goalUI();saveGoal()});
 $("gDone").onclick=$("gClose").onclick=()=>{$("gSet").value="1";saveGoal();close("mGoal");if(DATA)render()};
 async function delPlan(b){if(b.dataset.sure!=="1"){b.dataset.sure="1";b.textContent="Alle Einheiten von der KI ab heute löschen?";b.classList.add("red");return}
@@ -2449,7 +2454,7 @@ let GMODE="";
 function openGoal(mode){GMODE=typeof mode==="string"?mode:"";fillRaceSel();loadGoal();const g=store.get("imGoal",{}),gi=goalInfo(DATA);
   const gv=g.gRace==="__new"?undefined:g.gRace;$("gRace").value=gv!==undefined&&gv!==null&&(gv===""||[...$("gRace").options].some(o=>o.value===String(gv)))?String(gv):(gi.race?String(gi.race.id):"");
   $("gSrc").value=g.gSrc||"claude";if(!$("gDays").value)$("gDays").value=weekArr({}).join(",");renderDays();$("nrDate").value="";$("nrName").value="";$("nrErr").textContent="";goalUI();
-  const h=DATA?avgHours(DATA):0;$("gHoursHint").textContent=`Leer lassen: die KI leitet den Umfang aus deinen Daten ab (zuletzt im Schnitt ${nf(h,1)} h pro Woche) und steigert ihn passend.`;open("mGoal")}
+  const h=DATA?avgHours(DATA):0;$("gHoursHint").textContent=`Leer lassen: Die KI plant den Umfang, der für dein Ziel sinnvoll ist, und steigert ihn schrittweise vom aktuellen Stand aus (zuletzt im Schnitt ${nf(h,1)} h pro Woche). Mit Angabe plant sie höchstens so viel.`;open("mGoal")}
 $("gDone").onclick=$("gClose").onclick=e=>{if($("gRace").value==="__new")$("gRace").value="";$("gSet").value="1";saveGoal();close("mGoal");const go=e&&e.currentTarget&&e.currentTarget.id==="gDone"&&GMODE==="plan"&&$("gSrc").value==="claude"&&hasAi()&&isLive();GMODE="";if(DATA)render();if(go){setTab("training");aiPlan(true)}};
 async function createRace(name,date,prio,sp){
   if(!isLive()){const l=store.get("imDemoRaces",[]),id="r"+Date.now();l.push({id,name,date,prio});store.set("imDemoRaces",l);return id}
@@ -4468,6 +4473,43 @@ $("mProf").addEventListener("click",e=>{let b;const P=PF,keep=()=>{const s=$("mP
     const g=store.get("imGoal",{});g.gHours=P.hrs?String(P.hrs):"";g.gDays=P.days.join(",");store.set("imGoal",g);try{loadGoal()}catch(x){}
     close("mProf");try{drawProfile()}catch(x){}load();try{toast("Profil gespeichert")}catch(x){}}});
 $("cProfEdit").onclick=()=>{close("mSet");setTimeout(openProf,250)};
+
+/* ---------- v43 ---------- */
+/* Paket 5, Teil 1: Fragen vor dem Plan, sinnvoller Umfang, Zielprüfung, Einstufung */
+(function(){const h=$("gHoursHint");if(!h||$("gFocus"))return;
+  h.insertAdjacentHTML("afterend",`<label class="f">Schwerpunkt (optional)</label><div class="tchips" id="gFocusC"></div><input type="hidden" id="gFocus">
+   <label class="f">Erfahrung in deinen Sportarten</label><div class="tchips" id="gExpC"></div><input type="hidden" id="gExp">
+   <label class="f" for="gInj">Verletzungen oder Einschränkungen (optional)</label><input id="gInj" maxlength="160" placeholder="z. B. Achillessehne empfindlich, kein Laufen bergab" autocomplete="off">`);
+  ["gFocus","gExp","gInj"].forEach(k=>{GK.push(k);$(k).addEventListener("change",saveGoal)});
+  const FO=()=>{const us=userSports(),n={run:"Laufen verbessern",bike:"Rad verbessern",swim:"Schwimmen verbessern",kraft:"Kraft aufbauen"};return[["","ausgewogen"]].concat(us.filter(k=>n[k]).map(k=>[k,n[k]]))};
+  const EX=[["neu","Einsteiger (unter 1 Jahr)"],["mittel","1 bis 3 Jahre"],["erfahren","mehr als 3 Jahre"]];
+  window.drawGoalExtra=function(){const g=store.get("imGoal",{});
+    $("gFocusC").innerHTML=FO().map(([k,n])=>`<button type="button" data-gfo="${k}" class="${(g.gFocus||"")===k?"on":""}">${n}</button>`).join("");
+    $("gExpC").innerHTML=EX.map(([k,n])=>`<button type="button" data-gex="${k}" class="${g.gExp===k?"on":""}">${n}</button>`).join("");$("gInj").value=g.gInj||""};
+  $("mGoal").addEventListener("click",e=>{const a=e.target.closest("[data-gfo]"),b=e.target.closest("[data-gex]");if(!a&&!b)return;
+    if(a)$("gFocus").value=a.dataset.gfo;if(b)$("gExp").value=b.dataset.gex;saveGoal();drawGoalExtra()});
+  new MutationObserver(()=>{if($("mGoal").classList.contains("open"))drawGoalExtra()}).observe($("mGoal"),{attributes:true,attributeFilter:["class"]})})();
+coachText=(o=>function(){const s=o.apply(this,arguments),g=store.get("imGoal",{}),FN={run:"Laufen",bike:"Rad",swim:"Schwimmen",kraft:"Kraft"},EN={neu:"Einsteiger, unter 1 Jahr",mittel:"1 bis 3 Jahre",erfahren:"mehr als 3 Jahre"};
+  const x=["","WEITERE ANGABEN ZUM ZIEL",`Schwerpunkt: ${g.gFocus?FN[g.gFocus]+" verbessern":"ausgewogen"}`,`Erfahrung: ${EN[g.gExp]||"keine Angabe"}`,`Verletzungen oder Einschränkungen: ${g.gInj||"keine angegeben"}`].join("\n");
+  const i=s.indexOf("\nANTWORTFORMAT");return i<0?s+"\n"+x:s.slice(0,i)+"\n"+x+s.slice(i)})(coachText);
+function dataStatus(D){const t=today(),us=userSports().filter(k=>k!=="kraft"),n={run:"Laufen",bike:"Rad",swim:"Schwimmen"},z=(D.zones||{});
+  return us.map(k=>{const c=D.activities.filter(a=>a.sport===k&&a.date>=addDays(t,-56)).length,zz=z[k]||{},thr=k==="bike"?!!zz.ftp:k==="run"?!!(zz.tp||zz.lthr||D.pb90):!!zz.tp;
+    return`${n[k]}: ${c} Einheiten in den letzten 8 Wochen, Schwellenwert ${thr?"vorhanden":"fehlt"}${c<3||!thr?" -> Einstufungstest nötig":""}`}).join("\n")}
+planRules=(f=>function(){let s=f.apply(this,arguments);const g=store.get("imGoal",{}),h=+g.gHours||0;
+  s=s.replace(/\n- Wochenumfang passend zum Ziel[^\n]*/,"");
+  s+=`\n- UMFANG: ${h?`Der Nutzer hat höchstens ${h} Stunden pro Woche. Das ist die Obergrenze, in Aufbauwochen nahe daran planen.`:`Der Nutzer hat keine Zeit angegeben. Plane den Umfang, der für Distanz und Zielzeit sinnvoll ist, nicht den bisherigen Durchschnitt. Richtwerte Langdistanz: Grundlage etwa 8 bis 12 Stunden pro Woche, Aufbau etwa 12 bis 16, einzelne Spitzenwochen bei ehrgeizigen Zielzeiten bis etwa 16 bis 18. Mitteldistanz etwa zwei Drittel davon. Marathon etwa 5 bis 8 Stunden. Kürzere Ziele entsprechend weniger.`} Der Wochenumfang steigt vom aktuellen Stand aus um höchstens etwa 10 Prozent pro Woche, nach einer Pause oder einem Wettkampf zuerst Wiederaufbau. Der Zielumfang muss in den Phasen sichtbar sein (Umfang je Phase im focus nennen).
+- ZIELPRÜFUNG: Prüfe, ob Ziel und Zielzeit zum aktuellen Stand (Bestzeiten, Schwellen, bisheriger Umfang) und zur verfügbaren Zeit passen. Beginne note mit "Zielprüfung: realistisch", "Zielprüfung: ehrgeizig" oder "Zielprüfung: unrealistisch", dann eine kurze Begründung und bei unrealistisch eine realistische Zielzeit. Danach höchstens ein Satz zum Plan.
+- EINSTUFUNG: Fehlen für eine Sportart Daten (siehe DATENLAGE), plane in den ersten zwei Wochen einen Einstufungstest dafür ein, im Titel mit "Test" gekennzeichnet: Laufen 5 km zügig oder 20 Minuten so schnell wie gleichmäßig möglich, Rad 20 Minuten gleichmäßig hart nach Aufwärmen, Schwimmen 400 m und 200 m zügig mit Pause dazwischen. Nicht direkt nach harten Tagen und nicht in den ersten Wochen nach einem Wettkampf.
+- SCHWERPUNKT UND EINSCHRÄNKUNGEN: Den Schwerpunkt mit einer zusätzlichen Einheit oder mehr Qualität in dieser Sportart berücksichtigen. Angegebene Verletzungen oder Einschränkungen immer beachten.
+
+DATENLAGE
+${dataStatus(DATA)}`;return s})(planRules);
+/* Hinweise der KI zum Plan (Zielprüfung) aufheben und anzeigen */
+var PLANCAP=false;
+aiPlan=(f=>async function(){PLANCAP=true;try{return await f.apply(this,arguments)}finally{PLANCAP=false}})(aiPlan);
+claude=(f=>async function(){const r=await f.apply(this,arguments);if(PLANCAP&&typeof r==="string"){try{const o=jsonFrom(r);if(o&&o.note)store.set("imPlanNote",{date:today(),note:String(o.note).slice(0,500)})}catch(e){}}return r})(claude);
+renderPlanCheck=(f=>function(){const r=f.apply(this,arguments);try{const n=store.get("imPlanNote",null),h=$("coachHint");if(n&&h&&!$("planNote")&&DATA&&DATA.planned.some(p=>p.coach)){const m=String(n.note).match(/^Zielprüfung:\s*(realistisch|ehrgeizig|unrealistisch)/i),k=m?m[1].toLowerCase():"";
+  h.insertAdjacentHTML("beforebegin",`<div class="plannote ${k}" id="planNote"><b>${k?"Zielprüfung: "+k:"Hinweis der KI zum Plan"}</b><span>${esc(String(n.note).replace(/^Zielprüfung:\s*(realistisch|ehrgeizig|unrealistisch)[.:,]?\s*/i,""))}</span><small>Stand ${fD(n.date)}</small></div>`)}}catch(e){}return r})(renderPlanCheck);
 
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
