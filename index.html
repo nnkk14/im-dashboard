@@ -1100,7 +1100,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="54";
+const VERSION="55";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -1720,7 +1720,7 @@ async function aiWeekly(mon,manual){
 async function aiProg(manual){
   const t=today(),k="prog"+t.slice(0,7);if(!manual&&!lockOnce(k))return;
   try{
-    const b=bench(DATA),pr=coachText().replace(/\nANTWORTFORMAT[\s\S]*$/,"")+`\n\nBESTWERTE\n${benchText(b)||"keine"}\n\nAUFGABE\nSchätze realistische Zeiten für meine Ziele und Wettkämpfe zum jeweiligen Termin (bei Fortsetzung des Trainings) und für Standardstrecken passend zu meinen Sportarten (z. B. 5 km, 10 km, Halbmarathon, 1500 m Schwimmen, 40 km Rad, bei Triathlon auch Teilzeiten). Nenne eine Spanne und worauf die Schätzung beruht. Antworte nur mit JSON in einem json-Codeblock: {"items":[{"label":"z. B. Ironman Frankfurt (27.06.2027)","value":"12:45 h","range":"12:00 bis 13:30 h","basis":"max. 70 Zeichen"}],"comment":"ein Satz, wo das größte Potenzial liegt"}. Höchstens 8 Einträge.`;
+    const b=bench(DATA),pr=coachText().replace(/\nANTWORTFORMAT[\s\S]*$/,"")+`\n\nBESTWERTE\n${benchText(b)||"keine"}\n\nAUFGABE\nSchätze realistische Zeiten für meine Ziele und Wettkämpfe zum jeweiligen Termin (bei Fortsetzung des Trainings) und für Standardstrecken passend zu meinen Sportarten (z. B. 5 km, 10 km, Halbmarathon, 1500 m Schwimmen, 40 km Rad, bei Triathlon auch Teilzeiten). Nenne eine Spanne und worauf die Schätzung beruht. Grundlage für das Laufen sind die Bestzeiten draußen oben (90 Tage und insgesamt, mit Datum) und die Wettkämpfe. Liegt eine Prognose langsamer als die Bestzeit der letzten 12 Monate auf derselben Strecke, nenne den konkreten Grund in basis (z. B. Bestzeit älter, weniger Training seit dem Marathon). Antworte nur mit JSON in einem json-Codeblock: {"items":[{"label":"z. B. Ironman Frankfurt (27.06.2027)","value":"12:45 h","range":"12:00 bis 13:30 h","basis":"max. 70 Zeichen"}],"comment":"ein Satz, wo das größte Potenzial liegt"}. Höchstens 8 Einträge.`;
     const o=jsonFrom(await claude(pr,3500));
     await writeNote(t,[...(o.items||[]).map(i=>`Prognose: ${i.label} | ${i.value} | ${i.range||""} | ${i.basis||""}`),`Kommentar: ${o.comment||""}`].join("\n"),"Coach Prognose "+t);
   }catch(e){unlock(k);if(manual)throw e}
@@ -4928,6 +4928,21 @@ $("coachCard").addEventListener("click",async e=>{const inf=e.target.closest("[d
   try{if(b.dataset.wundo)await watchUndo();else{const W=window.__cw||[],w=W[+b.dataset.wswap];if(w)await watchSwap(w)}}catch(err){b.disabled=false;b.textContent=txt;alert37("Hat nicht geklappt: "+err.message)}});
 function alert37(m){if(typeof toast37==="function")toast37(m);else{const t=$("toastV37");if(t){t.textContent=m;t.classList.add("on")}}}
 coachText=(f=>function(){const s=f.apply(this,arguments),sw=swapAll()[today()];if(!sw||!sw.orig)return s;const x=`\nHEUTE GETAUSCHT: Der Nutzer hat die Plan-Einheit „${sw.orig.name}“ durch eine andere ersetzt.`;const i=s.indexOf("\nANTWORTFORMAT");return i<0?s+x:s.slice(0,i)+x+s.slice(i)})(coachText);
+
+/* ---------- v55 ---------- */
+/* Laufbestwerte nur aus Läufen draußen (Laufband liefert oft falsche Tempowerte). KI-Prognose bekommt dieselben Bestwerte wie die Anzeige. */
+const OUTF=encodeURIComponent(JSON.stringify([{field_id:"indoor",value:"outdoor"}]));
+api=(f=>function(path,opts){if(typeof path==="string"&&/^\/pace-curves\.json\?/.test(path)&&/[?&]type=Run(&|$)/.test(path)&&!/filters=/.test(path))path+="&filters="+OUTF;return f.call(this,path,opts)})(api);
+if(store.get("imPBFix","")!=="55"){store.set("imPB",null);store.set("imPBPrev",null);store.set("imPBFix","55")}
+function pbRunText(D){const L=[],fd=d=>d?d.split("-").reverse().join("."):"";
+  const all=(D.pb&&D.pb.run)||[];if(all.length)L.push("Laufen, beste Zeiten draußen insgesamt (auch Abschnitte aus längeren Läufen): "+all.map(x=>`${x.lab} ${fT(x.v)} (${fd(x.date)})`).join(", "));
+  const c=D.pb90;if(c){const act=id=>(D.activities||[]).find(a=>String(a.id)===String(id));const pts=[[5000,"5 km"],[10000,"10 km"],[21097.5,"Halbmarathon"],[42195,"Marathon"]].map(([x,lab])=>{const i=c.distance.findIndex(d=>Math.abs(d-x)<=x*.002);if(i<0||!c.values[i])return null;const a=act(c.activity_id&&c.activity_id[i]);return`${lab} ${fT(c.values[i])}${a?" ("+fd(a.date)+")":""}`}).filter(Boolean);if(pts.length)L.push("Laufen, beste Zeiten draußen letzte 90 Tage: "+pts.join(", "))}
+  try{const e=runEst(D);if(e.length)L.push("Laufen, Hochrechnung der App aus den 90-Tage-Bestwerten: "+e.map(x=>`${x.n} ${fT(x.v)}`).join(", "))}catch(e){}
+  const rc=(D.activities||[]).filter(a=>a.sport==="run"&&!a.trainer&&(/marathon|wettkampf|\brace\b|rennen|volkslauf|stadtlauf|\b10 ?k\b|\b5 ?k\b/i.test(a.name||"")||(D.races||[]).some(r=>r.date===a.date))).sort((x,y)=>y.date.localeCompare(x.date)).slice(0,5);
+  if(rc.length)L.push("Wettkämpfe Laufen: "+rc.map(a=>`${fd(a.date)} ${a.name} ${nf(a.km,1)} km in ${fT(a.secs)}`).join(", "));
+  return L.join("\n")}
+benchText=(f=>function(b){const s=f.apply(this,arguments).split("\n").filter(l=>!/^Laufen geschätzt|^Schnellster 5-km-Lauf/.test(l)),r=DATA?pbRunText(DATA):"";return(r?r+"\n":"")+s.join("\n")})(benchText);
+bench=(f=>function(D){const b=f.apply(this,arguments);try{const r=D.activities.filter(a=>a.sport==="run"&&!a.trainer&&a.type!=="VirtualRun"&&a.km>=4.9&&a.km<=5.4);b.real5=r.length?Math.min(...r.map(a=>a.secs*5/a.km)):null}catch(e){}return b})(bench);
 
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
