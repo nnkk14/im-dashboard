@@ -1050,7 +1050,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="34";
+const VERSION="35";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -4226,6 +4226,16 @@ function aiBar(on){let b=$("aibar");if(!b){b=document.createElement("div");b.id=
 claude=(f=>async function(){AIRUN++;aiBar(true);try{return await f.apply(this,arguments)}finally{AIRUN--;if(AIRUN<=0){AIRUN=0;aiBar(false)}}})(claude);
 claudeX=(f=>async function(){AIRUN++;aiBar(true);try{return await f.apply(this,arguments)}finally{AIRUN--;if(AIRUN<=0){AIRUN=0;aiBar(false)}}})(claudeX);
 aiPlan=(f=>async function(manual){AILAB=manual?"Die KI erstellt deinen Plan. Das dauert meist 1 bis 3 Minuten.":"Die KI plant die nächsten Wochen …";try{return await f.apply(this,arguments)}finally{AILAB=null}})(aiPlan);
+
+/* ---------- v35 ---------- */
+/* Persönlicher Plan nur mit Plus oder in der Testphase */
+planLocked=(f=>function(){return f.apply(this,arguments)||!tierOk("plus")})(planLocked);
+/* Kraft auch an Namen wie Rumpfstabilität erkennen, eigener Filter im Verlauf */
+const KRX=/kraft|rumpf|stabi|core|strength|weight|gym|fitnessstudio|hanteln?|athletik|mobilit|beweglich|yoga|pilates|zirkel|circuit|hiit/i;
+function actKey(a){if(/weight|strength/i.test(a.type||""))return"kraft";if(a.sport==="other"&&KRX.test(a.name||""))return"kraft";return a.sport}
+(function(){const rf=$("rf");if(!rf||rf.querySelector('[data-f="kraft"]'))return;const b=document.createElement("button");b.dataset.f="kraft";b.textContent="Kraft";rf.insertBefore(b,rf.querySelector('[data-f="other"]'))})();
+renderRecent=(f=>function(){if(RF!=="kraft"&&RF!=="other")return f.apply(this,arguments);const keep=RF;const all=DATA.activities;
+  DATA.activities=all.filter(a=>keep==="kraft"?actKey(a)==="kraft":a.sport==="other"&&actKey(a)!=="kraft");RF="all";try{f.apply(this,arguments)}finally{DATA.activities=all;RF=keep;$("rf").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x.dataset.f===keep))}})(renderRecent);
 
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
