@@ -869,6 +869,9 @@ h3>.tag,.cx-h>.tag{display:table;margin:8px 0 2px;font-size:12px}
 #aibar .aibt{margin:calc(env(safe-area-inset-top) + 6px) auto 0;width:max-content;max-width:92vw;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:13px;display:flex;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25)}
 #aibar em{font-style:normal;color:var(--muted);white-space:nowrap;align-self:center}
 @media (prefers-reduced-motion:reduce){#aibar .aibl{animation:none;background:var(--acc,#2f7de1)}}
+/* v36 */
+#upbar{position:fixed;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom) + 84px);z-index:9998;display:none;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px;box-shadow:0 6px 24px rgba(0,0,0,.3);font-size:14px;max-width:520px;margin:0 auto}
+#upbar.on{display:flex}#upbar span{flex:1}#upbar .upx{background:none;border:0;color:var(--muted);font-size:22px;line-height:1;padding:0 4px}
 </style>
 </head>
 <body>
@@ -1050,7 +1053,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="35";
+const VERSION="36";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -4236,6 +4239,21 @@ function actKey(a){if(/weight|strength/i.test(a.type||""))return"kraft";if(a.spo
 (function(){const rf=$("rf");if(!rf||rf.querySelector('[data-f="kraft"]'))return;const b=document.createElement("button");b.dataset.f="kraft";b.textContent="Kraft";rf.insertBefore(b,rf.querySelector('[data-f="other"]'))})();
 renderRecent=(f=>function(){if(RF!=="kraft"&&RF!=="other")return f.apply(this,arguments);const keep=RF;const all=DATA.activities;
   DATA.activities=all.filter(a=>keep==="kraft"?actKey(a)==="kraft":a.sport==="other"&&actKey(a)!=="kraft");RF="all";try{f.apply(this,arguments)}finally{DATA.activities=all;RF=keep;$("rf").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x.dataset.f===keep))}})(renderRecent);
+
+/* ---------- v36 ---------- */
+/* Bestzeiten nur neu laden, wenn eine neue Einheit dazukam oder ein neuer Tag ist */
+function pbKey(){const A=(DATA&&DATA.activities)||[];let n="";A.forEach(a=>{const k=a.date+"|"+(a.id||"");if(k>n)n=k});return n+"|"+A.length+"|"+userSports().join(",")}
+loadPB=(f=>async function(force){if(!DATA||!isLive()||!settings.apiKey)return;const c=store.get("imPB2",null),k=pbKey();
+  if(!force&&c&&c.day===today()&&c.key===k&&c.pb){DATA.pb=c.pb;DATA.pb90=c.pb90||null;try{renderPB(DATA);renderBench(DATA);renderDone(DATA);renderLocks&&renderLocks(DATA)}catch(e){}return}
+  if(loadPB.busy)return;loadPB.busy=true;try{await f.apply(this,arguments);store.set("imPB2",{day:today(),key:k,pb:DATA.pb||{},pb90:DATA.pb90||null})}finally{loadPB.busy=false}})(loadPB);
+/* Hinweis auf neue Version */
+var UPCHK=0;
+async function upCheck(){if(location.protocol!=="https:"||Date.now()-UPCHK<10*60*1000)return;UPCHK=Date.now();
+  try{const t=await (await fetch("./?c="+Date.now(),{cache:"no-store"})).text(),m=t.match(/const VERSION="(\d+)"/);if(!m||+m[1]<=+VERSION)return;
+    let b=$("upbar");if(!b){b=document.createElement("div");b.id="upbar";document.body.appendChild(b)}
+    b.innerHTML=`<span>Neue Version ${m[1]} ist da.</span><button class="btn blue sm" id="upGo">Jetzt neu laden</button><button class="upx" aria-label="Später">×</button>`;b.classList.add("on");
+    $("upGo").onclick=()=>{location.replace(location.pathname+"?v="+m[1])};b.querySelector(".upx").onclick=()=>b.classList.remove("on")}catch(e){}}
+setTimeout(upCheck,8000);document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")upCheck()});
 
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
