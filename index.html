@@ -850,6 +850,17 @@ h3>.tag,.cx-h>.tag{display:table;margin:8px 0 2px;font-size:12px}
 .dnpr i{flex:none;width:30px;height:30px;border-radius:50%;background:#e0a800;display:flex;align-items:center;justify-content:center}
 .dnpr i svg{width:20px;height:20px;fill:none;stroke:#fff;stroke-width:1.8}
 .dnpr span{display:flex;flex-direction:column;font-size:13px}.dnpr span b{font-size:15px}
+/* v30 */
+.cx-st{display:inline-flex;padding:7px 14px 7px 11px;border-radius:999px;background:color-mix(in srgb,var(--cxc) 20%,transparent);font-size:18px;margin-bottom:10px}
+.cx-st i{width:12px;height:12px;box-shadow:0 0 0 4px color-mix(in srgb,var(--cxc) 32%,transparent);animation:cxpulse 2.4s ease-in-out infinite}
+@keyframes cxpulse{50%{box-shadow:0 0 0 7px color-mix(in srgb,var(--cxc) 12%,transparent)}}
+@media (prefers-reduced-motion:reduce){.cx-st i{animation:none}}
+#doneCard{margin-bottom:16px}
+.bt2 .bsrc{display:block;font-style:normal;font-size:11px;color:var(--muted);margin-top:2px}
+.pbsub{margin-top:18px!important}
+.dnmore{background:var(--shade,rgba(127,127,127,.12));border-radius:12px;padding:10px 12px;margin:10px 0;font-size:14px;display:flex;flex-direction:column;gap:2px}
+.calless{display:block;margin:6px auto 10px}
+.rstart b{color:var(--muted)}
 </style>
 </head>
 <body>
@@ -1031,7 +1042,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="29";
+const VERSION="30";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -3749,13 +3760,13 @@ askCtx=function(){const t=today(),m=addDays(t,1),tm=(DATA&&DATA.planned||[]).fil
   const m=document.createElement("div");m.className="modal";m.id="mFb";m.innerHTML='<div class="sheet"><div class="mh"><h3>Feedback geben</h3><button class="ib" data-fbx="1" aria-label="Schließen"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div><div id="fbBody"></div></div>';document.body.appendChild(m)})();
 var FB={k:"idee"};
 function openFb(){FB={k:"idee"};$("fbBody").innerHTML=`<p class="hint">Was ist dir aufgefallen? Jede Rückmeldung hilft, die App besser zu machen.</p>
-  <div class="seg3">${[["fehler","Fehler"],["idee","Idee"],["lob","Lob"]].map(([k,n])=>`<button data-fbk="${k}" class="${FB.k===k?"on":""}">${n}</button>`).join("")}</div>
+  <div class="seg3">${[["fehler","Fehler"],["idee","Idee"],["frage","Frage"]].map(([k,n])=>`<button data-fbk="${k}" class="${FB.k===k?"on":""}">${n}</button>`).join("")}</div>
   <textarea id="fbTxt" rows="5" maxlength="1500" placeholder="Beschreib kurz, was passiert ist oder was du dir wünschst"></textarea>
   <label class="switch">Infos zur App anhängen (Version, Bereich, Abo)<input type="checkbox" id="fbInfo" checked></label>
   <button class="btn blue wide" id="fbSend" style="margin-top:14px">Senden</button><div class="hint" id="fbMsg"></div>`;open("mFb");setTimeout(()=>$("fbTxt").focus(),300)}
 $("mFb").addEventListener("click",async e=>{if(e.target.closest("[data-fbx]")){close("mFb");return}const k=e.target.closest("[data-fbk]");if(k){FB.k=k.dataset.fbk;k.parentNode.querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===k));return}
   if(e.target.closest("#fbSend")){const tx=$("fbTxt").value.trim();if(!tx){$("fbMsg").textContent="Bitte schreib kurz etwas dazu.";return}
-    const lab={fehler:"Fehler",idee:"Idee",lob:"Lob"}[FB.k],info=$("fbInfo").checked?`\n\nVersion ${VERSION} · Bereich ${TAB} · Abo ${TIERN[tierNow()]} · Daten ${settings.apiKey?"Sportuhr":settings.noWatch?"ohne Uhr":"Beispiel"} · ${navigator.userAgent.replace(/\s+/g," ").slice(0,140)}`:"",text=`Mein Training, ${lab}:\n${tx}${info}`;
+    const lab={fehler:"Fehler",idee:"Idee",lob:"Lob",frage:"Frage"}[FB.k],info=$("fbInfo").checked?`\n\nVersion ${VERSION} · Bereich ${TAB} · Abo ${TIERN[tierNow()]} · Daten ${settings.apiKey?"Sportuhr":settings.noWatch?"ohne Uhr":"Beispiel"} · ${navigator.userAgent.replace(/\s+/g," ").slice(0,140)}`:"",text=`Mein Training, ${lab}:\n${tx}${info}`;
     const L=store.get("imFeedback",[]);L.push({t:Date.now(),k:FB.k,tx});store.set("imFeedback",L.slice(-30));
     try{if(navigator.share){await navigator.share({title:"Feedback Mein Training",text});close("mFb");return}}catch(err){if(err&&err.name==="AbortError")return}
     try{await navigator.clipboard.writeText(text)}catch(err){}location.href="mailto:?subject="+encodeURIComponent("Feedback Mein Training: "+lab)+"&body="+encodeURIComponent(text);close("mFb")}});
@@ -4003,7 +4014,7 @@ openFb=(f=>function(){f.apply(this,arguments);const s=$("fbSend");if(s&&!$("fbIm
 if($("btnFb"))$("btnFb").onclick=openFb;
 document.addEventListener("click",async e=>{if(!e.target.closest("#fbSend"))return;const inp=$("fbImg");if(!inp||!inp.files||!inp.files.length)return;
   const tx=$("fbTxt").value.trim();if(!tx)return;e.stopPropagation();e.preventDefault();
-  const lab={fehler:"Fehler",idee:"Idee",lob:"Lob"}[FB.k],info=$("fbInfo").checked?`\n\nVersion ${VERSION} · Bereich ${TAB} · Abo ${TIERN[tierNow()]} · Daten ${settings.apiKey?"Sportuhr":settings.noWatch?"ohne Uhr":"Beispiel"} · ${navigator.userAgent.replace(/\s+/g," ").slice(0,140)}`:"",text=`Mein Training, ${lab}:\n${tx}${info}`,files=[...inp.files].slice(0,3);
+  const lab={fehler:"Fehler",idee:"Idee",lob:"Lob",frage:"Frage"}[FB.k],info=$("fbInfo").checked?`\n\nVersion ${VERSION} · Bereich ${TAB} · Abo ${TIERN[tierNow()]} · Daten ${settings.apiKey?"Sportuhr":settings.noWatch?"ohne Uhr":"Beispiel"} · ${navigator.userAgent.replace(/\s+/g," ").slice(0,140)}`:"",text=`Mein Training, ${lab}:\n${tx}${info}`,files=[...inp.files].slice(0,3);
   const L=store.get("imFeedback",[]);L.push({t:Date.now(),k:FB.k,tx,img:files.length});store.set("imFeedback",L.slice(-30));
   try{if(navigator.canShare&&navigator.canShare({files})){await navigator.share({title:"Feedback Mein Training",text,files});close("mFb");return}}catch(err){if(err&&err.name==="AbortError")return}
   try{await navigator.clipboard.writeText(text)}catch(err){}$("fbImgHint").textContent="Dein Gerät kann Bilder hier nicht direkt teilen. Die Mail öffnet sich gleich, bitte häng das Bild dort selbst an.";
@@ -4086,6 +4097,83 @@ renderV14=(f=>function(D){f.apply(this,arguments);try{renderPB(D)}catch(e){conso
 load=(f=>async function(){const r=await f.apply(this,arguments);loadPB().catch(()=>{});return r})(load);
 setTimeout(()=>{if(DATA&&!DATA.pb)loadPB().catch(()=>{})},5000);
 document.addEventListener("click",e=>{if(!e.target.closest('[data-pv="end"]'))return;close("mSet");if(PVPR){PVPR=false;setTimeout(()=>{if(DATA)renderDone(DATA);pvMark()},50)}},true);
+
+/* ---------- v30 ---------- */
+/* Prognose: aus der besten Leistung der letzten 90 Tage mit der passendsten Strecke */
+const PRX=[[1000,"1 km"],[1609.34,"1 Meile"],[3000,"3 km"],[5000,"5 km"],[10000,"10 km"],[21097.5,"Halbmarathon"],[42195,"Marathon"]];
+runEst=(f=>function(D){const c=D&&D.pb90;if(!c)return f.apply(this,arguments);
+  const E=PRX.map(([x,lab])=>{const i=c.distance.findIndex(d=>Math.abs(d-x)<=x*.002);return i>=0&&c.values[i]?{x,lab,t:c.values[i]}:null}).filter(Boolean),old=f.apply(this,arguments);
+  return [[5000,"5 km","e5"],[10000,"10 km","e10"],[21097.5,"Halbmarathon","e21"],[42195,"Marathon","e42"]].map(([d,n,k])=>{
+    const C=E.filter(e=>e.x>=d/4&&e.x<=d*4).sort((a,b)=>Math.abs(Math.log(a.x/d))-Math.abs(Math.log(b.x/d))||b.x-a.x);
+    if(!C.length){const o=old.find(z=>z.k===k);return o?Object.assign(o,{src:"aus Puls und Tempo"}):null}
+    const e=C[0];return{n,k,v:e.t*Math.pow(d/e.x,1.06),fromThr:true,src:e.x===d?`deine beste Zeit der letzten 90 Tage`:`aus deinen besten ${e.lab} der letzten 90 Tage`}}).filter(Boolean)})(runEst);
+renderBench=(f=>function(D){f.apply(this,arguments);const nob=$("bench")&&$("bench").querySelector(".nob");if(!nob||!D.pb90)return;const L=runEst(D);
+  nob.querySelectorAll(".bt2").forEach(x=>{const e=L.find(z=>z.k===x.dataset.b);if(!e)return;const s=x.querySelector(".bsrc")||x.appendChild(document.createElement("em"));s.className="bsrc";s.textContent=e.src});
+  const bs=nob.querySelector(".bs");if(bs)bs.textContent="So schnell könntest du gerade ungefähr laufen. Grundlage ist jeweils deine beste Leistung der letzten 90 Tage auf der Strecke, die der Zielstrecke am nächsten liegt."})(renderBench);
+thrInfo=(f=>function(){if(!DATA||!DATA.pb90)return f.apply(this,arguments);info(`<h3>Wie wird geschätzt?</h3><p>Für jede Strecke sucht die App deine schnellsten Abschnitte der letzten 90 Tage, auch mitten in längeren Läufen. Sie nimmt die Strecke, die der Zielstrecke am nächsten liegt, und rechnet mit der Riegel-Formel um. Eine Zeit über genau diese Strecke zählt direkt.</p><p>Das ist genauer als ein Mittelwert aus mehreren Rechenwegen, weil eine echte Leistung über eine ähnliche Strecke am meisten über deine Form verrät. Die Hochrechnung aus Puls und Tempo nutzt die App nur, wenn es keine passende Leistung gibt.</p><p class="hint">Die Prognose gilt für einen Wettkampf mit voller Anstrengung, ausgeruht und auf flacher Strecke.</p>`)})(thrInfo);
+
+/* Bestzeiten: mehr Strecken, nur gelaufene, längste Einheit, Rad nach Kilometern */
+PBD.swim.pts=[[100,"100 m"],[200,"200 m"],[400,"400 m"],[750,"750 m"],[1000,"1000 m"],[1500,"1500 m"],[1900,"1,9 km"],[3800,"3,8 km"]];
+loadPB=(f=>async function(){await f.apply(this,arguments);if(!DATA||!isLive()||!settings.apiKey)return;const P=DATA.pb||{};
+  await Promise.all(["run","swim"].filter(k=>P[k]).map(async k=>{try{const r=await api(`/pace-curves.json?type=${PBD[k].t}&curves=all`),c=r.list&&r.list[0];if(!c||!c.distance.length)return;const i=c.distance.length-1,aid=c.activity_id?c.activity_id[i]:null,a=aid&&r.activities?r.activities[aid]:null;
+    P[k+"Long"]={km:c.distance[i]/1000,aid,date:a?String(a.start_date_local).slice(0,10):null}}catch(e){}}));
+  if(userSports().includes("run")){try{const r=await api("/pace-curves.json?type=Run&curves=90d");DATA.pb90=r.list&&r.list[0]&&r.list[0].distance.length?r.list[0]:null}catch(e){}}
+  store.set("imPB",{t:Date.now(),pb:P});renderPB(DATA);renderBench(DATA);renderLocks&&renderLocks(DATA)})(loadPB);
+function bikeKm(D){const R=D.activities.filter(a=>a.sport==="bike"&&!a.trainer&&a.km>0&&a.secs>0);return[[20,"20 km"],[40,"40 km"],[90,"90 km"],[180,"180 km"]].map(([x,lab])=>{const C=R.filter(a=>a.km>=x).map(a=>({a,t:a.secs*x/a.km})).sort((p,q)=>p.t-q.t)[0];return C?{lab,v:C.t,kmh:x/(C.t/3600),aid:C.a.id,date:C.a.date}:null}).filter(Boolean)}
+renderPB=(f=>function(D){f.apply(this,arguments);const c=$("pbCard"),P=pbData(D);if(!c||c.style.display==="none"||c.classList.contains("lockc")||!P)return;const us=userSports();
+  const row=(lab,v,date,aid,sub)=>`<div class="pbr${aid?" tap":""}"${aid?` data-pba="${esc(String(aid))}"`:""}><span>${lab}</span><b>${v}</b><em>${sub?sub+" · ":""}${date?fDY(date):""}</em></div>`;
+  c.querySelectorAll(".pbh").forEach(h=>{const L=h.nextElementSibling;if(!L)return;const k=Object.keys(PBD).find(x=>PBD[x].lab===h.textContent.trim());
+    if(k==="run"&&P.runLong)L.insertAdjacentHTML("beforeend",row("Längster Lauf",nf(P.runLong.km,1)+" km",P.runLong.date,P.runLong.aid));
+    if(k==="swim"&&P.swimLong)L.insertAdjacentHTML("beforeend",row("Längste Einheit",nf(P.swimLong.km,1)+" km",P.swimLong.date,P.swimLong.aid));
+    if(k==="bike"){const B=bikeKm(D),lg=D.activities.filter(a=>a.sport==="bike").sort((a,b)=>b.km-a.km)[0];
+      if(B.length)L.insertAdjacentHTML("afterend",`<h3 class="pbh pbsub" style="--pc:var(--bike)">Rad (Zeit auf Strecke)</h3><div class="pbl">${B.map(x=>row(x.lab,fT(x.v),x.date,x.aid,nf(x.kmh,1)+" km/h")).join("")}${lg?row("Längste Fahrt",nf(lg.km,0)+" km",lg.date,lg.id):""}</div><p class="hint">Aus dem Durchschnittstempo ganzer Fahrten draußen in den letzten 12 Monaten, ohne Rolle.</p>`)}});
+  if(!c.querySelector(".pbnote"))c.insertAdjacentHTML("beforeend",'<p class="hint pbnote">Eine Strecke erscheint erst, wenn du sie einmal am Stück geschafft hast.</p>')})(renderPB);
+
+/* Bestzeit auch in den Details der Einheit */
+actInfo=(f=>function(a){f.apply(this,arguments);const P=DATA&&pbData(DATA);if(!P||!a)return;const L=[];
+  Object.keys(PBD).forEach(k=>(P[k]||[]).forEach(x=>{if(String(x.aid)===String(a.id))L.push(`${x.lab}: ${pbFmt(k,x.v)}`)}));
+  if(L.length){const b=$("iBody"),h=b&&b.querySelector("h3");const html=`<div class="dnpr"><i>${MEDI}</i><span><b>${L.length>1?"Persönliche Bestzeiten":"Persönliche Bestzeit"}</b>${L.join(" · ")}</span></div>`;if(h)h.insertAdjacentHTML("afterend",html);else if(b)b.insertAdjacentHTML("afterbegin",html)}})(actInfo);
+
+/* Noch eine Einheit heute: Vorschlag der KI aus der Bewertung, sonst Regel */
+async function aiActivity(a,manual){
+  const k="act"+a.id;if(!manual&&!lockOnce(k))return;
+  try{const t=today(),done=DATA.activities.filter(x=>x.date===t).map(x=>`${SPORTS[x.sport].n} ${Math.round((x.secs||0)/60)} min`).join(", ");
+    const pr=coachText().replace(/\nANTWORTFORMAT[\s\S]*$/,"")+`\n\nEINHEIT ZUM BEWERTEN\n${actLine(a)}\n${a.date===t?`HEUTE SCHON ERLEDIGT: ${done||"nichts"}\nHEUTIGE EMPFEHLUNG: ${typeof todayRec==="function"?todayRec():""}\n`:""}\nAUFGABE\nBewerte diese Einheit kurz wie ein Trainer: War Intensität und Umfang passend zum aktuellen Zustand und Ziel? Was war gut, was beim nächsten Mal anders?${a.date===t?' Prüfe außerdem, ob heute noch eine zusätzliche Einheit sinnvoll ist (z. B. weil die Einheit deutlich kürzer war als empfohlen). Wenn ja, beschreibe sie in "nochHeute" in einem kurzen Satz mit Sportart, Dauer und Intensität. Wenn nein, lass "nochHeute" leer.':""} Antworte nur mit JSON in einem json-Codeblock: {"headline":"max. 60 Zeichen","rating":"passend|zu hart|zu locker|gut","points":["2 bis 3 kurze Punkte mit Zahlen, je max. 110 Zeichen"],"nochHeute":""}`;
+    const o=jsonFrom(await claude(pr,2000));
+    await writeNote(a.date,[`Titel: ${o.headline||""}`,`Bewertung: ${o.rating||""}`,...(o.points||[]).map(x=>"- "+x),o.nochHeute&&a.date===t?`Noch heute: ${o.nochHeute}`:""].filter(Boolean).join("\n"),"Coach Einheit "+a.id);
+  }catch(e){unlock(k);if(manual)throw e}}
+function aiMore(D){const t=today();for(const a of D.activities.filter(x=>x.date===t).slice().reverse()){const n=noteBy("Coach Einheit "+a.id);if(n){const m=/^Noch heute:\s*(.+)$/m.exec(n.text||"");return{has:true,txt:m?m[1].trim():""}}}return{has:false}}
+afterDone=(f=>function(D){f.apply(this,arguments);const c=$("doneCard"),cc=$("coachCard");if(!c||c.style.display==="none"||c.classList.contains("donerest")||PVON.done)return;const m=aiMore(D);if(!m.has)return;
+  const old=cc&&cc.querySelector(".cxmore");if(old){old.remove();cc.classList.add("cxdone")}
+  if(m.txt&&!c.querySelector(".dnmore"))c.querySelector(".dnh").insertAdjacentHTML("afterend",`<div class="dnmore"><b>Wenn du noch Zeit hast</b>${esc(m.txt)}</div>`)})(afterDone);
+
+/* Erholungswert: Rechnung sichtbar */
+EXW.Startwert="Jeder Tag beginnt bei 60. Dann rechnet die App die Werte darunter dazu oder ab. Das Ergebnis liegt immer zwischen 0 und 100.";
+tapCards=(f=>function(){f.apply(this,arguments);const c=$("recCard"),R=DATA&&recovery(DATA);if(!c||!R)return;const kv=c.querySelector(".kv");if(!kv)return;
+  if(!kv.querySelector(".rstart")){kv.insertAdjacentHTML("afterbegin",'<div class="exk rstart"><span>Startwert</span><b>60</b></div>')}
+  const raw=60+R.parts.reduce((s,p)=>s+p[1],0),sum=`60 ${R.parts.map(p=>(p[1]<0?"− ":"+ ")+Math.abs(p[1])+" "+p[0]).join(" ")} = ${Math.round(raw)}${raw!==R.v?`, begrenzt auf ${R.v}`:""}`;
+  let s=c.querySelector(".rsum");if(!s){s=document.createElement("p");s.className="hint rsum";kv.after(s)}s.textContent="So entsteht der Wert: "+sum})(tapCards);
+
+/* Ohne Uhr: keine Fitness-, Ermüdungs- und Formwerte */
+hideNW=(f=>function(D){f.apply(this,arguments);const nw=NW();document.querySelectorAll('.kpi[data-k="ctl"],.kpi[data-k="atl"],.kpi[data-k="tsb"]').forEach(x=>x.classList.toggle("nwhide",nw));
+  document.querySelectorAll(".card").forEach(c=>{const h=c.querySelector("h2");if(h&&/^(Fitness, Ermüdung und Form|Fitness und Form|Trainingsbelastung)$/.test(h.textContent.trim()))c.classList.toggle("nwhide",nw)})})(hideNW);
+
+/* Kalender wieder einklappen */
+renderNext=(f=>function(D){f.apply(this,arguments);if(CAL.v!=="list")return;const box=$("nextList");if(!box)return;
+  if(CAL.back>0){const b=box.querySelector(".calback");const h='<button class="lnk calless" data-calless="back">Vergangene Tage ausblenden</button>';if(b)b.insertAdjacentHTML("afterend",h);else box.insertAdjacentHTML("afterbegin",h)}
+  if(CAL.n>7){const m=box.querySelector(".calmore");const h='<button class="lnk calless" data-calless="next">Wieder nur 7 Tage zeigen</button>';if(m)m.insertAdjacentHTML("afterend",h);else box.insertAdjacentHTML("beforeend",h)}})(renderNext);
+document.addEventListener("click",e=>{const b=e.target.closest("[data-calless]");if(!b||!DATA)return;if(b.dataset.calless==="back")CAL.back=0;else CAL.n=7;renderNext(DATA);const c=$("nextList");if(c)c.closest(".card").scrollIntoView({behavior:"smooth",block:"start"})});
+
+/* Zielkreis: wischen und automatisch wechseln */
+var RINGT=0;
+(function(){const h=$("hero");if(!h)return;let x0=null,y0=null;
+  h.addEventListener("touchstart",e=>{const t=e.touches[0];x0=t.clientX;y0=t.clientY},{passive:true});
+  h.addEventListener("touchend",e=>{if(x0==null)return;const t=e.changedTouches[0],dx=t.clientX-x0,dy=t.clientY-y0;x0=null;if(Math.abs(dx)<40||Math.abs(dx)<Math.abs(dy)||!DATA)return;
+    const n=ringData(DATA).length;RINGM=((RINGM+(dx<0?1:-1))%n+n)%n;store.set("imRingM",RINGM);RINGT=Date.now();heroRing(DATA)},{passive:true});
+  h.addEventListener("click",e=>{if(e.target.closest("#heroRing,[data-rm]"))RINGT=Date.now()},true);
+  const rm=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  setInterval(()=>{if(rm||!DATA||TAB!=="heute"||document.hidden||Date.now()-RINGT<15000||document.querySelector(".modal.open"))return;const r=$("heroRing");if(!r)return;const b=r.getBoundingClientRect();if(b.bottom<0||b.top>innerHeight)return;
+    const n=ringData(DATA).length;if(n<2)return;RINGM=(RINGM+1)%n;heroRing(DATA)},7000)})();
 
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
