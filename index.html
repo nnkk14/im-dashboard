@@ -1087,7 +1087,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="50";
+const VERSION="51";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -4742,6 +4742,33 @@ document.addEventListener("click",e=>{if(e.target&&e.target.id==="tsSave"){const
   $("cSave").addEventListener("click",()=>{const x=parseFloat($("oLthrB").value);settings.own=settings.own||{};if(isFinite(x)&&x>0)settings.own.lthrBike=x;else delete settings.own.lthrBike;store.set("imSettings",settings)})})();
 openSettings=(f=>function(own){const r=f.apply(this,arguments);const e=$("oLthrB");if(e)e.value=(settings.own||{}).lthrBike||"";return r})(openSettings);
 $("btnSettings").onclick=()=>openSettings();
+/* ---------- v51 ---------- */
+/* Reine Kraftpläne: Ziel „Krafttraining“, Schwerpunkt (Ganzkörper, Oberkörper, Beine und Po, Rumpf und Bauch, Rücken) und Art (Kraft, Muskelaufbau, Kraftausdauer). Quellen: claude/quellen-kraft.md */
+(function(){const s=$("gSport");if(s&&![...s.options].some(o=>o.text==="Krafttraining")){const o=document.createElement("option");o.text="Krafttraining";const af=[...s.options].find(x=>x.text==="Allgemeine Fitness");s.insertBefore(o,af||null)}})();
+const KFO=[["ganz","Ganzkörper"],["ober","Oberkörper"],["beine","Beine und Po"],["rumpf","Rumpf und Bauch"],["ruecken","Rücken stärken"]],KART=[["aufbau","Muskelaufbau"],["kraft","Maximalkraft"],["ausdauer","Kraftausdauer"]];
+function kraftGoal(){const g=store.get("imGoal",{}),us=userSports();return g.gSport==="Krafttraining"||g.gFocus==="kraft"||(us.length===1&&us[0]==="kraft")}
+(function(){const ex=$("gExpC");if(!ex||$("gKFoc"))return;const box=document.createElement("div");box.id="gKBox";
+  box.innerHTML=`<label class="f">Kraft: Schwerpunkt (mehrere möglich)</label><div class="tchips" id="gKFocC"></div><input type="hidden" id="gKFoc"><label class="f">Kraft: Ziel</label><div class="tchips" id="gKArtC"></div><input type="hidden" id="gKArt"><div class="hint" id="gKHint"></div>`;
+  ex.nextElementSibling.after(box);["gKFoc","gKArt"].forEach(k=>GK.push(k));
+  const draw=()=>{const g=store.get("imGoal",{}),sp=$("gSport").value,show=sp==="Krafttraining"||sp==="Allgemeine Fitness"||g.gFocus==="kraft";box.style.display=show?"":"none";if(!show)return;
+    const fo=(g.gKFoc||"ganz").split(",").filter(Boolean),art=g.gKArt||"aufbau";
+    $("gKFocC").innerHTML=KFO.map(([k,n])=>`<button type="button" data-gkf="${k}" class="${fo.includes(k)?"on":""}">${n}</button>`).join("");
+    $("gKArtC").innerHTML=KART.map(([k,n])=>`<button type="button" data-gka="${k}" class="${art===k?"on":""}">${n}</button>`).join("");
+    $("gKFoc").value=fo.join(",");$("gKArt").value=art;
+    $("gKHint").textContent=fo.includes("rumpf")?"Hinweis: Bauchübungen stärken die Muskeln, bauen aber kein Bauchfett gezielt ab. Dafür helfen Ganzkörpertraining, Ausdauer und Ernährung.":"Ganzkörper bleibt immer enthalten, der Schwerpunkt bekommt mehr Sätze."};
+  window.drawKraftGoal=draw;
+  $("mGoal").addEventListener("click",e=>{const a=e.target.closest("[data-gkf]"),b=e.target.closest("[data-gka]"),c=e.target.closest("[data-gfo]");if(!a&&!b&&!c)return;
+    if(a){let fo=($("gKFoc").value||"ganz").split(",").filter(Boolean);const k=a.dataset.gkf;if(k==="ganz")fo=["ganz"];else{fo=fo.filter(x=>x!=="ganz");fo=fo.includes(k)?fo.filter(x=>x!==k):fo.concat(k)}if(!fo.length)fo=["ganz"];$("gKFoc").value=fo.join(",")}
+    if(b)$("gKArt").value=b.dataset.gka;saveGoal();setTimeout(draw,0)});
+  $("gSport").addEventListener("change",()=>{saveGoal();draw()});
+  new MutationObserver(()=>{if($("mGoal").classList.contains("open"))setTimeout(draw,0)}).observe($("mGoal"),{attributes:true,attributeFilter:["class"]})})();
+saveGoal=(f=>function(){const g=f.apply(this,arguments);try{if(g.gSport==="Krafttraining"&&!rawSports().includes("kraft")){settings.sports=rawSports().concat("kraft");store.set("imSettings",settings)}}catch(e){}return g})(saveGoal);
+kraftRules=(f=>function(){let s=f.apply(this,arguments);if(!userSports().includes("kraft")||!kraftGoal())return s;const g=store.get("imGoal",{}),fo=(g.gKFoc||"ganz").split(",").filter(Boolean),art=g.gKArt||"aufbau",FN=Object.fromEntries(KFO),AN=Object.fromEntries(KART);
+  const AR={kraft:"Maximalkraft: Grundübungen (z. B. Kniebeuge, Kreuzheben, Bankdrücken, Rudern, Schulterdrücken) mit schweren Lasten, 2 bis 3 Sätze zu 3 bis 6 Wiederholungen, 2 bis 3 Minuten Pause, ergänzend leichtere Übungen.",aufbau:"Muskelaufbau: etwa 10 Sätze pro Muskelgruppe und Woche, 6 bis 12 Wiederholungen nahe an der Erschöpfung (1 bis 3 in Reserve), 1 bis 2 Minuten Pause.",ausdauer:"Kraftausdauer: 2 bis 3 Sätze zu 15 bis 20 Wiederholungen mit kurzen Pausen, auch als Zirkel."};
+  const FX={ober:"Oberkörper: Brust, Rücken, Schultern und Arme bekommen mehr Sätze.",beine:"Beine und Po: Kniebeuge, Ausfallschritt, Hüftheben und einbeinige Übungen bekommen mehr Sätze.",rumpf:"Rumpf und Bauch: Stütz-, Anti-Rotations- und Bauchübungen bekommen mehr Sätze. In die note: Bauchübungen bauen kein Bauchfett gezielt ab, dafür Ganzkörper, Ausdauer und Ernährung.",ruecken:"Rücken stärken: Hüftbeuge (z. B. Kreuzheben, Hüftheben), Rudern, Rückenstrecker und Rumpfstabilität bekommen mehr Sätze, langsam steigern, nur schmerzfrei."};
+  return s+`\n- KRAFTPLAN (Ziel ist Krafttraining, verbindlich): Schwerpunkt ${fo.map(k=>FN[k]).join(", ")}, Ziel ${AN[art]}. Jede große Muskelgruppe (Beine, Hüfte und Po, Rücken, Brust, Schultern, Rumpf) mindestens 2-mal pro Woche. Aufteilung nach Zahl der Trainingstage: 2 Tage Ganzkörper A und B, 3 Tage Ganzkörper A, B und C, ab 4 Tagen Oberkörper und Unterkörper im Wechsel. Dieselbe Muskelgruppe nicht an zwei Tagen hintereinander schwer. ${AR[art]} ${fo.filter(k=>k!=="ganz").map(k=>FX[k]).join(" ")}${fo.some(k=>k!=="ganz")?" Die übrigen Muskelgruppen bleiben im Plan, Ziehen und Drücken im Gleichgewicht.":""} Steigerung: erst die Wiederholungen bis zum oberen Ende des Bereichs, dann mehr Gewicht oder eine schwerere Variante. Alle 4 bis 6 Wochen eine leichtere Woche mit etwa halb so vielen Sätzen. Einsteiger: die ersten 2 bis 4 Wochen Technik mit leichten Lasten. Je Einheit 45 bis 60 Minuten mit Aufwärmen. Ohne Zieldatum einen Block von 12 Wochen planen, als target_date das Ende des Blocks.`})(kraftRules);
+planRules=(f=>function(){let s=f.apply(this,arguments);if(!userSports().some(k=>["run","bike","swim"].includes(k)))s=s.replace(/\n- AUSDAUER BEI ALLGEMEINEN ZIELEN:[^\n]*/,"\n- AUSDAUER: Der Nutzer hat keine Ausdauersportart gewählt. Plane keine Ausdauereinheiten, empfiehl aber in der note kurz 150 Minuten Bewegung pro Woche (WHO), z. B. zügiges Gehen oder Radfahren im Alltag.");return s})(planRules);
+
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
 $("btnRace").onclick=()=>openRace(null);
