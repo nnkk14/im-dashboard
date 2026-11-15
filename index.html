@@ -1079,7 +1079,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="45";
+const VERSION="46";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -4572,6 +4572,20 @@ function kraftRules(){const us=userSports(),g=store.get("imGoal",{}),e=endGoal()
   Last: nie bis zum Versagen. Beim Gewicht als Hinweis anhängen, wie viele Wiederholungen noch möglich wären, z. B. "2 bis 3 Wdh in Reserve". 4 bis 6 Hauptübungen, 30 bis 45 Minuten, zählt zum Wochenumfang.
   Platzierung: an Tagen mit harter Ausdauereinheit nach dieser, möglichst mit mindestens 3 Stunden Abstand, oder an lockeren Tagen. Nie am Tag vor einer langen oder harten Einheit, nie an Ruhetagen.${age>=65?" Ab 65: an 3 Tagen pro Woche Kraft mit Gleichgewichtsübungen kombinieren (z. B. Einbeinstand, Tandemstand).":""} Dehnen schützt nicht vor Verletzungen, Mobilität nur als Ergänzung.`}
 planRules=(f=>function(){let s=f.apply(this,arguments);s=s.replace(" Dazu 1 bis 2 Krafteinheiten.","");return s+kraftRules()})(planRules);
+
+/* ---------- v46 ---------- */
+/* Distanz zuerst aus der eigenen Angabe, erst dann aus dem Wettkampfnamen */
+function distOf(n){n=n||"";
+  if(/70[.,]3|mitteldistanz|half ?iron/i.test(n))return"Mitteldistanz (70.3)";if(/ironman|langdistanz|challenge roth|full distance/i.test(n))return"Langdistanz (Ironman)";if(/olymp|kurzdistanz/i.test(n))return"Olympisch";if(/sprint/i.test(n))return"Sprint";
+  if(/halbmarathon|half marathon|21[.,]1/i.test(n))return"Halbmarathon";if(/ultra|trail/i.test(n))return"Ultra (über 42 km)";if(/marathon/i.test(n)&&!/rad/i.test(n))return"Marathon";if(/radmarathon|200 ?km/i.test(n))return"Radmarathon 200 km";
+  if(/\b10 ?km|10k/i.test(n))return"10 km";if(/\b5 ?km|5k/i.test(n)&&!/schwimm|freiwasser/i.test(n))return"5 km";return""}
+function goalDist(){const g=store.get("imGoal",{});if(g.gDist&&VOL[g.gDist])return g.gDist;return distOf(g.gDist)||distOf((goalInfo(DATA)||{}).name)}
+
+/* Start beim bisherigen Stand, bei allgemeinen Zielen WHO-Untergrenze für Ausdauer (Funde aus dem Plan-Test 15.11.) */
+planRules=(f=>function(){let s=f.apply(this,arguments);const g=store.get("imGoal",{}),h=+g.gHours||0;
+  s+=`\n- START: Die erste Woche beginnt etwa beim bisherigen Wochenumfang der letzten 4 bis 6 Wochen, und die Einheiten sind mindestens so lang wie bisher üblich. Weniger nur nach einem Wettkampf, einer Krankheit oder einer Pause, dann mit kurzer Begründung in der note. Reicht die Zeit bis zum Ziel bei dieser Steigerung nicht, um die Richtwerte zu erreichen, plane trotzdem nach den Regeln und schreibe es in die Zielprüfung.`;
+  if(!endGoal())s+=`\n- AUSDAUER BEI ALLGEMEINEN ZIELEN: Auch bei Fitness- oder Kraftzielen mindestens 150 Minuten lockere bis mittlere Ausdauer pro Woche (WHO), vom bisherigen Stand schrittweise dorthin aufbauen.${h?" Hat der Nutzer weniger Zeit angegeben, so viel wie in seiner Zeit möglich.":""}`;
+  return s})(planRules);
 
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
