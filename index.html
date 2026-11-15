@@ -828,7 +828,7 @@ h3>.tag,.cx-h>.tag{display:table;margin:8px 0 2px;font-size:12px}
 #sgHelp .devb{margin-top:8px}
 /* v28 */
 .exh{display:flex;align-items:center;gap:8px;cursor:pointer}
-.exi{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--muted);background:none;color:var(--muted);font:600 12px/1 inherit;padding:0;display:inline-flex;align-items:center;justify-content:center;flex:none}
+.exinfo{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--muted);background:none;color:var(--muted);font:600 12px/1 inherit;padding:0;display:inline-flex;align-items:center;justify-content:center;flex:none}
 .exk{cursor:pointer;position:relative}
 .exk span::after{content:" ⓘ";opacity:.55;font-size:.9em}
 .cxdone{display:none!important}
@@ -1042,7 +1042,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="32";
+const VERSION="33";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -3975,7 +3975,7 @@ function exInfo(lab,val){const R=DATA&&recovery(DATA),key=lab==="Schlaf"&&R&&R.c
 function tapCards(){[["recCard",recExplain],["loadCard",loadExplain]].forEach(([id,fn])=>{const c=$(id);if(!c)return;c.classList.remove("tapc");
   c.querySelectorAll("p.hint").forEach(p=>{p.innerHTML=p.innerHTML.replace(/\s*Erklärung im Wiki( unter Belastungsverhältnis)?\.?/,"")});
   c.querySelectorAll(".tapmore").forEach(x=>x.remove());
-  const h=c.querySelector("h2");if(h&&!h.querySelector(".exi")){h.insertAdjacentHTML("beforeend",' <button class="exi" aria-label="Erklärung">i</button>');h.classList.add("exh")}
+  const h=c.querySelector("h2");if(h&&!h.querySelector(".exinfo")){h.insertAdjacentHTML("beforeend",' <button class="exinfo" aria-label="Erklärung">i</button>');h.classList.add("exh")}
   c.querySelectorAll(".kv>div").forEach(d=>{const s=d.querySelector("span");if(s&&EXW[s.textContent.trim()]!==undefined)d.classList.add("exk")});
   if(!c.dataset.tb2){c.dataset.tb2=1;c.addEventListener("click",e=>{if(e.target.closest(".exh")){fn();return}const k=e.target.closest(".exk");if(k){const s=k.querySelector("span"),b=k.querySelector("b");exInfo(s.textContent.trim(),b?b.textContent:"")}})}})}
 
