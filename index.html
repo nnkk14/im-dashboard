@@ -898,6 +898,9 @@ h3>.tag,.cx-h>.tag{display:table;margin:8px 0 2px;font-size:12px}
 #mGoal .tchips{margin-top:4px}
 /* v45 */
 #mKraft .sheet p{line-height:1.45}
+/* v48 */
+.pgate{margin:8px 0 10px;padding:9px 12px;border-radius:12px;background:var(--card2);font-size:13px;line-height:1.4}
+.pgate b{display:block;color:var(--yellow,#ffcc33)}.pgate.ok b{color:var(--green,#00c27a)}.pgate span{display:block;color:var(--sub,#999);margin-top:3px}
 </style>
 </head>
 <body>
@@ -1079,7 +1082,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="47";
+const VERSION="48";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -4592,6 +4595,52 @@ planRules=(f=>function(){let s=f.apply(this,arguments);const g=store.get("imGoal
 kraftRules=(f=>function(){let s=f.apply(this,arguments);if(!userSports().includes("kraft"))return s;
   const eq=equipList();if(eq.length===1&&eq[0]==="body")s+=` Nur Körpergewicht: Plane trotzdem Zugübungen für Rücken und Schultern ein, zum Beispiel umgekehrtes Rudern unter einem stabilen Tisch, Handtuch-Rudern an einer geschlossenen Tür oder Y-T-W-Heben in Bauchlage. Ziehen und Drücken sollen im Wochenverlauf ausgeglichen sein.${userSports().includes("swim")?" Für Schwimmer ist der Rücken besonders wichtig.":""}`;
   return s})(kraftRules);
+
+/* ---------- v48 ---------- */
+/* Regelprüfung jedes KI-Plans vor dem Eintragen: feste Regeln prüfen, bei Verstößen einmal von der KI korrigieren lassen, Rest sicher reparieren */
+const gSk=x=>/weight|strength/i.test(x.sport)?"kraft":/swim/i.test(x.sport)?"swim":/ride|bike/i.test(x.sport)?"bike":/run/i.test(x.sport)?"run":"other";
+const gDow=d=>(P(d).getDay()+6)%7;
+function gHard(x){if(gSk(x)==="kraft")return 0;let s=0;try{parseWo(x.description,gSk(x)).forEach(b=>b.steps.forEach(t=>{if((t.z||0)>=4)s+=(t.sec||0)*(b.reps||1)}))}catch(e){}return s/60}
+function planGate(items){const g=store.get("imGoal",{}),wa=weekArr(g),cap=+g.gHours||0,us=userSports(),N={run:"Laufen",bike:"Rad",swim:"Schwimmen",kraft:"Kraft"},I=items.slice().sort((a,b)=>a.date.localeCompare(b.date)),iss=[];
+  if(!I.length)return{issues:iss};
+  const bad=I.filter(x=>gSk(x)!=="other"&&!us.includes(gSk(x)));bad.forEach(x=>iss.push({k:"sport",d:x.date,t:`${fD(x.date)}: ${N[gSk(x)]||x.sport} ist keine gewählte Sportart`}));
+  const wk={};I.forEach(x=>{const m=monday(x.date);(wk[m]=wk[m]||[]).push(x)});
+  const base=DATA?avgHours(DATA)*60:0;let prev=0;
+  Object.keys(wk).sort().forEach((m,wi)=>{const L=wk[m],days=[...Array(7)].map((_,i)=>addDays(m,i)),full=days.every(d=>d>=I[0].date&&d<=I[I.length-1].date),min=L.reduce((s,x)=>s+(+x.minutes||0),0);
+    L.forEach(x=>{if(wa[gDow(x.date)]===0)iss.push({k:"tag",d:x.date,t:`${fD(x.date)}: ${x.name} liegt auf einem freien Tag`})});
+    if(cap&&min>cap*60*1.05)iss.push({k:"cap",w:m,t:`Woche ab ${fD(m)}: ${nf(min/60,1)} h statt höchstens ${cap} h`});
+    if(full&&days.every(d=>L.some(x=>x.date===d)))iss.push({k:"ruhe",w:m,t:`Woche ab ${fD(m)}: kein Ruhetag`});
+    const hd=days.filter(d=>L.some(x=>x.date===d&&gHard(x)>=5));
+    if(hd.length>2)iss.push({k:"hart",w:m,t:`Woche ab ${fD(m)}: ${hd.length} harte Tage, erlaubt sind 2`});
+    hd.forEach((d,i)=>{if(i&&diffDays(hd[i-1],d)===1)iss.push({k:"folge",d,t:`${fD(hd[i-1])} und ${fD(d)}: harte Einheiten an zwei Tagen hintereinander`})});
+    days.forEach(d=>{const e=L.filter(x=>x.date===d&&gSk(x)!=="kraft");if(e.length>1&&!(e.length===2&&e.some(x=>gSk(x)==="bike")&&e.some(x=>gSk(x)==="run")))iss.push({k:"doppel",d,t:`${fD(d)}: ${e.length} Ausdauereinheiten an einem Tag`})});
+    const lon=L.filter(x=>gSk(x)!=="kraft").sort((a,b)=>b.minutes-a.minutes)[0];
+    L.filter(x=>gSk(x)==="kraft").forEach(s=>{const nx=I.filter(x=>x.date===addDays(s.date,1)&&gSk(x)!=="kraft");if(nx.some(x=>gHard(x)>=5||x===lon))iss.push({k:"kraftvor",d:s.date,t:`${fD(s.date)}: Kraft am Tag vor einer harten oder langen Einheit`})});
+    if(full)us.filter(k=>k!=="kraft"&&!(k==="swim"&&!(settings.equip2||[]).includes("pool")&&(settings.equip2||[]).length)).forEach(k=>{if(!L.some(x=>gSk(x)===k))iss.push({k:"fehlt",w:m,t:`Woche ab ${fD(m)}: kein ${N[k]}`})});
+    const ref=wi===0?base:Math.max(prev,base);if(full&&ref>45&&min>ref*(wi===0?1.25:1.2)+20)iss.push({k:"steig",w:m,t:`Woche ab ${fD(m)}: ${nf(min/60,1)} h, das sind mehr als 20 Prozent über ${nf(ref/60,1)} h`});
+    if(full)prev=min});
+  return{issues:iss}}
+function gateRepair(items){const g=store.get("imGoal",{}),cap=+g.gHours||0,us=userSports(),fx=[];let I=items.filter(x=>gSk(x)==="other"||us.includes(gSk(x)));if(I.length<items.length)fx.push("nicht gewählte Sportart entfernt");
+  if(cap){const wk={};I.forEach(x=>{const m=monday(x.date);(wk[m]=wk[m]||[]).push(x)});Object.values(wk).forEach(L=>{const min=L.reduce((s,x)=>s+(+x.minutes||0),0);if(min>cap*60*1.05){const f=cap*60/min;L.forEach(x=>{x.minutes=Math.max(10,Math.round(x.minutes*f/5)*5)});fx.push("Umfang auf "+cap+" h gekürzt")}})}
+  return{items:I,fixed:fx}}
+var planImportRaw=importPlan;
+importPlan=async function(items){if(!PLANCAP)return planImportRaw(items);
+  let cur=items,r=planGate(cur),fixed=[];const first=r.issues.map(x=>x.t);
+  if(r.issues.length){const lab=AILAB;AILAB="Die KI prüft den Plan und korrigiert ihn …";
+    try{const pr=`Du bist Trainer. Dieser Trainingsplan verletzt feste Regeln der App. Korrigiere nur, was nötig ist, und behalte Ziel, Phase, Sportarten, Umfang und Aufbau bei. Verschiebe Einheiten lieber, als sie zu streichen.
+REGELVERSTÖSSE:
+${r.issues.map(x=>"- "+x.t).join("\n")}
+REGELN: Trainingstage ${weekText(store.get("imGoal",{}))}. Mindestens 1 Ruhetag pro Woche. Höchstens 2 harte Tage pro Woche, nie zwei hintereinander. Höchstens eine Ausdauereinheit pro Tag, außer Rad mit direkt folgendem Lauf. Kraft nie am Tag vor einer harten oder der längsten Einheit. Nur diese Sportarten: ${sportsText()}.${+store.get("imGoal",{}).gHours?" Höchstens "+store.get("imGoal",{}).gHours+" h pro Woche.":""} Umfang höchstens etwa 10 Prozent mehr pro Woche.
+PLAN:
+${JSON.stringify(cur.map(x=>({date:x.date,sport:x.sport,name:x.name,minutes:x.minutes,description:x.description})))}
+Antworte nur mit JSON in einem json-Codeblock: {"workouts":[{"date","sport","name","minutes","description"}]} mit dem vollständigen korrigierten Plan im selben Format.`;
+      const o=jsonFrom(await claude(pr,16000)),c=parsePlan(JSON.stringify((o&&o.workouts)||[])).filter(x=>x.date>=items.map(y=>y.date).sort()[0]);
+      if(c.length){const r2=planGate(c);if(r2.issues.length<r.issues.length){cur=c;r=r2;fixed.push("von der KI korrigiert")}}}catch(e){}finally{AILAB=lab}}
+  const rp=gateRepair(cur);cur=rp.items;fixed=fixed.concat(rp.fixed);r=planGate(cur);
+  store.set("imPlanCheck",{date:today(),found:first,left:r.issues.map(x=>x.t),fixed});
+  return planImportRaw(cur)};
+renderPlanCheck=(f=>function(){const r=f.apply(this,arguments);try{const c=store.get("imPlanCheck",null),pn=$("planNote");if(c&&pn&&!$("planGate")){
+  const ok=!c.left.length;pn.insertAdjacentHTML("afterend",`<div class="pgate ${ok?"ok":""}" id="planGate"><b>${ok?(c.found.length?"Regelprüfung: "+c.found.length+" Punkte korrigiert":"Regelprüfung: alle Regeln eingehalten"):"Regelprüfung: nicht alles einhaltbar"}</b>${c.left.length?`<span>${c.left.slice(0,4).map(esc).join("<br>")}</span>`:""}</div>`)}}catch(e){}return r})(renderPlanCheck);
 
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
