@@ -872,6 +872,13 @@ h3>.tag,.cx-h>.tag{display:table;margin:8px 0 2px;font-size:12px}
 /* v36 */
 #upbar{position:fixed;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom) + 84px);z-index:9998;display:none;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px;box-shadow:0 6px 24px rgba(0,0,0,.3);font-size:14px;max-width:520px;margin:0 auto}
 #upbar.on{display:flex}#upbar span{flex:1}#upbar .upx{background:none;border:0;color:var(--muted);font-size:22px;line-height:1;padding:0 4px}
+/* v37 */
+.plsave{width:100%;text-align:left;margin:14px 0 4px}.plsave .btn{margin-top:10px}.plsave .hint{margin:10px 0 0}
+.sickbar{grid-column:1/-1;border-color:var(--yellow);margin-bottom:16px}.sickbar .sbh{display:flex;gap:12px;align-items:flex-start}
+.sickbar .sbh b{display:block}.sickbar .sbh span{color:var(--muted);font-size:14px}.sickbar .sbdot{width:10px;min-width:10px;height:38px;border-radius:5px;background:var(--yellow)}
+.sickbar .sbdot.unterhalb{background:var(--red)}.sickbar .sbdot.verletzung{background:var(--hrv)}.sickbar .sbb{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.sickbar .hint{margin:10px 0 0}
+.qact{margin-top:12px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}.qact span{flex:1 1 100%}.qact.ok{color:var(--muted)}
+.toast37{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 90px);transform:translateX(-50%);background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 14px;z-index:9999;opacity:0;pointer-events:none;transition:opacity .2s;max-width:88vw;font-size:14px}.toast37.on{opacity:1}
 </style>
 </head>
 <body>
@@ -1053,7 +1060,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="36";
+const VERSION="37";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -4254,6 +4261,72 @@ async function upCheck(){if(location.protocol!=="https:"||Date.now()-UPCHK<10*60
     b.innerHTML=`<span>Neue Version ${m[1]} ist da.</span><button class="btn blue sm" id="upGo">Jetzt neu laden</button><button class="upx" aria-label="Später">×</button>`;b.classList.add("on");
     $("upGo").onclick=()=>{location.replace(location.pathname+"?v="+m[1])};b.querySelector(".upx").onclick=()=>b.classList.remove("on")}catch(e){}}
 setTimeout(upCheck,8000);document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")upCheck()});
+
+/* ---------- v37 ---------- */
+/* Training aus der App speichern */
+var PLLAST=null;
+plDone=(f=>function(){PLLAST=PL?{o:PL.o,min:Math.max(1,Math.round((Date.now()-PL.t0)/60000))}:null;f.apply(this,arguments);
+  const box=document.querySelector("#plBody .pl-done");if(!box||!PLLAST)return;const live=isLive()&&!!settings.apiKey;
+  const sv=document.createElement("div");sv.className="plsave";
+  sv.innerHTML=`<label class="f" for="plRpe">Wie anstrengend war es? <b id="plRpeL">5 · ${RPEN[5]}</b></label><input type="range" id="plRpe" min="1" max="10" value="5" class="rpe">
+    ${live?'<p class="hint">Hat deine Uhr mitgezeichnet? Dann kommt die Einheit beim nächsten Abgleich von selbst. Sonst hier speichern.</p>':""}
+    <button class="btn blue wide" id="plSave">Training speichern</button>${live?'<button class="btn wide" id="plWatch">Uhr hat aufgezeichnet</button>':""}`;
+  const end=$("plEnd");box.insertBefore(sv,end);end.textContent="Nicht speichern";end.classList.remove("blue");
+  $("plRpe").oninput=e=>{$("plRpeL").textContent=e.target.value+" · "+RPEN[+e.target.value]};
+  $("plSave").onclick=()=>{const o=PLLAST.o,sp=({run:"run",bike:"bike",swim:"swim",kraft:"kraft"})[spKey(o.sport)==="kraft"?"kraft":o.sport]||"other",n=new Date();
+    const M=store.get("imManual",[]);M.push({id:"m"+Date.now().toString(36),sp,date:today(),min:PLLAST.min,km:0,tm:String(n.getHours()).padStart(2,"0"),rpe:+$("plRpe").value||5,note:"In der App trainiert",name:o.title||"",app:true});store.set("imManual",M);plStop();load()};
+  if($("plWatch"))$("plWatch").onclick=()=>{plStop();toast&&toast("Die Einheit erscheint nach dem Abgleich deiner Uhr.")}})(plDone);
+manAct=(f=>function(x){const a=f.apply(this,arguments);if(x.name)a.name=x.name;if(x.app)a.app=true;return a})(manAct);
+/* App-Eintrag entfernen, sobald die Uhr dieselbe Einheit liefert */
+prep=(o=>function(D){const M=store.get("imManual",[]);if(M.some(x=>x.app)){const real=D.activities.filter(a=>!a.manual);
+  const keep=M.filter(x=>!x.app||!real.some(a=>a.date===x.date&&(manAct(x).sport===a.sport||(x.sp==="kraft"&&actKey(a)==="kraft"))));if(keep.length!==M.length)store.set("imManual",keep)}return o(D)})(prep);
+if(typeof toast!=="function")var toast=function(m){let t=$("toastV37");if(!t){t=document.createElement("div");t.id="toastV37";t.className="toast37";document.body.appendChild(t)}t.textContent=m;t.classList.add("on");clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove("on"),3500)};
+
+/* Krankheit: Hinweis auf Heute */
+const SKN={oberhalb:"Beschwerden oberhalb des Halses",unterhalb:"Beschwerden unterhalb des Halses",verletzung:"Verletzung"};
+function sickNow(D){const t=today();return((D&&D.sick)||[]).filter(s=>t>=s.start&&t<=s.end).sort((a,b)=>b.start.localeCompare(a.start))[0]||null}
+function sickJust(D){const t=today();return((D&&D.sick)||[]).filter(s=>s.end<t&&s.end>=addDays(t,-2)).sort((a,b)=>b.end.localeCompare(a.end))[0]||null}
+async function sickAdd(type,start,end,note){if(!isLive()){const l=store.get("imDemoSick",[]);l.push({id:"d"+Date.now(),start,end,type,note});store.set("imDemoSick",l);return}
+  await api("/events",{method:"POST",body:JSON.stringify({category:type==="verletzung"?"INJURED":"SICK",start_date_local:start+"T00:00:00",end_date_local:addDays(end,1)+"T00:00:00",name:type==="verletzung"?"Verletzt":"Krank",description:(type==="verletzung"?"":"["+type+"] ")+(note||"")})})}
+async function sickEnd(s,end){if(!isLive()){const l=store.get("imDemoSick",[]);l.forEach(x=>{if(String(x.id)===String(s.id))x.end=end});store.set("imDemoSick",l);return}
+  await api("/events/"+encodeURIComponent(s.id),{method:"PUT",body:JSON.stringify({end_date_local:addDays(end,1)+"T00:00:00"})})}
+function renderSickBar(D){const sec=document.querySelector('section[data-tab="heute"]');if(!sec)return;let b=$("sickBar");
+  const s=sickNow(D),j=!s&&sickJust(D),ask=j&&store.get("imSickAsk","")!==String(j.id);
+  if(!s&&!ask){if(b)b.remove();return}
+  if(!b){b=document.createElement("div");b.id="sickBar";b.className="card sickbar";sec.insertBefore(b,sec.firstChild)}
+  const t=today();
+  if(s){const n=diffDays(s.start,t)+1;b.innerHTML=`<div class="sbh"><span class="sbdot ${s.type}"></span><div><b>Du bist als ${s.type==="verletzung"?"verletzt":"krank"} eingetragen</b><span>seit ${fD(s.start)}, Tag ${n} · ${SKN[s.type]||""}${s.note?" · "+esc(s.note):""}</span></div></div>
+    <div class="sbb"><button class="btn blue sm" data-sbheal="${esc(String(s.id))}">Wieder gesund</button>${s.end<=t?`<button class="btn sm" data-sbmore="${esc(String(s.id))}">Noch ${s.type==="verletzung"?"verletzt":"krank"}</button>`:""}</div>
+    <p class="hint">Die Empfehlungen richten sich danach. Trag dich aus, sobald es dir besser geht.</p>`}
+  else b.innerHTML=`<div class="sbh"><span class="sbdot ${j.type}"></span><div><b>Bist du wieder fit?</b><span>Dein Eintrag (${SKN[j.type]||"krank"}) endete am ${fD(j.end)}.</span></div></div>
+    <div class="sbb"><button class="btn blue sm" data-sbok="${esc(String(j.id))}">Ja, wieder fit</button><button class="btn sm" data-sbmore="${esc(String(j.id))}">Noch ${j.type==="verletzung"?"verletzt":"krank"}</button></div>`}
+renderDone=(f=>function(D){f.apply(this,arguments);try{renderSickBar(D)}catch(e){console.error(e)}})(renderDone);
+document.addEventListener("click",async e=>{const h=e.target.closest("[data-sbheal],[data-sbmore],[data-sbok]");if(!h)return;e.preventDefault();
+  const id=h.dataset.sbheal||h.dataset.sbmore||h.dataset.sbok,s=((DATA&&DATA.sick)||[]).find(x=>String(x.id)===id);if(!s)return;
+  if(h.dataset.sbok){store.set("imSickAsk",id);renderSickBar(DATA);return}
+  h.disabled=true;try{if(h.dataset.sbheal){const y=addDays(today(),-1);await sickEnd(s,y<s.start?s.start:y);store.set("imSickAsk",id)}else{await sickEnd(s,addDays(today(),1));store.set("imSickAsk","")}await load()}
+  catch(er){h.disabled=false;$("banner").innerHTML=`<div class="banner err"><b>Fehler:</b> ${esc(er.message)}</div>`}});
+
+/* Coach: Krankheit erkennen, nachfragen, eintragen */
+var ASKF=false,ASKACT=null;
+askCtx=(f=>function(){const s=f.apply(this,arguments),cur=sickNow(DATA);
+  return s+`\n\nKRANKHEIT UND VERLETZUNG\nEingetragen: ${cur?`${cur.type==="verletzung"?"Verletzung":"krank"} seit ${cur.start} (${SKN[cur.type]||""})`:"nichts"}\nErwähnt der Nutzer im Gespräch Krankheit, Erkältung, Fieber, Verletzung oder Schmerzen und es ist nichts eingetragen: Fehlt etwas davon, frag in deiner Antwort kurz danach: Art (nur oberhalb des Halses wie Schnupfen oder Halsweh, unterhalb wie Fieber, Husten aus der Brust oder Gliederschmerzen, oder eine Verletzung) und seit wann. Sind Art und Beginn klar, schreib als letzte Zeile genau: [[KRANK|oberhalb oder unterhalb oder verletzung|JJJJ-MM-TT Beginn|Notiz max. 40 Zeichen]]. Heute ist ${today()}. Sagt der Nutzer, dass er wieder gesund oder fit ist und es ist etwas eingetragen, schreib als letzte Zeile genau: [[GESUND]]. Sonst nie eine solche Zeile. Erwähne die Zeile nicht im Text.`})(askCtx);
+claude=(f=>async function(){const r=await f.apply(this,arguments);if(!ASKF||typeof r!=="string")return r;
+  const m=r.match(/\[\[(KRANK\|[^\]]*|GESUND)\]\]/);if(!m)return r;
+  if(m[1]==="GESUND")ASKACT={k:"heal"};else{const p=m[1].split("|").map(x=>x.trim()),ty=/unter/i.test(p[1])?"unterhalb":/verl/i.test(p[1])?"verletzung":"oberhalb",d=/^\d{4}-\d{2}-\d{2}$/.test(p[2]||"")&&p[2]<=today()?p[2]:today();ASKACT={k:"sick",type:ty,start:d,note:(p[3]||"").slice(0,60)}}
+  return r.replace(m[0],"").trim()})(claude);
+ask=(f=>async function(){ASKF=true;ASKACT=null;try{await f.apply(this,arguments)}finally{ASKF=false}
+  if(ASKACT){const H=store.get("imAskH",[]);if(H[0]){H[0].act=ASKACT;store.set("imAskH",H);renderAsk()}ASKACT=null}})(ask);
+function askActCard(a){if(!a||a.done)return"";const cur=sickNow(DATA);
+  if(a.k==="heal")return cur?`<div class="qact"><span>Als wieder gesund austragen?</span><button class="btn blue sm" data-qact="heal">Wieder gesund</button><button class="lnk" data-qact="no">Nein</button></div>`:"";
+  if(cur)return"";return`<div class="qact"><span>Eintragen: ${a.type==="verletzung"?"Verletzung":"Krank"} seit ${fD(a.start)}, ${SKN[a.type]}${a.note?" ("+esc(a.note)+")":""}?</span><button class="btn blue sm" data-qact="sick">Eintragen</button><button class="lnk" data-qact="no">Nein</button></div>`}
+renderAsk=(f=>function(){f.apply(this,arguments);try{const H=store.get("imAskH",[])||[],a=H[0]&&H[0].act,o=$("qOut");if(!a||!o)return;const q=o.querySelector(".qa2 .qa");if(q&&!q.querySelector(".qact"))q.insertAdjacentHTML("beforeend",askActCard(a))}catch(e){}})(renderAsk);
+document.addEventListener("click",async e=>{const b=e.target.closest("[data-qact]");if(!b)return;e.preventDefault();const H=store.get("imAskH",[]),a=H[0]&&H[0].act;if(!a)return;
+  const fin=t=>{a.done=true;store.set("imAskH",H);const c=b.closest(".qact");if(c)c.outerHTML=t?`<div class="qact ok">${t}</div>`:""};
+  if(b.dataset.qact==="no"){fin("");return}b.disabled=true;
+  try{if(b.dataset.qact==="sick"){await sickAdd(a.type,a.start,today(),a.note);fin("Eingetragen. Du findest es unter Erholung und oben auf Heute.")}
+    else{const s=sickNow(DATA);if(s){const y=addDays(today(),-1);await sickEnd(s,y<s.start?s.start:y);store.set("imSickAsk",String(s.id))}fin("Ausgetragen. Schön, dass es dir besser geht.")}
+    await load()}catch(er){b.disabled=false;$("qErr").textContent=er.message}});
 
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
