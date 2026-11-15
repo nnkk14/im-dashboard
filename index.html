@@ -861,6 +861,14 @@ h3>.tag,.cx-h>.tag{display:table;margin:8px 0 2px;font-size:12px}
 .dnmore{background:var(--shade,rgba(127,127,127,.12));border-radius:12px;padding:10px 12px;margin:10px 0;font-size:14px;display:flex;flex-direction:column;gap:2px}
 .calless{display:block;margin:6px auto 10px}
 .rstart b{color:var(--muted)}
+/* v34 */
+#aibar{position:fixed;left:0;right:0;top:0;z-index:9999;pointer-events:none;opacity:0;transform:translateY(-100%);transition:opacity .2s,transform .2s}
+#aibar.on{opacity:1;transform:none}
+#aibar .aibl{height:3px;background:linear-gradient(90deg,transparent,var(--acc,#2f7de1),transparent);background-size:40% 100%;background-repeat:no-repeat;animation:aibl 1.2s linear infinite}
+@keyframes aibl{from{background-position:-40% 0}to{background-position:140% 0}}
+#aibar .aibt{margin:calc(env(safe-area-inset-top) + 6px) auto 0;width:max-content;max-width:92vw;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:13px;display:flex;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25)}
+#aibar em{font-style:normal;color:var(--muted);white-space:nowrap;align-self:center}
+@media (prefers-reduced-motion:reduce){#aibar .aibl{animation:none;background:var(--acc,#2f7de1)}}
 </style>
 </head>
 <body>
@@ -1042,7 +1050,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="33";
+const VERSION="34";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -1847,8 +1855,8 @@ async function aiPlan(manual){
   if(b){b.disabled=true;b.textContent="Die KI plant …"}
   try{
     const ov=noteBy("Coach Plan Übersicht");
-    const pr=coachText().replace(/\nANTWORTFORMAT[\s\S]*$/,"")+`\n\nZIELDATUM: ${goalInfo(D).date?goalInfo(D).date+" ("+goalInfo(D).name+")":"offen, bitte realistisch vorschlagen"}\nDURCHSCHNITT LETZTE 6 WOCHEN: ${nf(avgHours(D),1)} h pro Woche\n${ov&&!manual?"BESTEHENDE PHASEN:\n"+ov.text+"\n":""}\nAUFGABE\n${manual?"Plane den Weg bis zum Zieldatum in Phasen (Grundlage, Aufbau, Spitze, Tapering usw.) und ":"Setze den bestehenden Plan fort und "}erstelle konkrete Einheiten für 28 Tage ab ${from}. Arbeite nach diesen Grundsätzen: Periodisierung in Phasen (Grundlage, Aufbau, Spitze, Tapering). Etwa 80 Prozent der Trainingszeit locker (Z1 bis Z2), etwa 20 Prozent intensiv (polarisiertes Training nach Seiler). Leite den Wochenumfang aus meinen bisherigen Stunden ab und steigere ihn höchstens um etwa 10 Prozent pro Woche, nach 2 bis 3 Aufbauwochen eine Entlastungswoche mit etwa 60 bis 70 Prozent Umfang. Harte Schlüsseleinheiten nicht an aufeinanderfolgenden Tagen. Tapering vor dem Hauptwettkampf 1 bis 3 Wochen je nach Distanz, Umfang sinkt, Intensität bleibt. Lange Einheiten wachsen schrittweise in Richtung Wettkampfdauer. Halte die Trainingstage ein, lange Einheiten an den markierten Tagen. Berücksichtige die Wettkampf-Infos (Strecke, Höhenmeter, Hitze, Wasser) mit passenden Einheiten, zum Beispiel Hitzeanpassung in den letzten Wochen oder Bergintervalle. Höchstens eine Ausdauereinheit pro Tag, außer bei Koppeleinheiten. Plane nur meine Sportarten (${sportsText()}). ${extraText()?"Zusatztraining: "+extraText():""} Antworte nur mit JSON in einem json-Codeblock: {"target_date":"JJJJ-MM-TT","phases":[{"from":"JJJJ-MM-TT","to":"JJJJ-MM-TT","name":"kurz","focus":"ein Satz"}],"note":"max. 400 Zeichen","workouts":[{"date","sport","name","minutes","description"}]}. ${planFmt()}`;
-    const rs=await planResearch(D);const o=jsonFrom(await claude(pr+rs,16000));const items=parsePlan(JSON.stringify(o.workouts||[])).filter(x=>x.date>=from);
+    const pr=coachText().replace(/\nANTWORTFORMAT[\s\S]*$/,"")+`\n\nZIELDATUM: ${goalInfo(D).date?goalInfo(D).date+" ("+goalInfo(D).name+")":"offen, bitte realistisch vorschlagen"}\nDURCHSCHNITT LETZTE 6 WOCHEN: ${nf(avgHours(D),1)} h pro Woche\n${ov&&!manual?"BESTEHENDE PHASEN:\n"+ov.text+"\n":""}\nAUFGABE\n${manual?"Plane den Weg bis zum Zieldatum in Phasen (Grundlage, Aufbau, Spitze, Tapering usw.) und ":"Setze den bestehenden Plan fort und "}erstelle konkrete Einheiten für 14 Tage ab ${from}. Arbeite nach diesen Grundsätzen: Periodisierung in Phasen (Grundlage, Aufbau, Spitze, Tapering). Etwa 80 Prozent der Trainingszeit locker (Z1 bis Z2), etwa 20 Prozent intensiv (polarisiertes Training nach Seiler). Leite den Wochenumfang aus meinen bisherigen Stunden ab und steigere ihn höchstens um etwa 10 Prozent pro Woche, nach 2 bis 3 Aufbauwochen eine Entlastungswoche mit etwa 60 bis 70 Prozent Umfang. Harte Schlüsseleinheiten nicht an aufeinanderfolgenden Tagen. Tapering vor dem Hauptwettkampf 1 bis 3 Wochen je nach Distanz, Umfang sinkt, Intensität bleibt. Lange Einheiten wachsen schrittweise in Richtung Wettkampfdauer. Halte die Trainingstage ein, lange Einheiten an den markierten Tagen. Berücksichtige die Wettkampf-Infos (Strecke, Höhenmeter, Hitze, Wasser) mit passenden Einheiten, zum Beispiel Hitzeanpassung in den letzten Wochen oder Bergintervalle. Höchstens eine Ausdauereinheit pro Tag, außer bei Koppeleinheiten. Plane nur meine Sportarten (${sportsText()}). ${extraText()?"Zusatztraining: "+extraText():""} Antworte nur mit JSON in einem json-Codeblock: {"target_date":"JJJJ-MM-TT","phases":[{"from":"JJJJ-MM-TT","to":"JJJJ-MM-TT","name":"kurz","focus":"ein Satz"}],"note":"max. 400 Zeichen","workouts":[{"date","sport","name","minutes","description"}]}. ${planFmt()}`;
+    const rs=await planResearch(D);const o=jsonFrom(await claude(pr+rs,32000));const items=parsePlan(JSON.stringify(o.workouts||[])).filter(x=>x.date>=from);
     if(!items.length)throw new Error("Die KI hat keine Einheiten geliefert.");
     if(o.phases&&o.phases.length)await writeNote(t,[...o.phases.map(p=>`Phase: ${p.from} | ${p.to} | ${p.name} | ${p.focus||""}`),`Zieldatum: ${o.target_date||g.gDate||""}`].join("\n"),"Coach Plan Übersicht");
     if(manual)await delCoachFrom(from);const n=await importPlan(items);ensureExArt(items.filter(x=>/weight|strength/i.test(x.sport)).flatMap(x=>parseStr(x.description).filter(y=>!y.warm)));await load();if($("coachHint"))$("coachHint").textContent=`${n} Einheiten eingetragen. ${o.note||""}`;
@@ -4208,6 +4216,16 @@ function planRules(){const us=userSports(),tri=["swim","bike","run"].every(k=>us
 - Schwimmen in der Grundlagenphase mit Technikanteil.
 - Wochenumfang passend zum Ziel und zur Zeit, die der Nutzer hat. Ist sie unbekannt, realistisch für Berufstätige planen (Ironman-Grundlage etwa 6 bis 10 Stunden, Marathon etwa 4 bis 7 Stunden).`}
 planResearch=(f=>async function(D){const r=await f.apply(this,arguments);return(r||"")+planRules()})(planResearch);
+
+/* ---------- v34 ---------- */
+/* Sichtbar machen, dass die KI arbeitet */
+var AIRUN=0,AILAB=null,AIT0=0,AITM=null;
+function aiBar(on){let b=$("aibar");if(!b){b=document.createElement("div");b.id="aibar";b.innerHTML='<div class="aibl"></div><div class="aibt"><span class="aibs"></span><em></em></div>';document.body.appendChild(b)}
+  if(on){AIT0=AIT0||Date.now();b.classList.add("on");const up=()=>{const s=Math.round((Date.now()-AIT0)/1000);b.querySelector(".aibs").textContent=AILAB||"Die KI arbeitet …";b.querySelector("em").textContent=s>=3?s+" s":""};up();clearInterval(AITM);AITM=setInterval(up,1000)}
+  else{b.classList.remove("on");clearInterval(AITM);AIT0=0}}
+claude=(f=>async function(){AIRUN++;aiBar(true);try{return await f.apply(this,arguments)}finally{AIRUN--;if(AIRUN<=0){AIRUN=0;aiBar(false)}}})(claude);
+claudeX=(f=>async function(){AIRUN++;aiBar(true);try{return await f.apply(this,arguments)}finally{AIRUN--;if(AIRUN<=0){AIRUN=0;aiBar(false)}}})(claudeX);
+aiPlan=(f=>async function(manual){AILAB=manual?"Die KI erstellt deinen Plan. Das dauert meist 1 bis 3 Minuten.":"Die KI plant die nächsten Wochen …";try{return await f.apply(this,arguments)}finally{AILAB=null}})(aiPlan);
 
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
