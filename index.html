@@ -889,6 +889,8 @@ h3>.tag,.cx-h>.tag{display:table;margin:8px 0 2px;font-size:12px}
 .medh{display:block;color:var(--muted)}.qact .medh{flex:1 1 100%;font-size:12px}
 /* v40 */
 #mSet .hint a,#mOnb .hint a{color:var(--acc);text-decoration:underline}
+/* v41 */
+#mProf .tchips{margin-top:4px}#mProf .days{margin-top:4px}#mProf select,#mOnb select#obBy{width:100%}
 </style>
 </head>
 <body>
@@ -1070,7 +1072,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="40";
+const VERSION="41";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -4429,6 +4431,43 @@ obDraw=(f=>function(){f.apply(this,arguments);const m=$("mOnb");if(OBEDIT){m.cla
 $("mOnb").addEventListener("click",e=>{if(!OBEDIT)return;const n=e.target.closest('[data-ob="next"]');if(!n||OB.i!==3||!$("obHok"))return;e.stopImmediatePropagation();
   if(typeof obMeRead==="function")obMeRead();OB.v.me=false;OB.v.tier="";obSave(true);OBEDIT=false;close("mOnb");if(DATA)render();try{toast("Profil gespeichert")}catch(x){}},true);
 new MutationObserver(()=>{if(!$("mOnb").classList.contains("open"))OBEDIT=false}).observe($("mOnb"),{attributes:true,attributeFilter:["class"]});
+
+/* ---------- v41 ---------- */
+/* Geburtsjahr als Auswahlliste statt Zahlenfeld */
+function byOpts(sel){const cy=new Date().getFullYear();let h=`<option value="">bitte wählen</option>`;for(let y=cy-10;y>=cy-95;y--)h+=`<option value="${y}" ${+sel===y?"selected":""}>${y}</option>`;return h}
+obMeHTML=(f=>function(){const h=f.apply(this,arguments),v=OB.v,sel=v.by!=null?v.by:settings.birthYear||"";
+  return h.replace(/<input type="number" id="obBy"[^>]*>/,`<select id="obBy">${byOpts(sel)}</select>`)})(obMeHTML);
+/* Profil ändern: alles auf einer Seite */
+(function(){if($("mProf"))return;const m=document.createElement("div");m.className="modal";m.id="mProf";m.innerHTML='<div class="sheet"><button class="ib sx" data-pfx="1" title="Schließen"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button><h3>Profil ändern</h3><div id="pfBody"></div></div>';document.body.appendChild(m)})();
+var PF={};
+function openProf(){const g=store.get("imGoal",{});PF={purpose:settings.purpose||(settings.mode==="gesundheit"?"health":"race"),sports:rawSports(),equip:(settings.equip||[]).slice(),extra:settings.extraSports||"",by:settings.birthYear||"",sex:settings.sex||"",hrs:g.gHours?+g.gHours:null,days:weekArr(g),eq2:(settings.equip2||[]).slice()};drawProf();open("mProf")}
+function drawProf(){const P=PF,on=(c)=>c?"on":"",kr=P.sports.includes("kraft")||P.sports.includes("gym"),eq=EQ2.filter(e=>userSportsOf(P.sports).includes(e[2]));
+  $("pfBody").innerHTML=`<p class="hint" style="margin-top:0">Tippe an, was sich geändert hat, und speichere unten.</p>
+   <label class="f">Ziel</label><div class="tchips">${[["race","Wettkampf"],["fit","Fitter werden"],["health","Gesund bleiben"]].map(([k,n])=>`<button data-pfpur="${k}" class="${on(P.purpose===k)}">${n}</button>`).join("")}</div>
+   <label class="f">Sportarten</label><div class="tchips">${SPOPT.map(([k,n])=>`<button data-pfsp="${k}" class="${on(P.sports.includes(k))}">${n}</button>`).join("")}</div>
+   ${kr?`<label class="f">Kraft mit</label><div class="tchips">${EQ.map(([k,n])=>`<button data-pfeq="${k}" class="${on(P.equip.includes(k))}">${n}</button>`).join("")}</div>`:""}
+   <label class="f" for="pfExtra">Weitere Sportarten</label><input id="pfExtra" value="${esc(P.extra)}" placeholder="z. B. Tennis, Wandern" autocomplete="off">
+   <div class="row2"><div><label class="f" for="pfBy">Geburtsjahr</label><select id="pfBy">${byOpts(P.by)}</select></div><div><label class="f">Geschlecht</label><div class="tchips">${Object.entries(SEXN).map(([k,n])=>`<button data-pfsex="${k}" class="${on(P.sex===k)}">${n}</button>`).join("")}</div></div></div>
+   <label class="f">Zeit pro Woche</label><div class="tchips">${HRS.map(([h,n])=>`<button data-pfhrs="${h}" class="${on(P.hrs===h||(h===0&&!P.hrs&&P.hrs!==null))}">${n}</button>`).join("")}</div>
+   <label class="f">Trainingstage</label><p class="hint" style="margin-top:0">Tippen wechselt zwischen frei, Training und lang.</p><div class="days">${P.days.map((x,i)=>`<button data-pfday="${i}" class="d${x}">${DAYN[i]}<small>${["frei","Training","lang"][x]}</small></button>`).join("")}</div>
+   ${eq.length?`<label class="f">Ausstattung</label><div class="tchips">${eq.map(([k,n])=>`<button data-pfeq2="${k}" class="${on(P.eq2.includes(k))}">${n}</button>`).join("")}</div>`:""}
+   <p class="hint">Sportuhr, Schlüssel und „Ohne Sportuhr“ stellst du in den Einstellungen unter Verbindungen ein.</p>
+   <div class="err" id="pfErr"></div><button class="btn blue wide" id="pfSave" style="margin-top:8px">Speichern</button>`}
+function userSportsOf(a){a=a.slice();if(a.includes("gym")){a=a.filter(k=>k!=="gym");if(!a.includes("kraft"))a.push("kraft")}return a}
+$("mProf").addEventListener("click",e=>{let b;const P=PF,keep=()=>{const s=$("mProf").querySelector(".sheet"),st=s.scrollTop;P.extra=$("pfExtra").value;P.by=$("pfBy").value;drawProf();s.scrollTop=st};
+  if(e.target.closest("[data-pfx]")){close("mProf");return}
+  if(b=e.target.closest("[data-pfpur]")){P.purpose=b.dataset.pfpur;keep();return}
+  if(b=e.target.closest("[data-pfsp]")){const k=b.dataset.pfsp;P.sports=P.sports.includes(k)?P.sports.filter(x=>x!==k):P.sports.concat(k);if(k==="gym"){P.equip=P.sports.includes("gym")?(P.equip.includes("gym")?P.equip:P.equip.concat("gym")):P.equip.filter(x=>x!=="gym")}keep();return}
+  if(b=e.target.closest("[data-pfeq]")){const k=b.dataset.pfeq;P.equip=P.equip.includes(k)?P.equip.filter(x=>x!==k):P.equip.concat(k);keep();return}
+  if(b=e.target.closest("[data-pfsex]")){P.sex=b.dataset.pfsex;keep();return}
+  if(b=e.target.closest("[data-pfhrs]")){P.hrs=+b.dataset.pfhrs;keep();return}
+  if(b=e.target.closest("[data-pfday]")){const i=+b.dataset.pfday;P.days[i]=(P.days[i]+1)%3;keep();return}
+  if(b=e.target.closest("[data-pfeq2]")){const k=b.dataset.pfeq2;P.eq2=P.eq2.includes(k)?P.eq2.filter(x=>x!==k):P.eq2.concat(k);keep();return}
+  if(e.target.closest("#pfSave")){P.extra=$("pfExtra").value.trim();P.by=$("pfBy").value;if(!P.sports.length){$("pfErr").textContent="Bitte mindestens eine Sportart wählen.";return}
+    settings.purpose=P.purpose;settings.mode=P.purpose==="health"?"gesundheit":"sport";settings.sports=P.sports.slice();settings.equip=P.equip.slice();settings.extraSports=P.extra;settings.birthYear=P.by?+P.by:"";settings.sex=P.sex;settings.equip2=P.eq2.slice();store.set("imSettings",settings);
+    const g=store.get("imGoal",{});g.gHours=P.hrs?String(P.hrs):"";g.gDays=P.days.join(",");store.set("imGoal",g);try{loadGoal()}catch(x){}
+    close("mProf");try{drawProfile()}catch(x){}load();try{toast("Profil gespeichert")}catch(x){}}});
+$("cProfEdit").onclick=()=>{close("mSet");setTimeout(openProf,250)};
 
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
