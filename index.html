@@ -881,6 +881,12 @@ h3>.tag,.cx-h>.tag{display:table;margin:8px 0 2px;font-size:12px}
 .toast37{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 90px);transform:translateX(-50%);background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 14px;z-index:9999;opacity:0;pointer-events:none;transition:opacity .2s;max-width:88vw;font-size:14px}.toast37.on{opacity:1}
 /* v38 */
 .bt2 .bprev{display:block;font-style:normal;font-size:12px;color:var(--muted);margin-top:2px}.bt2 .bprev.up{color:var(--green)}.bt2 .bprev.down{color:var(--yellow)}
+/* v39 */
+.obhealth{display:flex;gap:10px;align-items:flex-start;margin-top:18px;padding:12px;border:1px solid var(--line);border-radius:12px;font-size:14px;line-height:1.4}.obhealth input{width:20px;height:20px;flex:none;margin-top:1px}
+.obdays{margin-top:6px}.obsex button,.obhrs button{white-space:nowrap}
+.eyew{position:relative}.eyew input{padding-right:46px}.eyeb{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:36px;height:36px;border:0;background:none;color:var(--muted);display:grid;place-items:center;border-radius:8px}
+.eyeb svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8}.eyeb.on{color:var(--acc)}
+.medh{display:block;color:var(--muted)}.qact .medh{flex:1 1 100%;font-size:12px}
 </style>
 </head>
 <body>
@@ -1062,7 +1068,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="38";
+const VERSION="39";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -4343,6 +4349,63 @@ renderBench=(f=>function(D){f.apply(this,arguments);try{const nob=$("bench")&&$(
   nob.querySelectorAll(".bt2").forEach(x=>{const e=L.find(z=>z.k===x.dataset.b),o=P.find(z=>z.k===x.dataset.b);if(!e||!o||!e.fromThr)return;const d=Math.round(o.v-e.v);
     const s=x.querySelector(".bprev")||x.appendChild(document.createElement("em"));s.className="bprev "+(d>=3?"up":d<=-3?"down":"");
     s.textContent=`vor 3 Monaten ${fT(o.v)}`+(Math.abs(d)<3?" · gleich":` · ${Math.abs(d)<60?Math.abs(d)+" s":fT(Math.abs(d))} ${d>0?"schneller":"langsamer"}`)})}catch(e){}})(renderBench);
+
+/* ---------- v39 ---------- */
+/* Einrichtung: Uhr-Schritte erst nach „Weiter“, neue Seite „Über dich und deine Woche“, Gesundheitshinweis */
+const EQ2=[["rolle","Rad-Rolle für drinnen","bike"],["watt","Wattmessung am Rad","bike"],["pool","Schwimmbad in der Nähe","swim"],["band","Laufband","run"]];
+const HRS=[[3,"bis 3 h"],[5,"4 bis 5 h"],[7,"6 bis 7 h"],[10,"8 bis 10 h"],[14,"mehr als 10 h"],[0,"weiß ich nicht"]];
+const SEXN={w:"Frau",m:"Mann",x:"keine Angabe"};
+function equip2Text(){const q=settings.equip2||[];return q.length?EQ2.filter(e=>q.includes(e[0])).map(e=>e[1]).join(", "):"keine Angabe"}
+function ageNow(){const y=+settings.birthYear;return y>1900?new Date().getFullYear()-y:null}
+function obMeHTML(){const v=OB.v,g=store.get("imGoal",{}),a=weekArr(g),hv=v.hrs!=null?v.hrs:(g.gHours?+g.gHours:null),us=v.sports||[],cy=new Date().getFullYear();
+  const CK='<svg viewBox="0 0 24 24" class="ck"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',eq=EQ2.filter(e=>us.includes(e[2])),hok=v.hok!=null?v.hok:!!settings.healthOk;
+  return`<h3>Über dich und deine Woche</h3><p class="hint">Damit passen Umfang, Pulsbereiche und Einstufungen zu dir. Alles lässt sich später ändern.</p>
+   <div class="row2"><div><label class="f" for="obBy">Geburtsjahr</label><input type="number" id="obBy" inputmode="numeric" min="${cy-100}" max="${cy-10}" placeholder="z. B. 1995" value="${esc(String(v.by!=null?v.by:settings.birthYear||""))}"></div>
+   <div><label class="f">Geschlecht</label><div class="tchips obsex">${Object.entries(SEXN).map(([k,n])=>`<button data-obsex="${k}" class="${(v.sex!=null?v.sex:settings.sex)===k?"on":""}">${n}</button>`).join("")}</div></div></div>
+   <label class="f">Wie viel Zeit hast du pro Woche für Training?</label><div class="tchips obhrs">${HRS.map(([h,n])=>`<button data-obhrs="${h}" class="${hv===h||(h===0&&hv===0)?"on":""}">${n}</button>`).join("")}</div>
+   <label class="f">An welchen Tagen kannst du trainieren?</label><p class="hint" style="margin-top:0">Tippen wechselt zwischen frei, Training und lang (Tag für die lange Einheit).</p><div class="days obdays">${a.map((x,i)=>`<button data-obday="${i}" class="d${x}">${DAYN[i]}<small>${["frei","Training","lang"][x]}</small></button>`).join("")}</div>
+   ${eq.length?`<h4 class="obh4">Was steht dir zur Verfügung?</h4><div class="obsp2">${eq.map(([k,n])=>`<button data-obeq2="${k}" class="${(v.eq2||settings.equip2||[]).includes(k)?"on":""}"><span class="obck">${CK}</span>${n}</button>`).join("")}</div>`:""}
+   <label class="obhealth"><input type="checkbox" id="obHok" ${hok?"checked":""}><span>Mir ist klar: Die App ersetzt keine ärztliche Beratung. Bei Schmerzen, Fieber, Vorerkrankungen oder Unsicherheit frage ich eine Ärztin oder einen Arzt.</span></label>
+   <button class="btn blue wide" data-ob="next" style="margin-top:16px" ${hok?"":"disabled"}>Weiter</button>`}
+function obMeRead(){const v=OB.v;const by=$("obBy");if(by)v.by=by.value.trim();const h=$("obHok");if(h)v.hok=h.checked}
+obDraw=(f=>function(){if(OB.i===3&&OB.v.me){f.apply(this,arguments);const b=$("obBody");const keep=[...b.children].filter(x=>x.classList.contains("obback")||x.classList.contains("obdots")).map(x=>x.outerHTML).join("");b.innerHTML=keep+obMeHTML();eyeAll();return}
+  f.apply(this,arguments);if(OB.i===3&&OB.v.src==="watch"&&!OB.v.ws){const b=$("obBody");b.querySelectorAll(".obsteps,label[for=obKey],#obKey").forEach(x=>x.remove());const k=b.querySelector("#obKey+.hint")||[...b.querySelectorAll(".hint")].find(x=>/bleibt auf diesem Gerät/.test(x.textContent));if(k)k.remove()}
+  eyeAll()})(obDraw);
+$("mOnb").addEventListener("click",e=>{let b;
+  if(OB.i===3&&OB.v.me){
+    if(b=e.target.closest("[data-obsex]")){e.stopImmediatePropagation();obMeRead();OB.v.sex=b.dataset.obsex;const st=$("mOnb").querySelector(".sheet").scrollTop;obDraw();$("mOnb").querySelector(".sheet").scrollTop=st;return}
+    if(b=e.target.closest("[data-obhrs]")){e.stopImmediatePropagation();obMeRead();OB.v.hrs=+b.dataset.obhrs;const g=store.get("imGoal",{});g.gHours=OB.v.hrs?String(OB.v.hrs):"";store.set("imGoal",g);try{loadGoal()}catch(x){}const st=$("mOnb").querySelector(".sheet").scrollTop;obDraw();$("mOnb").querySelector(".sheet").scrollTop=st;return}
+    if(b=e.target.closest("[data-obday]")){e.stopImmediatePropagation();obMeRead();const g=store.get("imGoal",{}),a=weekArr(g),i=+b.dataset.obday;a[i]=(a[i]+1)%3;g.gDays=a.join(",");store.set("imGoal",g);try{loadGoal()}catch(x){}const st=$("mOnb").querySelector(".sheet").scrollTop;obDraw();$("mOnb").querySelector(".sheet").scrollTop=st;return}
+    if(b=e.target.closest("[data-obeq2]")){e.stopImmediatePropagation();obMeRead();const q=(OB.v.eq2||settings.equip2||[]).slice(),k=b.dataset.obeq2;OB.v.eq2=q.includes(k)?q.filter(x=>x!==k):q.concat(k);const st=$("mOnb").querySelector(".sheet").scrollTop;obDraw();$("mOnb").querySelector(".sheet").scrollTop=st;return}
+    if(e.target.closest('[data-ob="back"]')){e.stopImmediatePropagation();obMeRead();OB.v.me=false;obDraw();return}
+    if(e.target.closest('[data-ob="next"]')){obMeRead();OB.v.me=false;return}}
+  if(OB.i===3&&e.target.closest('[data-ob="next"]')){
+    if(OB.v.src==="watch"&&!OB.v.ws){e.stopImmediatePropagation();OB.v.ws=true;obDraw();$("mOnb").querySelector(".sheet").scrollTop=0;return}
+    if($("obKey"))OB.v.key=$("obKey").value.trim();e.stopImmediatePropagation();OB.v.me=true;obDraw();$("mOnb").querySelector(".sheet").scrollTop=0;return}
+  if(OB.i===3&&OB.v.ws&&e.target.closest('[data-ob="back"]')){e.stopImmediatePropagation();OB.v.ws=false;obDraw();return}
+  if(OB.i===4&&e.target.closest('[data-ob="back"]')){e.stopImmediatePropagation();OB.i=3;OB.v.me=true;obDraw();return}},true);
+$("mOnb").addEventListener("change",e=>{if(e.target.id==="obHok"){OB.v.hok=e.target.checked;const n=$("obBody").querySelector('[data-ob="next"]');if(n)n.disabled=!e.target.checked}});
+obSave=(f=>function(final){const v=OB.v;if(OB.i===3&&v.me)obMeRead();f.apply(this,arguments);if(!final)return;
+  if(v.by!=null){const y=+v.by,cy=new Date().getFullYear();settings.birthYear=y>=cy-100&&y<=cy-10?y:(v.by===""?"":settings.birthYear)}
+  if(v.sex!=null)settings.sex=v.sex;if(v.eq2)settings.equip2=v.eq2.slice();if(v.hok)settings.healthOk=true;store.set("imSettings",settings)})(obSave);
+/* Profil zeigt die neuen Angaben */
+drawProfile=(f=>function(){f.apply(this,arguments);const el=$("cProf");if(!el)return;const g=store.get("imGoal",{}),a=ageNow();
+  el.insertAdjacentHTML("beforeend",`<div class="prow"><span>Über dich</span><b>${a?a+" Jahre":"Alter offen"}, ${SEXN[settings.sex]||"Geschlecht offen"}</b></div><div class="prow"><span>Trainingszeit</span><b>${g.gHours?"höchstens "+g.gHours+" h pro Woche":"offen"} · ${esc(weekText(g))}</b></div>${(settings.equip2||[]).length?`<div class="prow"><span>Ausstattung</span><b>${esc(equip2Text())}</b></div>`:""}`)})(drawProfile);
+/* Angaben an die KI */
+coachText=(o=>function(){const s=o.apply(this,arguments),a=ageNow(),x=["","PERSON UND AUSSTATTUNG",`Alter: ${a||"keine Angabe"}`,`Geschlecht: ${SEXN[settings.sex]||"keine Angabe"}`,`Ausstattung Ausdauer: ${equip2Text()}${(settings.equip2||[]).includes("rolle")?" (Radeinheiten bei schlechtem Wetter oder im Winter auch auf der Rolle möglich)":""}${(settings.equip2||[]).includes("pool")||!userSports().includes("swim")?"":" (kein Schwimmbad angegeben, Schwimmen nur wenn möglich)"}`].join("\n");
+  const i=s.indexOf("\nANTWORTFORMAT");return i<0?s+"\n"+x:s.slice(0,i)+"\n"+x+s.slice(i)})(coachText);
+/* Geschlecht aus intervals.icu übernehmen, falls noch nicht angegeben */
+setTimeout(async()=>{try{if(settings.sex||!settings.apiKey||!isLive())return;const a=await api("");if(a&&/^[MF]$/.test(a.sex||"")){settings.sex=a.sex==="F"?"w":"m";store.set("imSettings",settings)}}catch(e){}},9000);
+/* Schlüssel anzeigen (Auge) */
+const EYE='<svg viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+function eyeify(id){const i=$(id);if(!i||i.dataset.eye)return;i.dataset.eye="1";const w=document.createElement("div");w.className="eyew";i.parentNode.insertBefore(w,i);w.appendChild(i);
+  const b=document.createElement("button");b.type="button";b.className="eyeb";b.setAttribute("aria-label","Schlüssel anzeigen");b.innerHTML=EYE;w.appendChild(b);
+  b.onclick=()=>{const s=i.type==="password";i.type=s?"text":"password";b.classList.toggle("on",s);b.setAttribute("aria-label",s?"Schlüssel verbergen":"Schlüssel anzeigen")}}
+function eyeAll(){["cKey","cAi","obKey"].forEach(eyeify)}
+eyeAll();(function(){const k=$("cKey");if(!k)return;const h=k.closest(".eyew").nextElementSibling;if(h&&h.classList.contains("hint")&&!h.querySelector("a"))h.insertAdjacentHTML("beforeend",' <a href="https://intervals.icu/settings" target="_blank" rel="noopener">Schlüssel bei intervals.icu holen</a> (Settings, ganz unten bei Developer Settings).')})();
+/* Gesundheitshinweis an passenden Stellen */
+(function(){const n=document.querySelector("#mSick .hint");if(n)n.insertAdjacentHTML("afterend",'<div class="hint medh">Bei Fieber, Brustschmerzen, Atemnot oder anhaltenden Beschwerden bitte ärztlich abklären lassen. Die App ersetzt keine ärztliche Beratung.</div>')})();
+askActCard=(f=>function(a){const h=f.apply(this,arguments);return h&&a&&a.k==="sick"?h.replace(/<\/div>$/,'<small class="medh">Bei Fieber oder starken Beschwerden bitte ärztlich abklären lassen.</small></div>'):h})(askActCard);
 
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
