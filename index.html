@@ -904,6 +904,8 @@ h3>.tag,.cx-h>.tag{display:table;margin:8px 0 2px;font-size:12px}
 /* v49 */
 .tsf>div{margin-top:8px}.tsf input{width:100%}
 #tsOut{margin-top:8px;color:var(--text,#fff)}
+/* v50 */
+.tslist{margin:8px 0 0;padding-left:18px;font-size:14px;line-height:1.6}.tslist span{color:var(--sub,#999)}
 </style>
 </head>
 <body>
@@ -1085,7 +1087,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="49";
+const VERSION="50";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -2983,7 +2985,7 @@ function openSettings(own){
   const u=userSports();$("cSports").querySelectorAll("button").forEach(b=>b.classList.toggle("on",u.includes(b.dataset.k)));$("cExtra").value=settings.extraSports||"";$("cPal").value=settings.pal||"nacht";
   const o=settings.own||{},ms=s=>s?Math.floor(s/60)+":"+String(Math.round(s%60)).padStart(2,"0"):"";
   $("oWeight").value=o.weight||"";$("oMax").value=o.max||"";$("oLthr").value=o.lthr||"";$("oFtp").value=o.ftp||"";$("oRun").value=ms(o.runPace);$("oCss").value=ms(o.css);
-  open("mSet");if(own===true)setTimeout(()=>$("cOwnH").scrollIntoView({behavior:"smooth",block:"start"}),200)}
+  open("mSet");if(own===true)setTimeout(()=>{const g=$("cOwnH")||$("sgOwn");if(g)g.scrollIntoView({behavior:"smooth",block:"start"})},200)}
 
 /* Einrichtung beim ersten Start */
 const LOGO='<svg viewBox="0 0 64 64" class="onlogo" aria-hidden="true"><rect width="64" height="64" rx="14" style="fill:var(--lg1)"/><path d="M8 40 q4 -5 8 0 t8 0" style="stroke:var(--lg2)" stroke-width="4" fill="none" stroke-linecap="round"/><circle cx="34" cy="34" r="8" stroke="#fff" stroke-width="4" fill="none"/><path d="M42 34 L52 24" style="stroke:var(--lg3)" stroke-width="4.5" stroke-linecap="round"/><circle cx="54" cy="22" r="3" style="fill:var(--lg3)"/></svg>';
@@ -4681,6 +4683,65 @@ function renderTestCard(D){let el=$("testCard");const a=testFound(D);if(!a){if(e
     settings.own=Object.assign({},settings.own||{},r);store.set("imSettings",settings);done();try{applyOwn(DATA);render()}catch(e){}}}
 render=(f=>function(){const r=f.apply(this,arguments);try{renderTestCard(DATA)}catch(e){}return r})(render);
 
+/* ---------- v50 ---------- */
+/* Schwellen aktuell halten: Wiederholungstest alle 8 Wochen, Testergebnis automatisch aus den Daten der Uhr, Werte in den Einstellungen jederzeit änderbar */
+applyOwn=(f=>function(D){if(D&&!D.zonesSrc)D.zonesSrc=JSON.parse(JSON.stringify(D.zones||{}));const r=f.apply(this,arguments);const o=settings.own||{};
+  if(D&&o.lthrBike){D.zones=D.zones||{};const z=D.zones.bike=D.zones.bike||{};z.lthr=o.lthrBike;z.hr=[.81,.89,.93,.99,1.02,1.06].map(x=>Math.round(o.lthrBike*x)).concat([z.max||o.max||Math.round(o.lthrBike*1.1)])}return r})(applyOwn);
+const testLog=()=>store.get("imTestLog",[]);
+dataStatus=(f=>function(D){const t=today(),L=testLog();return f.apply(this,arguments).split("\n").map(line=>{if(!/Schwellenwert vorhanden/.test(line))return line;
+  const k={Laufen:"run",Rad:"bike",Schwimmen:"swim"}[line.split(":")[0]],last=testsOf(D,k).concat(L.filter(x=>x.sport===k).map(x=>x.date)).filter(d=>d<=addDays(t,60)).sort().pop();
+  if(last&&last>=addDays(t,-56))return line.replace("Schwellenwert vorhanden, kein Test nötig",`Schwellenwert vorhanden, Test ${last>t?"geplant am":"zuletzt am"} ${last}, kein Test nötig`);
+  return line.replace("Schwellenwert vorhanden, kein Test nötig",`Schwellenwert vorhanden, aber ${last?"letzter Test am "+last:"kein Test in der App bekannt"} -> Wiederholungstest nötig (alle 8 Wochen, nicht im Tapering, nicht in den 4 Wochen nach einem Wettkampf)`)}).join("\n")})(dataStatus);
+planRules=(f=>function(){return f.apply(this,arguments).replace('bei denen in DATENLAGE "Einstufungstest nötig" steht','bei denen in DATENLAGE "Einstufungstest nötig" oder "Wiederholungstest nötig" steht')})(planRules);
+/* Auswertung aus den Daten der Uhr */
+function bestWin(t,v,W){const P=[0];for(let i=0;i<v.length;i++)P.push(P[i]+(v[i]||0));let j=0,best=null;
+  for(let i=0;i<t.length;i++){while(j<i&&t[i]-t[j]>W)j++;if(t[i]-t[j]>=W*0.95&&i>j){const a=(P[i+1]-P[j])/(i+1-j);if(!best||a>best.avg)best={avg:a,j,i}}}return best}
+function avgRange(t,v,from,j,i){let s=0,n=0;for(let k=j;k<=i;k++)if(t[k]>=from&&v[k]){s+=v[k];n++}return n?s/n:null}
+async function testAuto(a){const st=k=>S.find(x=>x.type===k),S=a.sport==="swim"?[]:await streams(a.id),r={};
+  if(a.sport==="run"){const t=(st("time")||{}).data,v=(st("velocity_smooth")||{}).data,h=(st("heartrate")||{}).data;if(!t||!v)return null;const b=bestWin(t,v,1800);if(!b)return null;
+    r.runPace=Math.round(1000/b.avg);if(h){const hr=avgRange(t,h,t[b.i]-1200,b.j,b.i);if(hr)r.lthr=Math.round(hr)}}
+  if(a.sport==="bike"){const t=(st("time")||{}).data,w=(st("watts")||{}).data,h=(st("heartrate")||{}).data;if(!t)return null;
+    const hasW=w&&w.some(x=>x>50);if(hasW){const b=bestWin(t,w,1200);if(b)r.ftp=Math.round(b.avg*0.95)}
+    else if(h){const b=bestWin(t,h,1800);if(b){const hr=avgRange(t,h,t[b.i]-1200,b.j,b.i);if(hr)r.lthrBike=Math.round(hr)}}}
+  if(a.sport==="swim"){const res=await fetch(`https://intervals.icu/api/v1/activity/${encodeURIComponent(a.id)}/intervals`,{headers:{"Authorization":"Basic "+btoa("API_KEY:"+settings.apiKey)}});if(!res.ok)return null;
+    const I=((await res.json()).icu_intervals||[]).filter(x=>x.distance&&x.moving_time),f=(lo,hi)=>I.filter(x=>x.distance>=lo&&x.distance<=hi).sort((p,q)=>p.moving_time/p.distance-q.moving_time/q.distance)[0];
+    const x4=f(380,420),x2=f(190,210);if(x4&&x2){const t4=x4.moving_time*400/x4.distance,t2=x2.moving_time*200/x2.distance;if(t4>t2)r.css=Math.round((t4-t2)/2)}}
+  const ok={lthr:[120,215],lthrBike:[110,210],runPace:[150,600],ftp:[80,550],css:[55,240]};Object.keys(r).forEach(k=>{if(!(r[k]>=ok[k][0]&&r[k]<=ok[k][1]))delete r[k]});
+  return Object.keys(r).length?r:null}
+function curVals(){const Z=(DATA&&DATA.zones)||{};return{lthr:(Z.run||{}).lthr,lthrBike:(Z.bike||{}).lthr,runPace:(Z.run||{}).tp?Math.round(1000/Z.run.tp):null,ftp:(Z.bike||{}).ftp,css:(Z.swim||{}).tp?Math.round(100/Z.swim.tp):null}}
+const TVN={lthr:"Schwellenpuls",lthrBike:"Schwellenpuls Rad",runPace:"Schwellentempo",ftp:"FTP",css:"Schwimm-Schwelle"},tvF=(k,v)=>k==="runPace"?fT(v)+" pro km":k==="css"?fT(v)+" pro 100 m":k==="ftp"?v+" W":v+" /min";
+var TESTBUSY=false;
+renderTestCard=(f=>function(D){const a=testFound(D),done=store.get("imTestAuto",{});
+  if(!a||!isLive()||!settings.apiKey)return f.apply(this,arguments);
+  const st=done[a.id];
+  if(st&&st.state==="saved"){let el=$("testCard");if(!el){el=document.createElement("div");el.className="card";el.id="testCard";const w=$("weekNew");if(!w)return;w.parentNode.insertBefore(el,w)}
+    el.innerHTML=`<div class="cx-k" style="color:var(--green,#00c27a)">Einstufungstest ausgewertet</div><div class="cx-h">${esc({run:"Laufen",bike:"Rad",swim:"Schwimmen"}[a.sport])} am ${fD(a.date)}</div><p class="hint" style="margin-top:4px">Die neuen Werte sind übernommen. Zonen und Plan richten sich ab jetzt danach.</p><ul class="tslist">${Object.entries(st.vals).map(([k,v])=>`<li><b>${TVN[k]}</b> ${tvF(k,v)}${st.old[k]?` <span>(vorher ${tvF(k,st.old[k])})</span>`:""}</li>`).join("")}</ul><div class="btnrow" style="margin-top:10px"><button class="btn" id="tsOk">Gut so</button><button class="btn" id="tsUndo">Rückgängig</button><button class="btn" id="tsEdit">Werte ändern</button></div>`;
+    $("tsOk").onclick=()=>{const s=store.get("imTestSeen",[]);s.push(a.id);store.set("imTestSeen",s.slice(-50));el.remove()};
+    $("tsUndo").onclick=()=>{settings.own=Object.assign({},settings.own||{},st.prevOwn);Object.keys(st.vals).forEach(k=>{if(st.prevOwn[k]==null)delete settings.own[k]});store.set("imSettings",settings);store.set("imTestLog",testLog().filter(x=>x.id!==a.id));const d=store.get("imTestAuto",{});d[a.id]={state:"undone"};store.set("imTestAuto",d);const s=store.get("imTestSeen",[]);s.push(a.id);store.set("imTestSeen",s.slice(-50));load()};
+    $("tsEdit").onclick=()=>{try{openSettings(true)}catch(e){}};return}
+  if(st&&st.state==="ask"){f.apply(this,arguments);const o=$("tsOut");if(o)o.textContent="Die Werte weichen stark von den bisherigen ab. Bitte prüfen und dann übernehmen.";
+    const map={lthr:"tsHr",runPace:"tsPace",ftp:"tsW",lthrBike:"tsHr"};Object.entries(st.vals).forEach(([k,v])=>{const e=$(map[k]);if(e&&!e.value)e.value=k==="runPace"?fT(v):k==="ftp"?Math.round(v/0.95):v});
+    if(st.vals.css){const e=$("tsT4");if(e)e.closest(".tsf").insertAdjacentHTML("beforeend",`<p class="hint">Aus deinen Bahnen berechnet: ${tvF("css",st.vals.css)}</p>`)}return}
+  if(st&&(st.state==="none"||st.state==="undone"))return f.apply(this,arguments);
+  if(TESTBUSY)return;TESTBUSY=true;
+  testAuto(a).then(vals=>{const d=store.get("imTestAuto",{});if(!vals){d[a.id]={state:"none"}}else{const cur=curVals(),big=Object.keys(vals).some(k=>cur[k]&&Math.abs(vals[k]-cur[k])/cur[k]>0.15);
+      if(big)d[a.id]={state:"ask",vals};else{const prevOwn={};Object.keys(vals).forEach(k=>prevOwn[k]=(settings.own||{})[k]??null);settings.own=Object.assign({},settings.own||{},vals);store.set("imSettings",settings);
+        const L=testLog();L.push({id:a.id,date:a.date,sport:a.sport,vals});store.set("imTestLog",L.slice(-30));d[a.id]={state:"saved",vals,old:cur,prevOwn}}}
+    store.set("imTestAuto",d);TESTBUSY=false;try{applyOwn(DATA);render()}catch(e){}}).catch(()=>{const d=store.get("imTestAuto",{});d[a.id]={state:"none"};store.set("imTestAuto",d);TESTBUSY=false;try{render()}catch(e){}})})(renderTestCard);
+/* manuell übernommene Testwerte ebenfalls im Protokoll vermerken */
+document.addEventListener("click",e=>{if(e.target&&e.target.id==="tsSave"){const a=testFound(DATA);if(a){const L=testLog();L.push({id:a.id,date:a.date,sport:a.sport,manual:true});store.set("imTestLog",L.slice(-30))}}},true);
+/* Einstellungen: aktuelle Werte aus der Datenquelle als Platzhalter, letzter Test */
+(function(){const m=$("mSet");if(!m)return;const fill=()=>{if(!m.classList.contains("open"))return;const Z=(DATA&&DATA.zonesSrc)||{},ph=(id,v,t)=>{const e=$(id);if(e)e.placeholder=v?"Quelle: "+(t?t(v):v):(id==="oRun"?"z. B. 4:10":id==="oCss"?"z. B. 1:45":"")};
+  ph("oLthr",(Z.run||{}).lthr);ph("oLthrB",(Z.bike||{}).lthr);ph("oFtp",(Z.bike||{}).ftp);ph("oMax",(Z.run||{}).max);ph("oRun",(Z.run||{}).tp?Math.round(1000/Z.run.tp):null,fT);ph("oCss",(Z.swim||{}).tp?Math.round(100/Z.swim.tp):null,fT);
+  const L=testLog().slice(-1)[0],h=$("sgOwn");let n=$("cOwnLast");if(h&&!n){n=document.createElement("div");n.className="hint";n.id="cOwnLast";const hd=h.querySelector(".sgh");(hd||h.firstChild).after(n)}
+  if(n)n.textContent=L?`Zuletzt per Test geändert: ${{run:"Laufen",bike:"Rad",swim:"Schwimmen"}[L.sport]} am ${fD(L.date)}`:"";};
+  new MutationObserver(fill).observe(m,{attributes:true,attributeFilter:["class","style"]})})();
+
+/* Schwellenpuls Rad als eigenes Feld */
+(function(){const l=$("oLthr");if(!l||$("oLthrB"))return;const row=l.closest(".row");row.insertAdjacentHTML("afterend",`<div class="row"><div><label class="f" for="oLthrB">Schwellenpuls Rad</label><input type="number" id="oLthrB" inputmode="numeric"></div><div></div></div>`);
+  $("cSave").addEventListener("click",()=>{const x=parseFloat($("oLthrB").value);settings.own=settings.own||{};if(isFinite(x)&&x>0)settings.own.lthrBike=x;else delete settings.own.lthrBike;store.set("imSettings",settings)})})();
+openSettings=(f=>function(own){const r=f.apply(this,arguments);const e=$("oLthrB");if(e)e.value=(settings.own||{}).lthrBike||"";return r})(openSettings);
+$("btnSettings").onclick=()=>openSettings();
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
 $("btnRace").onclick=()=>openRace(null);
