@@ -901,6 +901,9 @@ h3>.tag,.cx-h>.tag{display:table;margin:8px 0 2px;font-size:12px}
 /* v48 */
 .pgate{margin:8px 0 10px;padding:9px 12px;border-radius:12px;background:var(--card2);font-size:13px;line-height:1.4}
 .pgate b{display:block;color:var(--yellow,#ffcc33)}.pgate.ok b{color:var(--green,#00c27a)}.pgate span{display:block;color:var(--sub,#999);margin-top:3px}
+/* v49 */
+.tsf>div{margin-top:8px}.tsf input{width:100%}
+#tsOut{margin-top:8px;color:var(--text,#fff)}
 </style>
 </head>
 <body>
@@ -1082,7 +1085,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="48";
+const VERSION="49";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -4641,6 +4644,42 @@ Antworte nur mit JSON in einem json-Codeblock: {"workouts":[{"date","sport","nam
   return planImportRaw(cur)};
 renderPlanCheck=(f=>function(){const r=f.apply(this,arguments);try{const c=store.get("imPlanCheck",null),pn=$("planNote");if(c&&pn&&!$("planGate")){
   const ok=!c.left.length;pn.insertAdjacentHTML("afterend",`<div class="pgate ${ok?"ok":""}" id="planGate"><b>${ok?(c.found.length?"Regelprüfung: "+c.found.length+" Punkte korrigiert":"Regelprüfung: alle Regeln eingehalten"):"Regelprüfung: nicht alles einhaltbar"}</b>${c.left.length?`<span>${c.left.slice(0,4).map(esc).join("<br>")}</span>`:""}</div>`)}}catch(e){}return r})(renderPlanCheck);
+
+/* ---------- v49 ---------- */
+/* Einstufungstests: nur bei Bedarf, nicht wiederholt, Einsteiger erst nach Gewöhnung, Ergebnis übernehmen. Quellen: claude/quellen-einstufung.md */
+const TRX=/\btest\b|einstufung/i;
+function testsOf(D,k){const fromA=D.activities.filter(a=>a.sport===k&&TRX.test(a.name||"")).map(a=>a.date),fromP=(D.planned||[]).filter(p=>spKey(p.name+" "+(SPAPI[p.sport]||p.sport||""))===k&&TRX.test(p.name||"")).map(p=>p.date);return fromA.concat(fromP).sort()}
+dataStatus=function(D){const t=today(),us=userSports().filter(k=>k!=="kraft"),n={run:"Laufen",bike:"Rad",swim:"Schwimmen"},z=(D.zones||{}),g=store.get("imGoal",{}),ov=noteBy("Coach Plan Übersicht"),started=ov?diffDays(ov.date,t):0;
+  return us.map(k=>{const c=D.activities.filter(a=>a.sport===k&&a.date>=addDays(t,-56)).length,zz=z[k]||{},thr=k==="bike"?!!(zz.ftp||zz.lthr):k==="run"?!!(zz.tp||zz.lthr||D.pb90):!!zz.tp;
+    const last=testsOf(D,k).filter(d=>d>=addDays(t,-42)).pop(),neu=g.gExp==="neu"||c<6;
+    let st;if(thr)st="Schwellenwert vorhanden, kein Test nötig";else if(last)st=`Test ${last>t?"schon geplant am "+last:"zuletzt am "+last}, keinen weiteren Test planen`;else if(neu&&started<28)st="Einsteiger: in den ersten 4 Wochen keinen harten Test, Intensität nach Gefühl und Sprechtest steuern";else st="Schwellenwert fehlt -> Einstufungstest nötig";
+    return`${n[k]}: ${c} Einheiten in den letzten 8 Wochen. ${st}`}).join("\n")};
+planRules=(f=>function(){let s=f.apply(this,arguments);
+  s=s.replace(/\n- EINSTUFUNG:[^\n]*/,`\n- EINSTUFUNG: Einen Test nur für Sportarten planen, bei denen in DATENLAGE "Einstufungstest nötig" steht, höchstens einen pro Sportart in diesen 14 Tagen, nicht nach harten Tagen, nicht im Tapering und nicht in den ersten 4 Wochen nach einem Wettkampf. Titel beginnt mit "Test". Ablauf: Laufen nach 15 Minuten Einlaufen 30 Minuten allein so schnell wie gleichmäßig möglich, nach 10 Minuten Runde drücken (Schwellenpuls ist der Durchschnittspuls der letzten 20 Minuten). Rad mit Wattmessung nach Einfahren mit 5 Minuten hart und 10 Minuten locker 20 Minuten gleichmäßig so hart wie möglich (FTP ist 95 Prozent der Durchschnittsleistung), ohne Wattmessung wie beim Laufen 30 Minuten. Schwimmen nach Einschwimmen 400 m und nach voller Erholung 200 m jeweils so schnell wie möglich. Danach locker auslaufen, ausfahren oder ausschwimmen.`);
+  return s})(planRules);
+function lthrGuess(a){let best=null;(a.is||[]).forEach(x=>{const m=String(x).match(/^1x\s+(?:(\d+)h)?(\d+)m(?:(\d+)s)?\s+(\d+)bpm/);if(m){const sec=(+m[1]||0)*3600+ +m[2]*60+(+m[3]||0);if(sec>=15*60&&sec<=40*60&&(!best||sec>best.sec))best={sec,bpm:+m[4]}}});return best?best.bpm:null}
+function testFound(D){const t=today(),seen=store.get("imTestSeen",[]);if(!D||!D.activities)return null;
+  return D.activities.filter(a=>["run","bike","swim"].includes(a.sport)&&a.date>=addDays(t,-7)&&!seen.includes(a.id)&&(TRX.test(a.name||"")||(D.planned||[]).some(p=>p.date===a.date&&TRX.test(p.name||"")&&spKey(p.name+" "+(SPAPI[p.sport]||p.sport||""))===a.sport))).sort((a,b)=>b.date.localeCompare(a.date))[0]||null}
+function renderTestCard(D){let el=$("testCard");const a=testFound(D);if(!a){if(el)el.remove();return}
+  if(!el){el=document.createElement("div");el.className="card";el.id="testCard";const w=$("weekNew");if(!w)return;w.parentNode.insertBefore(el,w)}
+  const o=settings.own||{},n={run:"Laufen",bike:"Rad",swim:"Schwimmen"}[a.sport],lg=lthrGuess(a),hasW=a.sport==="bike"&&(a.np||a.ftp);
+  const inp=(id,l,ph,v)=>`<div><label class="f" for="${id}">${l}</label><input id="${id}" inputmode="decimal" placeholder="${ph}" value="${v??""}" autocomplete="off"></div>`;
+  const fields=a.sport==="run"?inp("tsHr","Durchschnittspuls der letzten 20 Minuten","z. B. 172",lg)+inp("tsPace","Tempo über die 30 Minuten (pro km)","z. B. 4:50",""):
+    a.sport==="bike"?inp("tsW","Durchschnittsleistung der 20 Minuten (Watt)","z. B. 250","")+inp("tsHr","oder ohne Wattmessung: Puls der letzten 20 Minuten","z. B. 165",lg):
+    inp("tsT4","Zeit für 400 m","z. B. 7:20","")+inp("tsT2","Zeit für 200 m","z. B. 3:30","");
+  el.innerHTML=`<div class="cx-k" style="color:var(--acc)">Einstufungstest erkannt</div><div class="cx-h">${esc(n)} am ${fD(a.date)}</div><p class="hint" style="margin-top:4px">Trag die Werte von deiner Uhr ein. Die App berechnet daraus deine Schwelle und passt Zonen und Plan an.${lg?" Der Puls ist aus deinen Runden geschätzt, bitte prüfen.":""}</p><div class="tsf">${fields}</div><div id="tsOut" class="hint"></div><div class="btnrow" style="margin-top:10px"><button class="btn blue" id="tsSave">Übernehmen</button><button class="btn" id="tsNo">War kein Test</button></div>`;
+  const calc=()=>{const v=id=>{const e=$(id);return e?e.value.trim():""};const r={};
+    if(a.sport==="run"){if(+v("tsHr"))r.lthr=Math.round(+v("tsHr"));if(msP(v("tsPace")))r.runPace=msP(v("tsPace"))}
+    if(a.sport==="bike"){if(+v("tsW"))r.ftp=Math.round(+v("tsW")*0.95);if(+v("tsHr")&&!o.lthr)r.lthr=Math.round(+v("tsHr"))}
+    if(a.sport==="swim"){const t4=msP(v("tsT4")),t2=msP(v("tsT2"));if(t4&&t2&&t4>t2)r.css=Math.round((t4-t2)/2)}
+    const L=[];if(r.lthr)L.push(`Schwellenpuls ${r.lthr}`);if(r.runPace)L.push(`Schwellentempo ${fT(r.runPace)} pro km`);if(r.ftp)L.push(`FTP ${r.ftp} W`);if(r.css)L.push(`Schwimm-Schwelle ${fT(r.css)} pro 100 m`);
+    $("tsOut").textContent=L.length?"Ergebnis: "+L.join(", "):(a.sport==="swim"&&msP(v("tsT4"))&&msP(v("tsT2"))?"Die 400 m müssen länger dauern als die 200 m.":"");return r};
+  el.querySelectorAll("input").forEach(i=>i.addEventListener("input",calc));calc();
+  const done=()=>{const s=store.get("imTestSeen",[]);s.push(a.id);store.set("imTestSeen",s.slice(-50));el.remove()};
+  $("tsNo").onclick=done;
+  $("tsSave").onclick=async()=>{const r=calc();if(!Object.keys(r).length){$("tsOut").textContent="Bitte mindestens einen Wert eintragen.";return}
+    settings.own=Object.assign({},settings.own||{},r);store.set("imSettings",settings);done();try{applyOwn(DATA);render()}catch(e){}}}
+render=(f=>function(){const r=f.apply(this,arguments);try{renderTestCard(DATA)}catch(e){}return r})(render);
 
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
