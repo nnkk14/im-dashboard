@@ -879,6 +879,8 @@ h3>.tag,.cx-h>.tag{display:table;margin:8px 0 2px;font-size:12px}
 .sickbar .sbdot.unterhalb{background:var(--red)}.sickbar .sbdot.verletzung{background:var(--hrv)}.sickbar .sbb{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.sickbar .hint{margin:10px 0 0}
 .qact{margin-top:12px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}.qact span{flex:1 1 100%}.qact.ok{color:var(--muted)}
 .toast37{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 90px);transform:translateX(-50%);background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 14px;z-index:9999;opacity:0;pointer-events:none;transition:opacity .2s;max-width:88vw;font-size:14px}.toast37.on{opacity:1}
+/* v38 */
+.bt2 .bprev{display:block;font-style:normal;font-size:12px;color:var(--muted);margin-top:2px}.bt2 .bprev.up{color:var(--green)}.bt2 .bprev.down{color:var(--yellow)}
 </style>
 </head>
 <body>
@@ -1060,7 +1062,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="37";
+const VERSION="38";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -4327,6 +4329,20 @@ document.addEventListener("click",async e=>{const b=e.target.closest("[data-qact
   try{if(b.dataset.qact==="sick"){await sickAdd(a.type,a.start,today(),a.note);fin("Eingetragen. Du findest es unter Erholung und oben auf Heute.")}
     else{const s=sickNow(DATA);if(s){const y=addDays(today(),-1);await sickEnd(s,y<s.start?s.start:y);store.set("imSickAsk",String(s.id))}fin("Ausgetragen. Schön, dass es dir besser geht.")}
     await load()}catch(er){b.disabled=false;$("qErr").textContent=er.message}});
+
+/* ---------- v38 ---------- */
+/* Geplante Krafteinheiten als „Kraft“ statt „Sonstiges“ */
+plInfo=(f=>function(p){f.apply(this,arguments);try{if(!p||p.sport!=="other"||!(/weight|strength/i.test(p.type||"")||KRX.test(p.name||"")))return;
+  const k=spInfo("kraft"),w=document.querySelector("#mInfo .wck"),h=document.querySelector("#mInfo .wch");if(w)w.textContent=w.textContent.replace("Sonstiges",k.n||"Kraft");if(h&&k.c)h.style.setProperty("--wc",k.c)}catch(e){}})(plInfo);
+/* Prognose mit Verlauf: Vergleich mit den 90 Tagen davor */
+loadPB=(f=>async function(){await f.apply(this,arguments);if(!DATA||!isLive()||!settings.apiKey||!userSports().includes("run"))return;
+  const c=store.get("imPBPrev",null);if(c&&c.day===today()){DATA.pbPrev=c.v}else{try{const t=today(),r=await api(`/pace-curves.json?type=Run&curves=r.${addDays(t,-180)}.${addDays(t,-91)}`);DATA.pbPrev=r.list&&r.list[0]&&r.list[0].distance.length?r.list[0]:null;store.set("imPBPrev",{day:t,v:DATA.pbPrev})}catch(e){return}}
+  try{renderBench(DATA)}catch(e){}})(loadPB);
+function prevEst(D){if(!D||!D.pbPrev||!D.pb90)return[];return runEst(Object.assign({},D,{pb90:D.pbPrev})).filter(x=>x.fromThr)}
+renderBench=(f=>function(D){f.apply(this,arguments);try{const nob=$("bench")&&$("bench").querySelector(".nob");if(!nob||!D.pb90||!D.pbPrev)return;const L=runEst(D),P=prevEst(D);
+  nob.querySelectorAll(".bt2").forEach(x=>{const e=L.find(z=>z.k===x.dataset.b),o=P.find(z=>z.k===x.dataset.b);if(!e||!o||!e.fromThr)return;const d=Math.round(o.v-e.v);
+    const s=x.querySelector(".bprev")||x.appendChild(document.createElement("em"));s.className="bprev "+(d>=3?"up":d<=-3?"down":"");
+    s.textContent=`vor 3 Monaten ${fT(o.v)}`+(Math.abs(d)<3?" · gleich":` · ${Math.abs(d)<60?Math.abs(d)+" s":fT(Math.abs(d))} ${d>0?"schneller":"langsamer"}`)})}catch(e){}})(renderBench);
 
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
