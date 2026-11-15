@@ -838,6 +838,18 @@ h3>.tag,.cx-h>.tag{display:table;margin:8px 0 2px;font-size:12px}
 .donecard [data-showrec]{display:block;margin-top:10px;font-size:13px}
 [data-pv].on{background:var(--blue,#2f7de1)!important;color:#fff!important;border-color:transparent!important}
 .fbpick{display:block;text-align:center;margin-top:12px;cursor:pointer}
+/* v29 */
+#pbCard .pbh{font-size:14px;margin:16px 0 8px;display:flex;align-items:center;gap:8px}
+#pbCard .pbh:before{content:"";width:10px;height:10px;border-radius:50%;background:var(--pc)}
+#pbCard .pbl{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
+.pbr{background:var(--card2);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
+.pbr span{font-size:13px;color:var(--muted)}.pbr b{font-size:20px}.pbr em{font-style:normal;font-size:12px;color:var(--muted)}
+.pbnew{font-style:normal;background:var(--green);color:#fff;border-radius:6px;padding:0 5px;font-size:11px;margin-left:4px}
+.bt[data-b2]{cursor:pointer}.bt[data-b2] .bk{display:flex}.bt[data-b2] .bk:after{content:"›";margin-left:auto;font-size:17px;line-height:1;color:var(--muted)}
+.dnpr{display:flex;gap:10px;align-items:flex-start;background:rgba(224,168,0,.14);border-radius:12px;padding:10px 12px;margin:10px 0}
+.dnpr i{flex:none;width:30px;height:30px;border-radius:50%;background:#e0a800;display:flex;align-items:center;justify-content:center}
+.dnpr i svg{width:20px;height:20px;fill:none;stroke:#fff;stroke-width:1.8}
+.dnpr span{display:flex;flex-direction:column;font-size:13px}.dnpr span b{font-size:15px}
 </style>
 </head>
 <body>
@@ -1019,7 +1031,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="28";
+const VERSION="29";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -1085,9 +1097,9 @@ async function loadLive(){
   const activities=(acts||[]).filter(a=>a&&a.start_date_local).map(a=>({
     date:a.start_date_local.slice(0,10),tm:a.start_date_local.slice(11,13),sport:sportOf(a.type),name:a.name||a.type||"",
     secs:a.moving_time||a.elapsed_time||0,km:(a.distance||0)/1000,load:a.icu_training_load||0,hr:a.average_heartrate||null,
-    id:a.id,type:a.type,np:a.icu_weighted_avg_watts||null,ftp:a.icu_ftp||null,elev:a.total_elevation_gain||0,dec:a.decoupling!=null?a.decoupling:null,if:a.icu_intensity!=null?a.icu_intensity/100:null,maxhr:a.max_heartrate||null,hz:a.icu_hr_zone_times||null,is:a.interval_summary||null,trainer:!!a.trainer}));
+    id:a.id,type:a.type,np:a.icu_weighted_avg_watts||null,ftp:a.icu_ftp||null,elev:a.total_elevation_gain||0,dec:a.decoupling!=null?a.decoupling:null,if:a.icu_intensity!=null?a.icu_intensity/100:null,maxhr:a.max_heartrate||null,hz:a.icu_hr_zone_times||null,is:a.interval_summary||null,trainer:!!a.trainer,cad:a.average_cadence||null}));
   const wellness=(well||[]).map(w=>({date:w.id,ctl:w.ctl,atl:w.atl,hrv:w.hrv||null,rhr:w.restingHR||null,
-    sleepH:w.sleepSecs?w.sleepSecs/3600:null,sleepS:w.sleepScore||null,sleepQ:w.sleepQuality||null,steps:w.steps||null,weight:w.weight||null}));
+    sleepH:w.sleepSecs?w.sleepSecs/3600:null,sleepS:w.sleepScore||null,sleepQ:w.sleepQuality||null,steps:w.steps||null,weight:w.weight||null,vo2:w.vo2max||null}));
   const sick=[],planned=[],races=[],notes=[];
   (evs||[]).forEach(e=>{
     if(e.category==="NOTE"&&/^Coach/.test(e.name||"")){notes.push({id:e.id,date:String(e.start_date_local).slice(0,10),name:e.name,text:e.description||""});return}
@@ -4016,6 +4028,64 @@ document.addEventListener("click",async e=>{const b=e.target.closest("[data-pv]"
   if(a==="trial"){PVON.trial=!PVON.trial;PVTIER=PVON.trial?"free":null;PVLOCK=PVON.trial;pvMark();close("mSet");await pvReload();setTab(PVON.trial?"training":"heute");return}
   if(a==="nw"){PVON.nw=!PVON.nw;pvMark();close("mSet");if(PVON.nw){const sv=settings;settings=Object.assign({},sv,{apiKey:"",noWatch:true});try{renderV14(Object.assign({},DATA,{hrvStat:{},rhrStat:{},sleepNow:null}));hideNW(DATA)}finally{settings=sv}setTab("erholung")}else{await pvReload();setTab("heute")}return}
   if(a==="off"){PVON.off=!PVON.off;pvMark();close("mSet");if(PVON.off){$("banner").innerHTML='<div class="banner off"><b>Keine Internetverbindung.</b> Du siehst den zuletzt geladenen Stand. Sobald du wieder online bist, lädt die App neu.</div>'}else{$("banner").innerHTML="";if(typeof offlineBanner==="function")offlineBanner()}setTab("heute");return}},true);
+
+/* ---------- v29 ---------- */
+/* Persönliche Bestzeiten aus den Bestwertkurven von intervals.icu */
+const PBD={run:{t:"Run",lab:"Laufen",c:"var(--run)",pts:[[1000,"1 km"],[1609.34,"1 Meile"],[5000,"5 km"],[10000,"10 km"],[21097.5,"Halbmarathon"],[42195,"Marathon"]]},
+ swim:{t:"Swim",lab:"Schwimmen",c:"var(--swim)",pts:[[100,"100 m"],[400,"400 m"],[1000,"1000 m"],[1500,"1500 m"]]},
+ bike:{t:"Ride",lab:"Rad (Leistung)",c:"var(--bike)",pw:true,pts:[[5,"5 s"],[60,"1 min"],[300,"5 min"],[1200,"20 min"],[3600,"1 h"]]}};
+function pbPick(c,acts,w,pw){if(!c)return null;const X=pw?c.secs:c.distance;if(!X)return null;const i=X.findIndex(d=>Math.abs(d-w)<=Math.max(.5,w*.002));if(i<0||c.values[i]==null)return null;
+  const aid=c.activity_id?c.activity_id[i]:null,a=aid&&acts?acts[aid]:null;return{v:c.values[i],aid,date:a?String(a.start_date_local).slice(0,10):null,name:a?a.name:""}}
+async function loadPB(){if(!DATA||!isLive()||!settings.apiKey)return;const y=addDays(today(),-1),us=userSports(),PB={};
+  await Promise.all(Object.entries(PBD).filter(([k])=>us.includes(k)).map(async([k,d])=>{try{const r=await api(`/${d.pw?"power":"pace"}-curves.json?type=${d.t}&curves=all,r.2000-01-01.${y}`);
+    const L=r.list||[],A=r.activities||{};PB[k]=d.pts.map(([w,lab])=>{const n=pbPick(L[0],A,w,d.pw),p=pbPick(L[1],A,w,d.pw);return n?Object.assign(n,{lab,prev:p?p.v:null}):null}).filter(Boolean)}catch(e){}}));
+  DATA.pb=PB;store.set("imPB",{t:Date.now(),pb:PB});renderPB(DATA);renderDone(DATA)}
+function demoPB(){const t=today();return{run:[["1 km",235],["1 Meile",385],["5 km",1300],["10 km",2710],["Halbmarathon",6090]].map(([lab,v],i)=>({lab,v,prev:v+(i?0:4),date:i?addDays(t,-40-i*9):t,aid:null})),
+  bike:[["5 s",980],["1 min",520],["5 min",330],["20 min",285],["1 h",262]].map(([lab,v],i)=>({lab,v,prev:v,date:addDays(t,-30-i*7),aid:null})),
+  swim:[["100 m",98],["400 m",425],["1000 m",1120]].map(([lab,v],i)=>({lab,v,prev:v,date:addDays(t,-50-i*5),aid:null}))}}
+function pbData(D){if(D.pb)return D.pb;if(!isLive())return D.pb=demoPB();const c=store.get("imPB",null);return c&&c.pb?c.pb:null}
+function pbFmt(k,v){return PBD[k].pw?Math.round(v)+" W":fT(v)}
+function prsToday(D){const P=pbData(D),t=today(),O=[];if(!P)return O;Object.entries(P).forEach(([k,L])=>L.forEach(x=>{if(x.date!==t)return;const pw=PBD[k].pw,better=x.prev==null||(pw?x.v>x.prev:x.v<x.prev);if(!better)return;
+  O.push({k,lab:x.lab,v:x.v,d:x.prev==null?null:Math.abs(x.v-x.prev)})}));return O}
+const MEDI='<svg viewBox="0 0 24 24"><circle cx="12" cy="14" r="6"/><path d="M8.5 3l3.5 5.5L15.5 3M12 11.5l.9 1.9 2 .3-1.5 1.4.4 2-1.8-1-1.8 1 .4-2-1.5-1.4 2-.3z"/></svg>';
+function prLine(p){const pw=PBD[p.k].pw;return`<div class="dnpr"><i>${MEDI}</i><span><b>Neue Bestzeit${pw?"":""} über ${p.lab}: ${pbFmt(p.k,p.v)}</b>${p.d==null?"Deine erste Bestmarke auf dieser Strecke.":pw?`${Math.round(p.d)} Watt mehr als bisher.`:`${fT(p.d)} schneller als bisher.`}</span></div>`}
+function renderPB(D){const P=pbData(D),us=userSports();let c=$("pbCard");const b=$("bench");if(!b)return;
+  if(!c){c=document.createElement("div");c.className="card wide";c.id="pbCard";(b.closest(".card")||b).after(c)}
+  const S=P?Object.keys(PBD).filter(k=>us.includes(k)&&P[k]&&P[k].length):[];
+  if(!S.length){c.style.display="none";return}c.style.display="";
+  c.innerHTML=`<h2>Persönliche Bestzeiten</h2><div class="sub">Deine schnellsten Abschnitte aus allen Einheiten, nicht nur aus ganzen Läufen</div><div id="pbBody">${S.map(k=>`<h3 class="pbh" style="--pc:${PBD[k].c}">${PBD[k].lab}</h3><div class="pbl">${P[k].map(x=>`<div class="pbr${x.aid?" tap":""}"${x.aid?` data-pba="${esc(x.aid)}"`:""}><span>${x.lab}</span><b>${pbFmt(k,x.v)}</b><em>${x.date?fDY(x.date):""}${x.date===today()?' <i class="pbnew">neu</i>':""}</em></div>`).join("")}</div>`).join("")}</div>`;
+  lockCard($("pbBody"),"plus","Bestzeiten ab Plus","Deine Bestzeiten über 1 km, 5 km, 10 km und mehr, beim Rad und im Wasser.",'<div class="pbl">'+[["1 km","3:58"],["5 km","21:40"],["10 km","45:10"]].map(([a,b])=>`<div class="pbr"><span>${a}</span><b>${b}</b><em>im Mai</em></div>`).join("")+'</div>')}
+document.addEventListener("click",e=>{const r=e.target.closest("[data-pba]");if(!r||!DATA)return;const a=DATA.activities.find(x=>String(x.id)===r.dataset.pba);if(a)actInfo(a);else toast("Diese Einheit liegt außerhalb der geladenen 12 Monate")});
+
+/* VO2max und Kadenz */
+function mSeries(rows,f){const t=today(),O=[];for(let m=11;m>=0;m--){const a=addDays(t,-(m+1)*30),b=addDays(t,-m*30),v=rows.filter(r=>r.date>a&&r.date<=b).map(f).filter(x=>x!=null&&x>0);O.push(v.length?v.reduce((s,x)=>s+x,0)/v.length:null)}return O}
+function extraTiles(D){const us=userSports(),T=[],t=today(),avg=a=>a.length?a.reduce((s,x)=>s+x,0)/a.length:null;
+  const dl=(n,o,u)=>n==null||o==null?'<span class="bd" style="color:var(--muted)">noch kein Vergleich</span>':`<span class="bd" style="color:${Math.abs(n-o)<.5?"var(--muted)":n>o?"var(--green)":"var(--muted)"}">${Math.abs(n-o)<.5?"unverändert":(n>o?"+":"−")+Math.round(Math.abs(n-o))+u} seit 3 Monaten</span>`;
+  const tile=(k,lab,v,sub,delta,s,c)=>`<div class="bt bx" data-b2="${k}"><div class="bk">${lab}</div><div class="bv">${v}</div><div class="bs">${sub}</div>${delta}${s.filter(x=>x!=null).length>1?`<div class="bsp">${spark(s,c)}</div><div class="bcap">Verlauf 12 Monate</div>`:""}</div>`;
+  const W=(D.wellness||[]).filter(w=>w.vo2),lv=W.length?W[W.length-1]:null;
+  if(lv){const old=W.filter(w=>w.date<=addDays(t,-90)).slice(-1)[0];T.push(tile("vo2","VO2max",Math.round(lv.vo2),"ml pro kg und Minute, geschätzt von deiner Uhr",dl(lv.vo2,old?old.vo2:null,""),mSeries(W,w=>w.vo2),"var(--hrv)"))}
+  [["run","cadr","Kadenz Laufen",2,"Schritte pro Minute, Schnitt der letzten 4 Wochen","var(--run)"],["bike","cadb","Kadenz Rad",1,"Umdrehungen pro Minute, Schnitt der letzten 4 Wochen","var(--bike)"]].forEach(([s,k,lab,f,sub,c])=>{if(!us.includes(s))return;
+    const R=D.activities.filter(a=>a.sport===s&&a.cad>0),now=avg(R.filter(a=>a.date>addDays(t,-28)).map(a=>a.cad*f)),old=avg(R.filter(a=>a.date>addDays(t,-118)&&a.date<=addDays(t,-90)).map(a=>a.cad*f));
+    if(now)T.push(tile(k,lab,Math.round(now),sub,dl(now,old," "),mSeries(R,a=>a.cad*f),c))});
+  return T.join("")}
+const EXB={vo2:["VO2max","Die VO2max schätzt, wie viel Sauerstoff dein Körper bei voller Belastung höchstens verwerten kann, in Millilitern pro Kilogramm Körpergewicht und Minute. Je höher, desto besser ist deine Ausdauer-Grundlage. Deine Uhr schätzt den Wert aus Puls und Tempo oder Leistung. Er schwankt etwas und ist kein Labormesswert. Wichtiger als die genaue Zahl ist, wie er sich über Monate entwickelt."],
+ cadr:["Kadenz Laufen","Wie viele Schritte du pro Minute machst. Viele Läufer liegen etwa zwischen 160 und 180. Eine etwas höhere Kadenz bei gleichem Tempo heißt kürzere Schritte und meist weniger Stoß pro Schritt. Einen Idealwert für alle gibt es nicht, große Sprünge solltest du langsam angehen."],
+ cadb:["Kadenz Rad","Wie oft sich deine Kurbel pro Minute dreht. Häufig liegt sie in der Ebene etwa zwischen 80 und 95, am Berg und mit viel Kraft darunter. Eine höhere Kadenz schont eher die Muskeln, eine niedrigere eher Herz und Atmung."]};
+document.addEventListener("click",e=>{const t=e.target.closest("[data-b2]");if(!t)return;const x=EXB[t.dataset.b2];if(x)info(`<h3>${x[0]}</h3><div class="ibig">${esc(t.querySelector(".bv").textContent)}</div><p>${x[1]}</p>`)});
+renderBench=(f=>function(D){f.apply(this,arguments);const el=$("bench");if(!el)return;const h=extraTiles(D);if(!h)return;const em=el.querySelector(".empty");if(em)em.remove();el.insertAdjacentHTML("beforeend",h)})(renderBench);
+
+/* Bestzeit-Meldung in der Erledigt-Karte */
+var PVPR=false;
+afterDone=(f=>function(D){f.apply(this,arguments);const c=$("doneCard");if(!c||c.style.display==="none"||c.classList.contains("donerest"))return;
+  const P=PVPR?[{k:"run",lab:"5 km",v:1162,d:31}]:prsToday(D);if(!P.length)return;const l=c.querySelector(".dnl");(l||c).insertAdjacentHTML(l?"beforebegin":"beforeend",P.map(prLine).join(""))})(afterDone);
+PV.splice(PV.findIndex(x=>x[0]==="next")+1,0,["pr","Neue Bestzeit"]);
+document.addEventListener("click",e=>{const b=e.target.closest('[data-pv="pr"]');if(!b||!DATA)return;e.stopPropagation();e.preventDefault();PVPR=!PVPR;b.classList.toggle("on",PVPR);close("mSet");setTab("heute");if(!PVON.done&&PVPR)pvDoneOn("plan");else if(PVON.done)pvDoneOn(PVON.done);else renderDone(DATA);pvMark();window.scrollTo({top:0})},true);
+pvMark=(f=>function(){f.apply(this,arguments);const b=document.querySelector('[data-pv="pr"]');if(b)b.classList.toggle("on",PVPR)})(pvMark);
+
+renderV14=(f=>function(D){f.apply(this,arguments);try{renderPB(D)}catch(e){console.error(e)}})(renderV14);
+load=(f=>async function(){const r=await f.apply(this,arguments);loadPB().catch(()=>{});return r})(load);
+setTimeout(()=>{if(DATA&&!DATA.pb)loadPB().catch(()=>{})},5000);
+document.addEventListener("click",e=>{if(!e.target.closest('[data-pv="end"]'))return;close("mSet");if(PVPR){PVPR=false;setTimeout(()=>{if(DATA)renderDone(DATA);pvMark()},50)}},true);
 
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
