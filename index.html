@@ -1077,7 +1077,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="43";
+const VERSION="44";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -4510,6 +4510,35 @@ aiPlan=(f=>async function(){PLANCAP=true;try{return await f.apply(this,arguments
 claude=(f=>async function(){const r=await f.apply(this,arguments);if(PLANCAP&&typeof r==="string"){try{const o=jsonFrom(r);if(o&&o.note)store.set("imPlanNote",{date:today(),note:String(o.note).slice(0,500)})}catch(e){}}return r})(claude);
 renderPlanCheck=(f=>function(){const r=f.apply(this,arguments);try{const n=store.get("imPlanNote",null),h=$("coachHint");if(n&&h&&!$("planNote")&&DATA&&DATA.planned.some(p=>p.coach)){const m=String(n.note).match(/^Zielprüfung:\s*(realistisch|ehrgeizig|unrealistisch)/i),k=m?m[1].toLowerCase():"";
   h.insertAdjacentHTML("beforebegin",`<div class="plannote ${k}" id="planNote"><b>${k?"Zielprüfung: "+k:"Hinweis der KI zum Plan"}</b><span>${esc(String(n.note).replace(/^Zielprüfung:\s*(realistisch|ehrgeizig|unrealistisch)[.:,]?\s*/i,""))}</span><small>Stand ${fD(n.date)}</small></div>`)}}catch(e){}return r})(renderPlanCheck);
+
+/* ---------- v44 ---------- */
+/* Richtwerte für den Wochenumfang je Ziel (Spitzenwochen). Quellen: Projekt-Datei claude/quellen-trainingsumfang.md */
+const VOL={
+ "5 km":"Einsteiger 16 bis 40 km Laufen pro Woche (etwa 1:40 bis 4:10 h)",
+ "10 km":"Einsteiger etwa 17 km, Fortgeschritten etwa 31 km Laufen pro Woche, bei ambitionierten Zielen bis etwa 45 km",
+ "Halbmarathon":"Einsteiger etwa 40 km (3 bis 6 h), Fortgeschritten 48 bis 72 km, Ambitioniert (unter 1:30) 72 bis 80 km Laufen pro Woche",
+ "Marathon":"Einsteiger 56 bis 64 km, Fortgeschritten 72 bis 88 km, Ambitioniert 88 bis 113 km Laufen pro Woche",
+ "Ultra (über 42 km)":"Einsteiger 4 bis 8 h pro Woche, Spitzenwochen bis etwa 80 bis 96 km Laufen",
+ "Zeitfahren 40 km":"Einsteiger etwa 5 h, Fortgeschritten etwa 8 bis 9 h, Ambitioniert 10 bis 12 h Rad pro Woche",
+ "100 km":"Einsteiger 5,5 bis 9 h Rad pro Woche",
+ "160 km":"Einsteiger 7 bis 10 h, Fortgeschritten 8 bis 11 h Rad pro Woche, längste Fahrt bis etwa 5 h",
+ "Radmarathon 200 km":"wie 160 km (Einsteiger 7 bis 10 h, Fortgeschritten 8 bis 11 h), mit längeren Einzelfahrten bis etwa 6 h",
+ "1,5 km Freiwasser":"etwa die Hälfte des Umfangs für 5 km: 2 bis 3 Einheiten zu 30 bis 60 min, etwa 5 km Schwimmen pro Woche",
+ "3,8 km Freiwasser":"etwas weniger als für 5 km: 3 Einheiten zu 30 bis 70 min, etwa 8 bis 10 km Schwimmen pro Woche",
+ "5 km Freiwasser":"Einsteiger 3 Einheiten zu 30 bis 75 min, etwa 10,7 km pro Woche, Fortgeschritten etwa 3 h pro Woche",
+ "Sprint":"Einsteiger 3 bis 6 h, Fortgeschritten bis etwa 7,5 h pro Woche",
+ "Olympisch":"Einsteiger und Fortgeschritten 6,5 bis 9 h pro Woche",
+ "Mitteldistanz (70.3)":"Minimum 6 bis 7 h, empfohlen 8 bis 10 h, Fortgeschritten 8 bis 12 h, Spitzenwochen 12 bis 14 h",
+ "Langdistanz (Ironman)":"Einsteiger 11 bis 14 h, Grundlage 8 bis 14 h, Aufbau 14 bis 18 h, ehrgeizige Zielzeiten (10 bis 11 h) einzelne Spitzenwochen bis 18 h"};
+const VOLH="Gesundheit (WHO): 150 bis 300 min mäßige oder 75 bis 150 min intensive Ausdauerbewegung pro Woche, dazu Kraft für alle großen Muskelgruppen an mindestens 2 Tagen. Das ist auch die Untergrenze für „fitter werden“ und Kraftziele ohne Wettkampf.";
+function goalDist(){const g=store.get("imGoal",{});if(g.gDist&&VOL[g.gDist])return g.gDist;const gi=goalInfo(DATA),n=((gi&&gi.name)||"")+" "+(g.gDist||"");
+  if(/70[.,]3|mitteldistanz|half ?iron/i.test(n))return"Mitteldistanz (70.3)";if(/ironman|langdistanz|challenge roth/i.test(n))return"Langdistanz (Ironman)";if(/olymp|kurzdistanz/i.test(n))return"Olympisch";if(/sprint/i.test(n))return"Sprint";
+  if(/halbmarathon|half marathon|21[.,]1/i.test(n))return"Halbmarathon";if(/marathon/i.test(n)&&!/rad/i.test(n))return"Marathon";if(/\b10 ?km|10k/i.test(n))return"10 km";if(/\b5 ?km|5k/i.test(n))return"5 km";if(/ultra|trail/i.test(n))return"Ultra (über 42 km)";return""}
+planRules=(f=>function(){let s=f.apply(this,arguments);const g=store.get("imGoal",{}),h=+g.gHours||0,d=goalDist(),EN={neu:"Einsteiger",mittel:"Fortgeschritten",erfahren:"Ambitioniert"},lv=EN[g.gExp]||"aus den Daten einschätzen";
+  const ref=(d&&VOL[d]?`Richtwerte für ${d} (Spitzenwochen, aus etablierten Trainingsplänen): ${VOL[d]}. Stufe des Nutzers: ${lv}, Zielzeit: ${g.gTime||"ankommen"}. Wähle die Stufe nach Erfahrung, Zielzeit und bisherigen Daten.`:`Kein Distanzziel. Richte den Umfang am Ziel und an den bisherigen Daten aus.`)+" "+VOLH;
+  s=s.replace(/Richtwerte Langdistanz:[^\n]*?Kürzere Ziele entsprechend weniger\./,"Richtwerte siehe RICHTWERTE UMFANG.");
+  return s+`\n- RICHTWERTE UMFANG: ${ref} Die Richtwerte gelten für die Spitzenwochen. Davor wird schrittweise aufgebaut, vor dem Wettkampf reduziert.${h?` Höchstgrenze des Nutzers: ${h} h pro Woche, sie hat Vorrang.`:""}
+- GANZHEITLICH: Der Plan muss als Ganzes zum Ziel führen: spezifische Einheiten für die Zieldistanz (lange Einheiten in Richtung Wettkampfdauer, Wettkampftempo in der Aufbau- und Spitzenphase, bei Triathlon Koppeleinheiten), Kraft zur Verletzungsvorbeugung, ausreichend Erholung.`})(planRules);
 
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
