@@ -983,6 +983,12 @@ h3>.tag,.cx-h>.tag{display:table;margin:8px 0 2px;font-size:12px}
 .trgd{display:flex;align-items:center;gap:4px}.trgd em{font-style:normal;font-size:12px;color:var(--muted)}
 .trg input{padding:9px 10px}
 .trform .rcbtns{margin-top:12px}
+/* v75 */
+.owr{margin:8px 0 10px}
+.owh{display:flex;flex-direction:column;gap:2px;margin-bottom:6px}.owh b{font-size:14px}.owh span{font-size:13px;color:var(--muted)}
+.owd{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.owd button{background:var(--card2);border-radius:12px;padding:8px 0;font:700 14px "Barlow Semi Condensed",sans-serif;color:var(--muted)}
+.owd button.on{background:var(--acc);color:#fff}
 </style>
 </head>
 <body>
@@ -1165,7 +1171,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="74";
+const VERSION="75";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -5596,6 +5602,61 @@ drawProf=(f=>function(){f.apply(this,arguments);try{const b=$("pfBody"),bt=MSPK.
   g.after(l,g2,p);
   const le=b.querySelector('label[for="pfExtra"]');if(le)le.textContent="Andere Sportarten";const i=$("pfExtra");if(i)i.placeholder="z. B. Rudern, Klettern";
 }catch(e){}})(drawProf);
+
+/* ---------- v75 ---------- */
+/* 4.8 Selbst organisierte Sportarten (Yoga, Tennis, Ballsport): feste Tage nur freiwillig (settings.ownDays),
+   sonst Stand aus den letzten Einheiten. Länger keine Einheit heißt Pause. Schwellen siehe technik-und-arbeitsweise.md */
+const OWNRX={yoga:/yoga|pilates/i,tennis:/tennis|padel|squash|badminton|pickleball|racquet/i,ball:/soccer|fu(ß|ss)ball|basketball|volleyball|handball|hockey|rugby|ballsport/i};
+const DAYL=["Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag","Sonntag"];
+function ownDays(){const o=settings.ownDays;return o&&typeof o==="object"?o:{}}
+function ownActs(k,D){D=D||DATA;const rx=OWNRX[k];return((D&&D.activities)||[]).filter(a=>a&&a.date&&(rx.test(a.type||"")||rx.test(a.name||""))).sort((a,b)=>a.date.localeCompare(b.date))}
+function ownHard(a){const z=a.hz||[];if(z.some(x=>x>0))return z.slice(3).reduce((s,x)=>s+(x||0),0)>=300;return(+a.rpe||0)>=7}
+function ownInfo(k,D,days){const t=today(),A=ownActs(k,D).filter(a=>a.date<=t&&diffDays(a.date,t)<=56),d=(days||ownDays()[k]||[]).map(Number).filter(x=>x>=0&&x<7).sort();
+  const last=A.length?diffDays(A[A.length-1].date,t):null,R4=A.filter(a=>diffDays(a.date,t)<=28);
+  const gaps=[];for(let i=1;i<A.length;i++){const g=diffDays(A[i-1].date,A[i].date);if(g>0)gaps.push(g)}gaps.sort((a,b)=>a-b);
+  const gap=gaps.length?gaps[Math.floor(gaps.length/2)]:null,lim=gap?Math.max(21,Math.min(42,Math.round(gap*2.5))):21;
+  const wd=[0,0,0,0,0,0,0];A.filter(a=>diffDays(a.date,t)<=42).forEach(a=>wd[gDow(a.date)]++);const n6=wd.reduce((s,x)=>s+x,0),top=wd.indexOf(Math.max(...wd));
+  const paused=A.length>0&&last>lim;
+  return{k,n:MSPN[k],days:d,n4:R4.length,n8:A.length,last,gap,lim,paused,active:A.length>0&&!paused,
+    usual:!paused&&n6>=3&&wd[top]>=3&&wd[top]/n6>=0.75?top:null,
+    hard:A.length?A.filter(ownHard).length/A.length:0,
+    avg:A.length?Math.round(A.reduce((s,a)=>s+(a.secs||0),0)/60/A.length):0,
+    week:Math.round(R4.reduce((s,a)=>s+(a.secs||0),0)/60/4)}}
+/* Welche Sportarten zählen: gewählt oder in den letzten 4 Wochen aufgezeichnet */
+function ownList(D){const sel=moreSports().filter(k=>MSPOWN.includes(k));return MSPOWN.filter(k=>sel.includes(k)||ownActs(k,D).some(a=>diffDays(a.date,today())<=28)).map(k=>Object.assign(ownInfo(k,D),{sel:sel.includes(k)}))}
+const vorT=n=>n===0?"heute":n===1?"gestern":`vor ${n} Tagen`;
+function ownKI(i){const p=[];if(!i.sel)p.push("nicht im Profil gewählt, aber aufgezeichnet");
+  if(i.days.length)p.push("feste Tage laut Nutzer: "+i.days.map(x=>DAYL[x]).join(", "));
+  if(!i.n8)p.push("in den letzten 8 Wochen keine Einheit aufgezeichnet");
+  else{p.push(`zuletzt ${vorT(i.last)}, ${i.n4}-mal in 4 Wochen, ${i.n8}-mal in 8 Wochen, im Schnitt ${i.avg} min`);
+    if(i.paused)p.push(`seit ${i.last} Tagen keine Einheit, vermutlich Pause`);
+    else{if(!i.days.length)p.push(i.usual!=null?`meist am ${DAYL[i.usual]}`:"unregelmäßig, ohne festen Tag");if(i.week)p.push(`etwa ${i.week} min pro Woche`)}
+    if(i.hard>=0.5)p.push("meist hart (mindestens 5 Minuten in Z4 oder höher)")}
+  return`${i.n}: ${p.join(", ")}`}
+function ownUser(i){if(!i.n8)return"Noch keine Einheit aufgezeichnet.";if(i.paused)return`Seit ${i.last} Tagen keine Einheit. Der Coach nimmt eine Pause an.`;
+  return`Zuletzt ${vorT(i.last)}, ${i.n4}-mal in 4 Wochen, ${i.usual!=null?"meist am "+DAYL[i.usual]:"unregelmäßig"}.`}
+/* Tage, an denen nichts Hartes geplant wird: feste Tage immer, „meist am …“ nur solange aktiv */
+function ownBlock(D){const B=[];ownList(D).forEach(i=>{const d=i.days.length?i.days:i.usual!=null?[i.usual]:[];d.forEach(x=>B.push({dow:x,n:i.n,hard:i.hard>=0.5&&i.active}))});return B}
+/* KI: genaue Angaben statt der allgemeinen Regel aus V73 */
+planRules=(f=>function(){let s=f.apply(this,arguments).replace(/\n- SELBST ORGANISIERT \([^\n]*/,"");const L=ownList();if(!L.length)return s;
+  return s+`\n- SELBST ORGANISIERT: Diese Sportarten macht der Nutzer selbst. Nie einplanen. Stand aus den Daten:\n${L.map(i=>"  "+ownKI(i)).join("\n")}\n  Umgang: Feste Tage (vom Nutzer angegeben oder „meist am …“) bekommen keine harte Einheit, höchstens locker oder frei. Ist die Sportart meist hart, zählt der Tag als harter Tag (höchstens 2 harte Tage pro Woche, nie zwei hintereinander). Unregelmäßig und aktiv: keinen Tag dafür freihalten, aber die übliche Zeit pro Woche von der Höchstzeit pro Woche abziehen. Vermutlich Pause oder keine Einheit aufgezeichnet: Zeit nicht abziehen, feste Tage des Nutzers trotzdem ohne harte Einheit lassen. Gewohnheiten können sich ändern, deshalb nur die Angaben oben verwenden und keine eigenen Annahmen über feste Termine treffen.`})(planRules);
+sportsText=(f=>function(){let s=f.apply(this,arguments);try{const L=ownList();L.filter(i=>i.sel).forEach(i=>{s=s.replace(`${i.n} (macht der Nutzer selbst, nicht einplanen)`,`${i.n} (macht der Nutzer selbst, nicht einplanen. ${ownKI(i).slice(i.n.length+2)})`)});
+  const x=L.filter(i=>!i.sel);if(x.length)s+=`. Außerdem aufgezeichnet: ${x.map(ownKI).join(". ")}`}catch(e){}return s})(sportsText);
+/* Regelprüfung: keine harte Einheit an diesen Tagen, bei meist harter Sportart auch nicht am Tag davor oder danach */
+planGate=(f=>function(items){const r=f.apply(this,arguments);try{const B=ownBlock();if(!B.length)return r;
+  (items||[]).filter(x=>gSk(x)!=="kraft"&&gHard(x)>=5).forEach(x=>{const w=gDow(x.date);B.forEach(b=>{
+    if(b.dow===w)r.issues.push({k:"eigen",d:x.date,t:`${fD(x.date)}: harte Einheit an einem Tag mit ${b.n}`});
+    else if(b.hard&&(b.dow===(w+1)%7||b.dow===(w+6)%7))r.issues.push({k:"eigen",d:x.date,t:`${fD(x.date)}: harte Einheit direkt neben einem Tag mit ${b.n}, das zählt als harter Tag`})})})}catch(e){}return r})(planGate);
+/* Profil ändern: feste Tage freiwillig, mit Stand aus den Daten */
+openProf=(f=>function(){f.apply(this,arguments);PF.od=JSON.parse(JSON.stringify(ownDays()));drawProf()})(openProf);
+drawProf=(f=>function(){f.apply(this,arguments);try{const b=$("pfBody"),h=b.querySelector(".mspf"),sel=MSPOWN.filter(k=>(PF.sports||[]).includes(k));if(!h)return;
+  if(!sel.length){h.textContent="Gehen und Wandern plant der Coach mit ein. Yoga, Tennis und Ballsport berücksichtigt er, plant sie aber nicht ein.";return}
+  const od=PF.od||{};h.textContent="Gehen und Wandern plant der Coach mit ein. Yoga, Tennis und Ballsport plant er nicht ein. Feste Tage sind freiwillig: An diesen Tagen plant er nichts Hartes. Ohne feste Tage richtet er sich nach deinen letzten Einheiten, und gab es länger keine, nimmt er eine Pause an.";
+  h.insertAdjacentHTML("afterend",sel.map(k=>{const i=ownInfo(k,DATA,od[k]||[]);return`<div class="owr"><div class="owh"><b>${MSPN[k]}</b><span>${esc(ownUser(i))}</span></div><div class="owd" aria-label="Feste Tage für ${MSPN[k]}">${DAYN.map((d,x)=>`<button type="button" data-pfod="${k}:${x}" class="${(od[k]||[]).includes(x)?"on":""}" aria-pressed="${(od[k]||[]).includes(x)}">${d}</button>`).join("")}</div></div>`}).join(""))}catch(e){}})(drawProf);
+$("mProf").addEventListener("click",e=>{const b=e.target.closest("[data-pfod]");if(b){const [k,x]=b.dataset.pfod.split(":"),n=+x;PF.od=PF.od||{};const a=(PF.od[k]||[]).filter(v=>v!==n);if(a.length===(PF.od[k]||[]).length)a.push(n);PF.od[k]=a.sort();b.classList.toggle("on",a.includes(n));b.setAttribute("aria-pressed",a.includes(n));return}
+  if(e.target.closest("#pfSave")&&PF.od&&(PF.sports||[]).length){const o={};MSPOWN.filter(k=>PF.sports.includes(k)&&(PF.od[k]||[]).length).forEach(k=>o[k]=PF.od[k].slice());settings.ownDays=o;store.set("imSettings",settings)}});
+/* Einrichtung: Hinweis auf die freiwilligen festen Tage */
+obDraw=(f=>function(){f.apply(this,arguments);try{if(OB.i!==2)return;const p=[...$("obBody").querySelectorAll("p.hint")].find(x=>/Yoga, Tennis/.test(x.textContent));if(p)p.textContent+=" Feste Tage dafür kannst du später unter Profil ändern angeben, musst du aber nicht."}catch(e){}})(obDraw);
 
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
