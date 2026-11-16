@@ -1165,7 +1165,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="72";
+const VERSION="73";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -5533,6 +5533,69 @@ document.addEventListener("click",e=>{const g=n=>e.target.closest("["+n+"]");if(
     const M=rmkAll();M[a.id]={r:1};store.set("imRaceMk",M);const I=store.get("imRaceIgnore",[]);if(I.includes(a.date))store.set("imRaceIgnore",I.filter(x=>x!==a.date));rcRefresh(a);toast("Als Wettkampf markiert");return}
   if(g("data-rcmtri")){const d=a.date;triSave(d,r=>{delete r.no;r.ids=dayActs(d).filter(x=>x.sport!=="other"||x.type==="Transition").map(x=>String(x.id))});
     const I=store.get("imRaceIgnore",[]);if(I.includes(d))store.set("imRaceIgnore",I.filter(x=>x!==d));try{render()}catch(x){}triInfo(d,true);return}});
+
+/* ---------- v73 ---------- */
+/* 4.1 Weitere Sportarten in Einrichtung und Profil: Gehen, Wandern, Yoga, Tennis, Ballsport.
+   Gehen und Wandern plant der Coach ein, Yoga, Tennis und Ballsport berücksichtigt er nur.
+   Quellen: quellen-trainingsumfang.md (WHO 2020, CDC Sprechtest) */
+const MSPK=["walk","hike","yoga","tennis","ball"],MSPN={walk:"Gehen",hike:"Wandern",yoga:"Yoga",tennis:"Tennis",ball:"Ballsport"},MSPOWN=["yoga","tennis","ball"];
+const SPNM={Walk:"Gehen",Hike:"Wandern",Yoga:"Yoga",Tennis:"Tennis",Soccer:"Ballsport"};
+MSPK.forEach(k=>{if(!SPOPT.some(x=>x[0]===k))SPOPT.push([k,MSPN[k]])});
+function moreSports(){return rawSports().filter(k=>MSPK.includes(k))}
+function walkSports(){return moreSports().filter(k=>k==="walk"||k==="hike")}
+function endSports(){return userSports().filter(k=>["run","bike","swim"].includes(k))}
+/* Planung und Auswertung kennen weiter nur Laufen, Rad, Schwimmen und Kraft */
+userSports=(f=>function(){return f.apply(this,arguments).filter(k=>!MSPK.includes(k))})(userSports);
+/* Gehen als Auswahl auf „Heute“ (Schlüssel other, siehe spKey) */
+allowedKeys=(f=>function(){const k=f.apply(this,arguments);if(walkSports().length&&!k.includes("other"))k.push("other");return k})(allowedKeys);
+const TPLW=[{sport:"Walk",title:"Zügiges Gehen",minutes:40,zone:"",purpose:"So zügig, dass du noch reden, aber nicht mehr singen kannst",description:"Hauptteil\n- 40m zügig gehen"},
+  {sport:"Walk",title:"Lockerer Spaziergang",minutes:30,zone:"",purpose:"Bewegung ohne Belastung",description:"Hauptteil\n- 30m locker gehen"}];
+ruleNote=(f=>function(D){const o=f.apply(this,arguments);try{
+  if(!o||!o.wo||o.wo.sport==="Rest")return o;
+  const L=Math.max(0,["gruen","gelb","rot"].indexOf(o.status)),noPlan=!o.ps||o.ps.status==="kein Plan",W=()=>Object.assign({},TPLW[L>0?1:0]);
+  if(noPlan&&!endSports().length&&spKey(o.wo.sport)==="run"){
+    const r=/^Tag \d/.test(o.wo.reason||"")?o.wo.reason:L?"Locker, weil deine Erholungswerte nicht ganz im grünen Bereich sind.":"Zügiges Gehen zählt zu den 150 Minuten Bewegung pro Woche.";
+    o.wo=Object.assign(W(),{reason:r});o.alts=(o.alts||[]).filter(a=>spKey(a.sport)!=="run")}
+  else if(walkSports().length&&o.wo.sport!=="Walk")o.alts=(o.alts||[]).concat(Object.assign(W(),{label:"Gehen",reason:L?"Ebenfalls locker, falls dir das heute mehr liegt.":"Ruhiger, wenn dir heute eher nach Bewegung draußen ist."}));
+}catch(e){}return o})(ruleNote);
+/* Anzeige: Gehen, Wandern usw. statt „Sonstiges“ */
+wcard=(f=>function(w,i){let h=f.apply(this,arguments);try{const n=w&&SPNM[w.sport];if(n){h=h.replace("· Sonstiges","· "+n);if(!/Z\d/.test(w.description||""))h=h.replace(/<div class="wop-wrap"><svg[\s\S]*?<\/svg><\/div>/,"")}}catch(e){}return h})(wcard);
+coachHTML=(f=>function(){let h=f.apply(this,arguments);try{(window.__cw||[]).forEach((w,i)=>{const n=w&&SPNM[w.sport];if(n)h=h.replace(new RegExp(`<button data-w="${i}"[\\s\\S]*?</button>`),m=>m.split("Sonstiges").join(n))})}catch(e){}return h})(coachHTML);
+/* KI: Sportarten und Regeln */
+sportsText=(f=>function(){let s=f.apply(this,arguments);moreSports().filter(k=>MSPOWN.includes(k)).forEach(k=>{s=s.replace(new RegExp(`(^|, )${MSPN[k]}(?=, |$| \\()`),`$1${MSPN[k]} (macht der Nutzer selbst, nicht einplanen)`)});return s})(sportsText);
+planFmt=(f=>function(){let s=f.apply(this,arguments);const ws=walkSports();if(!ws.length)return s;
+  const t=["Walk für Gehen"].concat(ws.includes("hike")?["Hike für Wandern"]:[]).join(", ");
+  return s.replace("sport ist Run, Ride, Swim oder WeightTraining.",`sport ist Run, Ride, Swim, WeightTraining oder ${t}.`)+` Geh- und Wandereinheiten nur mit Dauer und kurzem Hinweis, ohne Zone, z. B. "Hauptteil\\n- 45m zügig gehen".`})(planFmt);
+planRules=(f=>function(){let s=f.apply(this,arguments);const ms=moreSports();if(!ms.length)return s;
+  const ws=walkSports(),own=ms.filter(k=>MSPOWN.includes(k)),wn=ws.map(k=>MSPN[k]).join(" und ");
+  s=s.replace("die der Nutzer gewählt hat (), von der ersten Woche an.","die der Nutzer gewählt hat, von der ersten Woche an.");
+  if(ws.length){if(!endSports().length)s=s.replace(/\n- AUSDAUER: Der Nutzer hat keine Ausdauersportart gewählt\.[^\n]*/,"")+`\n- AUSDAUER ÜBER ${wn.toUpperCase()}: Der Nutzer hat kein Laufen, Rad oder Schwimmen gewählt. Die Ausdauer kommt aus ${wn}: mindestens 150 Minuten pro Woche zügig (WHO), verteilt auf mindestens 3 Tage, vom bisherigen Umfang aus schrittweise steigern.${ws.includes("hike")?" Wandern als lange Einheit an einem Tag mit viel Zeit.":""}`;
+    else s+=`\n- ${wn.toUpperCase()}: Darf als lockere Einheit vorkommen, z. B. an leichten Tagen oder in Entlastungswochen. Zählt zum Wochenumfang, ersetzt aber keine Einheit der gewählten Sportarten.`}
+  if(own.length)s+=`\n- SELBST ORGANISIERT (${own.map(k=>MSPN[k]).join(", ")}): Der Nutzer macht das selbst. Nicht einplanen. Kamen diese Einheiten in den letzten Wochen regelmäßig an bestimmten Wochentagen vor, an diesen Tagen nichts Hartes planen und ihre Zeit zum Wochenumfang zählen. Zeigen die Daten der Uhr dabei mindestens 5 Minuten in Z4 oder höher, zählen sie als harter Tag.`;
+  return s})(planRules);
+/* Tagesempfehlung und Coach mit KI: Gehen als Sportart erlauben */
+function msPrompt(p){if(typeof p!=="string")return p;const ws=walkSports();if(!ws.length&&endSports().length)return p;
+  const add=["Walk"].concat(ws.includes("hike")?["Hike"]:[]).join("|");
+  p=p.split('"sport":"Run|Ride|Swim|Strength|Rest|Kombi"').join(`"sport":"Run|Ride|Swim|Strength|${add}|Rest|Kombi"`).split('"sport":"Run|Ride|Swim|Strength|Kombi"').join(`"sport":"Run|Ride|Swim|Strength|${add}|Kombi"`);
+  if(ws.length)p=p.replace(/(außer der Sportart von workout: )([^\n]*?)\. label genau so\./,(m,a,b)=>`${a}${b?b+", ":""}Gehen. label genau so. Gehen mit sport "Walk" und ohne zone.`);
+  return p}
+claude=(f=>async function(prompt){const a=[].slice.call(arguments);try{a[0]=msPrompt(prompt)}catch(e){}return f.apply(this,a)})(claude);
+/* Einrichtung: zweite Gruppe für Bewegung und weitere Sportarten */
+obDraw=(f=>function(){f.apply(this,arguments);try{if(OB.i!==2)return;const b=$("obBody"),g=b.querySelector(".obsp2"),bt=g?MSPK.map(k=>g.querySelector(`[data-sp2="${k}"]`)).filter(Boolean):[];if(!bt.length)return;
+  const h=document.createElement("h4");h.className="obh4";h.textContent="Bewegung und weitere Sportarten";
+  const p=document.createElement("p");p.className="hint";p.textContent="Gehen und Wandern plant der Coach mit ein. Yoga, Tennis und Ballsport berücksichtigt er, plant sie aber nicht ein.";
+  const g2=document.createElement("div");g2.className="obsp2";bt.forEach(x=>g2.appendChild(x));g.after(h,p,g2);
+  const h0=b.querySelector("h3+.hint");if(h0)h0.textContent="Wähle alle aus, die du machst.";
+  const l=b.querySelector('label[for="obExtra"]');if(l)l.textContent="Andere Sportarten (optional)";const i=$("obExtra");if(i)i.placeholder="z. B. Rudern, Klettern";
+}catch(e){}})(obDraw);
+/* Profil ändern: dieselbe Gruppe */
+drawProf=(f=>function(){f.apply(this,arguments);try{const b=$("pfBody"),bt=MSPK.map(k=>b.querySelector(`[data-pfsp="${k}"]`)).filter(Boolean);if(!bt.length)return;
+  const g=bt[0].parentElement,l=document.createElement("label");l.className="f";l.textContent="Bewegung und weitere Sportarten";
+  const g2=document.createElement("div");g2.className="tchips";bt.forEach(x=>g2.appendChild(x));
+  const p=document.createElement("p");p.className="hint mspf";p.textContent="Gehen und Wandern plant der Coach mit ein. Yoga, Tennis und Ballsport berücksichtigt er, plant sie aber nicht ein.";
+  g.after(l,g2,p);
+  const le=b.querySelector('label[for="pfExtra"]');if(le)le.textContent="Andere Sportarten";const i=$("pfExtra");if(i)i.placeholder="z. B. Rudern, Klettern";
+}catch(e){}})(drawProf);
 
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
