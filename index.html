@@ -926,6 +926,15 @@ h3>.tag,.cx-h>.tag{display:table;margin:8px 0 2px;font-size:12px}
 .fbmini{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;padding:8px 12px;border-radius:12px;background:var(--card2);font-size:13px}
 .fbmini .fbck{width:15px;height:15px;stroke:var(--green);fill:none;stroke-width:2.6;vertical-align:-3px;margin-right:6px}
 #toastV57 .lnk{color:#fff;text-decoration:underline;margin-left:6px}
+#rcNo{background:color-mix(in srgb,var(--red) 22%,transparent);color:var(--text,#fff);border:1px solid color-mix(in srgb,var(--red) 60%,transparent);font-weight:600;cursor:pointer}
+#rcNo:hover,#rcNo:focus-visible{background:color-mix(in srgb,var(--red) 38%,transparent)}
+.rcmenu:hover,.rcmenu:focus-visible{background:var(--card2);color:var(--text,#fff)}
+#askCard.asking{position:relative}
+#askCard.asking::before{content:"";position:absolute;inset:-2px;border-radius:inherit;padding:2px;background:conic-gradient(from var(--askang),transparent 0 62%,var(--acc) 80%,transparent 98%);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:askrot 1.4s linear infinite;pointer-events:none}
+@property --askang{syntax:"<angle>";initial-value:0deg;inherits:false}
+@keyframes askrot{to{--askang:360deg}}
+@media (prefers-reduced-motion:reduce){#askCard.asking::before{animation:none;background:var(--acc)}}
+.fbmd{margin:10px 0;padding:10px 12px;border-radius:12px;background:var(--card2)}.fbmd .fbb{margin:8px 0 6px}.fbmd .sub{display:block;font-size:12px}
 </style>
 </head>
 <body>
@@ -1021,6 +1030,7 @@ h3>.tag,.cx-h>.tag{display:table;margin:8px 0 2px;font-size:12px}
   <div class="opts">
     <label class="opt"><input type="radio" name="sType" value="oberhalb" checked><i class="dot" style="background:var(--yellow)"></i><div><b>Nur oberhalb des Halses</b><span>Schnupfen, verstopfte Nase, leichte Halsschmerzen</span></div></label>
     <label class="opt"><input type="radio" name="sType" value="unterhalb"><i class="dot" style="background:var(--red)"></i><div><b>Auch unterhalb des Halses</b><span>Fieber, Husten, Gliederschmerzen, Magen-Darm</span></div></label>
+    <label class="opt"><input type="radio" name="sType" value="pause"><i class="dot" style="background:var(--muted)"></i><div><b>Trainingspause</b><span>z. B. nach einer Operation oder auf ärztliche Anweisung, mit Enddatum</span></div></label>
     <label class="opt"><input type="radio" name="sType" value="verletzung"><i class="dot" style="background:var(--hrv)"></i><div><b>Verletzung</b><span>z. B. Zerrung, Überlastung</span></div></label>
   </div>
   <label class="f" for="sNote">Notiz</label>
@@ -1107,7 +1117,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="57";
+const VERSION="58";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -1157,8 +1167,8 @@ function sickFromEvent(e){
   let end=e.end_date_local?addDays(String(e.end_date_local).slice(0,10),-1):start;
   if(end<start)end=start;
   const d=e.description||"";
-  const type=e.category==="INJURED"?"verletzung":(d.includes("[unterhalb]")?"unterhalb":"oberhalb");
-  return{id:e.id,start,end,type,note:d.replace(/\[(oberhalb|unterhalb)\]\s*/,""),name:e.name||""};
+  const type=e.category==="INJURED"?"verletzung":d.includes("[pause]")?"pause":(d.includes("[unterhalb]")?"unterhalb":"oberhalb");
+  return{id:e.id,start,end,type,note:d.replace(/\[(oberhalb|unterhalb|pause)\]\s*/,""),name:e.name||""};
 }
 async function loadLive(){
   const end=today(),start=addDays(end,-180);
@@ -1248,6 +1258,7 @@ function evaluate(D){
   const recent=D.sick.filter(s=>s.end<t&&diffDays(s.end,t)<=7).sort((a,b)=>b.end.localeCompare(a.end))[0];
   if(act){
     if(act.type==="unterhalb")S.push({l:2,t:"Krank mit Beschwerden unterhalb des Halses: kein Training, bis die Beschwerden abgeklungen sind.",src:"Erfahrungsregel (Neck Check). Laut IOC-Konsens zu akuten Atemwegsinfekten (Snyders et al., Br J Sports Med) gibt es dafür keine evidenzbasierte Leitlinie."});
+    else if(act.type==="pause")S.push({l:2,t:"Trainingspause eingetragen"+(act.note?" ("+act.note+")":"")+`: kein Training bis ${fD(act.end)}`,src:"Eigene Angabe"});
     else if(act.type==="verletzung")S.push({l:2,t:"Verletzung eingetragen: Training nur nach ärztlicher oder physiotherapeutischer Freigabe.",src:"Erfahrungsregel"});
     else S.push({l:1,t:"Nur Beschwerden oberhalb des Halses: wenn überhaupt, kurz und locker trainieren. Keine Intervalle.",src:"Erfahrungsregel (Neck Check), keine evidenzbasierte Leitlinie (IOC-Konsens, Snyders et al.)"});
   }else if(recent){
@@ -1432,7 +1443,7 @@ function render(){
   const rec=D.activities.slice().sort((a,b)=>b.date.localeCompare(a.date)).slice(0,15);
   $("recent").innerHTML=rec.length?rec.map(a=>`<div class="act tap" data-act="${esc(String(a.id||""))}"><div class="ico" style="background:${SPORTS[a.sport].c}">${svgI(a.sport,"#fff")}</div><div class="m"><b>${esc(a.name)}</b><span>${fDL(a.date)}${a.hr?" · Ø "+Math.round(a.hr)+" bpm":""}${a.load?" · Last "+nf(a.load):""}</span>${a.id?`<div data-aid="${esc(String(a.id))}"></div>`:""}</div><div class="r"><b>${fH(a.secs)} h</b><span>${nf(a.km,a.sport==="swim"?2:1)} km</span></div></div>`).join(""):'<div class="empty">Keine Einheiten</div>';
   // Krankheit
-  const TL={oberhalb:["oberhalb des Halses","var(--yellow)"],unterhalb:["unterhalb des Halses","var(--red)"],verletzung:["Verletzung","var(--hrv)"]};
+  const TL={oberhalb:["oberhalb des Halses","var(--yellow)"],unterhalb:["unterhalb des Halses","var(--red)"],verletzung:["Verletzung","var(--hrv)"],pause:["Trainingspause","var(--muted)"]};
   const sl=D.sick.slice().sort((a,b)=>b.start.localeCompare(a.start));
   $("sickList").innerHTML=sl.length?sl.map(s=>{const cur=t>=s.start&&t<=s.end,tl=TL[s.type]||TL.oberhalb;return`<div class="sick"><div class="ico" style="width:10px;height:38px;border-radius:5px;background:${tl[1]}"></div><div class="m"><b>${fD(s.start)} bis ${fD(s.end)}</b>${cur?'<span class="tag">aktuell</span>':""}<span>${diffDays(s.start,s.end)+1} Tage · ${tl[0]}${s.note?" · "+esc(s.note):""}</span></div>${cur?`<button class="btn sm" data-heal="${esc(s.id)}">Gesund ab heute</button>`:""}<button class="btn sm" data-del="${esc(s.id)}">Löschen</button></div>`}).join(""):'<div class="empty">Keine Einträge</div>';
   $("rules").innerHTML=`
@@ -1496,7 +1507,7 @@ $("sSave").onclick=async()=>{
   if(end<start){err.textContent="Das Ende liegt vor dem Beginn.";return}
   try{
     if(!isLive()){const l=store.get("imDemoSick",[]);l.push({id:"d"+Date.now(),start,end,type,note});store.set("imDemoSick",l)}
-    else await api("/events",{method:"POST",body:JSON.stringify({category:type==="verletzung"?"INJURED":"SICK",start_date_local:start+"T00:00:00",end_date_local:addDays(end,1)+"T00:00:00",name:type==="verletzung"?"Verletzt":"Krank",description:(type==="verletzung"?"":"["+type+"] ")+note})});
+    else await api("/events",{method:"POST",body:JSON.stringify({category:type==="verletzung"?"INJURED":"SICK",start_date_local:start+"T00:00:00",end_date_local:addDays(end,1)+"T00:00:00",name:type==="verletzung"?"Verletzt":type==="pause"?"Trainingspause":"Krank",description:(type==="verletzung"?"":"["+type+"] ")+note})});
     close("mSick");load();
   }catch(e){err.textContent=e.message}
 };
@@ -2024,7 +2035,7 @@ function ringsHTML(D){return`<div class="cx-m">${ringData(D).map(x=>{const col=x
   return`<div class="rg tap" data-k="${x.k}"><svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="15" fill="none" stroke="var(--ringbg)" stroke-width="5"/><circle cx="18" cy="18" r="15" fill="none" stroke="${col}" stroke-width="5" stroke-linecap="round" stroke-dasharray="${(x.f*94.2).toFixed(1)} 94.2"/></svg><div><b>${x.v}</b><span>${x.lab}</span><em style="color:${x.lv?col:"var(--muted)"}">${x.lv?"⚠ ":""}${esc(x.st)}</em></div></div>`}).join("")}</div>
   <div class="hint rlegend">Voller Ring: oberes Ende deines Normalbereichs. Gelb oder Rot mit ⚠: außerhalb.</div>`}
 const hlNum=s=>esc(s).replace(/([+−-]?\d+(?:[.,]\d+)?(?:\s?(?:%|ms|h|min|km|W|bpm|\/min|Schläge|Tage|Nächte))?)/g,"<b>$1</b>");
-const whyTag=s=>/HRV/i.test(s)?["HRV","var(--hrv)"]:/Ruhepuls/i.test(s)?["Ruhepuls","var(--rhr)"]:/Schlaf/i.test(s)?["Schlaf","var(--sleep)"]:/krank|infekt|verletz/i.test(s)?["Gesundheit","var(--red)"]:/Form|Ermüdung|Fitness|Last|CTL|ATL|TSB/i.test(s)?["Belastung","var(--form)"]:/Wettkampf|Ziel|Ironman|Plan/i.test(s)?["Plan","var(--acc)"]:null;
+const whyTag=s=>/HRV/i.test(s)?["HRV","var(--hrv)"]:/Ruhepuls/i.test(s)?["Ruhepuls","var(--rhr)"]:/Schlaf/i.test(s)?["Schlaf","var(--sleep)"]:/krank|infekt|verletz|pause/i.test(s)?["Gesundheit","var(--red)"]:/Form|Ermüdung|Fitness|Last|CTL|ATL|TSB/i.test(s)?["Belastung","var(--form)"]:/Wettkampf|Ziel|Ironman|Plan/i.test(s)?["Plan","var(--acc)"]:null;
 const TGT='<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg>';
 function coachHTML(n,D,t){
   const o=parseNote(n.text),L=/rot/.test(o.status)?2:/gelb/.test(o.status)?1:/gr/.test(o.status)?0:evaluate(D).L,c=LV[L];
@@ -4330,11 +4341,11 @@ prep=(o=>function(D){const M=store.get("imManual",[]);if(M.some(x=>x.app)){const
 if(typeof toast!=="function")var toast=function(m){let t=$("toastV37");if(!t){t=document.createElement("div");t.id="toastV37";t.className="toast37";document.body.appendChild(t)}t.textContent=m;t.classList.add("on");clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove("on"),3500)};
 
 /* Krankheit: Hinweis auf Heute */
-const SKN={oberhalb:"Beschwerden oberhalb des Halses",unterhalb:"Beschwerden unterhalb des Halses",verletzung:"Verletzung"};
+const SKN={oberhalb:"Beschwerden oberhalb des Halses",unterhalb:"Beschwerden unterhalb des Halses",verletzung:"Verletzung",pause:"Trainingspause"};
 function sickNow(D){const t=today();return((D&&D.sick)||[]).filter(s=>t>=s.start&&t<=s.end).sort((a,b)=>b.start.localeCompare(a.start))[0]||null}
 function sickJust(D){const t=today();return((D&&D.sick)||[]).filter(s=>s.end<t&&s.end>=addDays(t,-2)).sort((a,b)=>b.end.localeCompare(a.end))[0]||null}
 async function sickAdd(type,start,end,note){if(!isLive()){const l=store.get("imDemoSick",[]);l.push({id:"d"+Date.now(),start,end,type,note});store.set("imDemoSick",l);return}
-  await api("/events",{method:"POST",body:JSON.stringify({category:type==="verletzung"?"INJURED":"SICK",start_date_local:start+"T00:00:00",end_date_local:addDays(end,1)+"T00:00:00",name:type==="verletzung"?"Verletzt":"Krank",description:(type==="verletzung"?"":"["+type+"] ")+(note||"")})})}
+  await api("/events",{method:"POST",body:JSON.stringify({category:type==="verletzung"?"INJURED":"SICK",start_date_local:start+"T00:00:00",end_date_local:addDays(end,1)+"T00:00:00",name:type==="verletzung"?"Verletzt":type==="pause"?"Trainingspause":"Krank",description:(type==="verletzung"?"":"["+type+"] ")+(note||"")})})}
 async function sickEnd(s,end){if(!isLive()){const l=store.get("imDemoSick",[]);l.forEach(x=>{if(String(x.id)===String(s.id))x.end=end});store.set("imDemoSick",l);return}
   await api("/events/"+encodeURIComponent(s.id),{method:"PUT",body:JSON.stringify({end_date_local:addDays(end,1)+"T00:00:00"})})}
 function renderSickBar(D){const sec=document.querySelector('section[data-tab="heute"]');if(!sec)return;let b=$("sickBar");
@@ -4342,7 +4353,7 @@ function renderSickBar(D){const sec=document.querySelector('section[data-tab="he
   if(!s&&!ask){if(b)b.remove();return}
   if(!b){b=document.createElement("div");b.id="sickBar";b.className="card sickbar";sec.insertBefore(b,sec.firstChild)}
   const t=today();
-  if(s){const n=diffDays(s.start,t)+1;b.innerHTML=`<div class="sbh"><span class="sbdot ${s.type}"></span><div><b>Du bist als ${s.type==="verletzung"?"verletzt":"krank"} eingetragen</b><span>seit ${fD(s.start)}, Tag ${n} · ${SKN[s.type]||""}${s.note?" · "+esc(s.note):""}</span></div></div>
+  if(s){const n=diffDays(s.start,t)+1;b.innerHTML=`<div class="sbh"><span class="sbdot ${s.type}"></span><div><b>${s.type==="pause"?"Trainingspause bis "+fD(s.end):"Du bist als "+(s.type==="verletzung"?"verletzt":"krank")+" eingetragen"}</b><span>seit ${fD(s.start)}, Tag ${n} · ${SKN[s.type]||""}${s.note?" · "+esc(s.note):""}</span></div></div>
     <div class="sbb"><button class="btn blue sm" data-sbheal="${esc(String(s.id))}">Wieder gesund</button>${s.end<=t?`<button class="btn sm" data-sbmore="${esc(String(s.id))}">Noch ${s.type==="verletzung"?"verletzt":"krank"}</button>`:""}</div>
     <p class="hint">Die Empfehlungen richten sich danach. Trag dich aus, sobald es dir besser geht.</p>`}
   else b.innerHTML=`<div class="sbh"><span class="sbdot ${j.type}"></span><div><b>Bist du wieder fit?</b><span>Dein Eintrag (${SKN[j.type]||"krank"}) endete am ${fD(j.end)}.</span></div></div>
@@ -4357,21 +4368,23 @@ document.addEventListener("click",async e=>{const h=e.target.closest("[data-sbhe
 /* Coach: Krankheit erkennen, nachfragen, eintragen */
 var ASKF=false,ASKACT=null;
 askCtx=(f=>function(){const s=f.apply(this,arguments),cur=sickNow(DATA);
-  return s+`\n\nKRANKHEIT UND VERLETZUNG\nEingetragen: ${cur?`${cur.type==="verletzung"?"Verletzung":"krank"} seit ${cur.start} (${SKN[cur.type]||""})`:"nichts"}\nErwähnt der Nutzer im Gespräch Krankheit, Erkältung, Fieber, Verletzung oder Schmerzen und es ist nichts eingetragen: Fehlt etwas davon, frag in deiner Antwort kurz danach: Art (nur oberhalb des Halses wie Schnupfen oder Halsweh, unterhalb wie Fieber, Husten aus der Brust oder Gliederschmerzen, oder eine Verletzung) und seit wann. Sind Art und Beginn klar, schreib als letzte Zeile genau: [[KRANK|oberhalb oder unterhalb oder verletzung|JJJJ-MM-TT Beginn|Notiz max. 40 Zeichen]]. Heute ist ${today()}. Sagt der Nutzer, dass er wieder gesund oder fit ist und es ist etwas eingetragen, schreib als letzte Zeile genau: [[GESUND]]. Sonst nie eine solche Zeile. Erwähne die Zeile nicht im Text.`})(askCtx);
+  return s+`\n\nKRANKHEIT UND VERLETZUNG\nEingetragen: ${cur?`${cur.type==="verletzung"?"Verletzung":"krank"} seit ${cur.start} (${SKN[cur.type]||""})`:"nichts"}\nErwähnt der Nutzer im Gespräch Krankheit, Erkältung, Fieber, Verletzung oder Schmerzen und es ist nichts eingetragen: Fehlt etwas davon, frag in deiner Antwort kurz danach: Art (nur oberhalb des Halses wie Schnupfen oder Halsweh, unterhalb wie Fieber, Husten aus der Brust oder Gliederschmerzen, oder eine Verletzung) und seit wann. Sind Art und Beginn klar, schreib als letzte Zeile genau: [[KRANK|oberhalb oder unterhalb oder verletzung|JJJJ-MM-TT Beginn|Notiz max. 40 Zeichen]]. Heute ist ${today()}. Sagt der Nutzer, dass er für eine bestimmte Zeit gar nicht trainieren darf oder kann (z. B. nach einer Operation, auf ärztliche Anweisung), schreib als letzte Zeile genau: [[PAUSE|JJJJ-MM-TT erster Tag ohne Training|JJJJ-MM-TT letzter Tag ohne Training (bei einer Spanne wie 1 bis 2 Wochen das spätere Ende)|Grund max. 40 Zeichen]]. Rechne die Daten von heute aus richtig (morgen ist ${addDays(today(),1)}). Gelten danach noch Einschränkungen (z. B. länger kein Schwimmen), nenne sie im Text. Sagt der Nutzer, dass er wieder gesund oder fit ist und es ist etwas eingetragen, schreib als letzte Zeile genau: [[GESUND]]. Sonst nie eine solche Zeile. Erwähne die Zeile nicht im Text.`})(askCtx);
 claude=(f=>async function(){const r=await f.apply(this,arguments);if(!ASKF||typeof r!=="string")return r;
-  const m=r.match(/\[\[(KRANK\|[^\]]*|GESUND)\]\]/);if(!m)return r;
-  if(m[1]==="GESUND")ASKACT={k:"heal"};else{const p=m[1].split("|").map(x=>x.trim()),ty=/unter/i.test(p[1])?"unterhalb":/verl/i.test(p[1])?"verletzung":"oberhalb",d=/^\d{4}-\d{2}-\d{2}$/.test(p[2]||"")&&p[2]<=today()?p[2]:today();ASKACT={k:"sick",type:ty,start:d,note:(p[3]||"").slice(0,60)}}
+  const m=r.match(/\[\[(KRANK\|[^\]]*|PAUSE\|[^\]]*|GESUND)\]\]/);if(!m)return r;
+  if(m[1]==="GESUND")ASKACT={k:"heal"};else if(/^PAUSE/.test(m[1])){const p=m[1].split("|").map(x=>x.trim()),ok=x=>/^\d{4}-\d{2}-\d{2}$/.test(x||"");const st=ok(p[1])&&p[1]>=today()?p[1]:today();let en=ok(p[2])&&p[2]>=st?p[2]:addDays(st,6);if(en>addDays(st,90))en=addDays(st,90);ASKACT={k:"pause",start:st,end:en,note:(p[3]||"").slice(0,60)}}else{const p=m[1].split("|").map(x=>x.trim()),ty=/unter/i.test(p[1])?"unterhalb":/verl/i.test(p[1])?"verletzung":"oberhalb",d=/^\d{4}-\d{2}-\d{2}$/.test(p[2]||"")&&p[2]<=today()?p[2]:today();ASKACT={k:"sick",type:ty,start:d,note:(p[3]||"").slice(0,60)}}
   return r.replace(m[0],"").trim()})(claude);
 ask=(f=>async function(){ASKF=true;ASKACT=null;try{await f.apply(this,arguments)}finally{ASKF=false}
   if(ASKACT){const H=store.get("imAskH",[]);if(H[0]){H[0].act=ASKACT;store.set("imAskH",H);renderAsk()}ASKACT=null}})(ask);
 function askActCard(a){if(!a||a.done)return"";const cur=sickNow(DATA);
+  if(a.k==="pause"){const n=((DATA&&DATA.planned)||[]).filter(p=>p.coach&&p.date>=a.start&&p.date<=a.end).length;return`<div class="qact"><span>Trainingspause eintragen: ${fD(a.start)} bis ${fD(a.end)}${a.note?" ("+esc(a.note)+")":""}?${n?` ${n} KI-Einheiten in dieser Zeit nimmt die App aus dem Plan und von der Uhr.`:""} Eigene Einträge bleiben stehen und sind im Kalender ausgegraut.</span><button class="btn blue sm" data-qact="pause">Eintragen</button><button class="lnk" data-qact="no">Nein</button></div>`}
   if(a.k==="heal")return cur?`<div class="qact"><span>Als wieder gesund austragen?</span><button class="btn blue sm" data-qact="heal">Wieder gesund</button><button class="lnk" data-qact="no">Nein</button></div>`:"";
   if(cur)return"";return`<div class="qact"><span>Eintragen: ${a.type==="verletzung"?"Verletzung":"Krank"} seit ${fD(a.start)}, ${SKN[a.type]}${a.note?" ("+esc(a.note)+")":""}?</span><button class="btn blue sm" data-qact="sick">Eintragen</button><button class="lnk" data-qact="no">Nein</button></div>`}
 renderAsk=(f=>function(){f.apply(this,arguments);try{const H=store.get("imAskH",[])||[],a=H[0]&&H[0].act,o=$("qOut");if(!a||!o)return;const q=o.querySelector(".qa2 .qa");if(q&&!q.querySelector(".qact"))q.insertAdjacentHTML("beforeend",askActCard(a))}catch(e){}})(renderAsk);
 document.addEventListener("click",async e=>{const b=e.target.closest("[data-qact]");if(!b)return;e.preventDefault();const H=store.get("imAskH",[]),a=H[0]&&H[0].act;if(!a)return;
   const fin=t=>{a.done=true;store.set("imAskH",H);const c=b.closest(".qact");if(c)c.outerHTML=t?`<div class="qact ok">${t}</div>`:""};
   if(b.dataset.qact==="no"){fin("");return}b.disabled=true;
-  try{if(b.dataset.qact==="sick"){await sickAdd(a.type,a.start,today(),a.note);fin("Eingetragen. Du findest es unter Erholung und oben auf Heute.")}
+  try{if(b.dataset.qact==="pause"){await sickAdd("pause",a.start,a.end,a.note);if(isLive())for(const p of (DATA.planned||[]).filter(p=>p.coach&&p.date>=a.start&&p.date<=a.end))await api("/events/"+encodeURIComponent(p.id),{method:"DELETE"});fin("Eingetragen. Du findest die Pause unter Erholung, im Kalender und ab dem ersten Tag oben auf Heute.")}
+    else if(b.dataset.qact==="sick"){await sickAdd(a.type,a.start,today(),a.note);fin("Eingetragen. Du findest es unter Erholung und oben auf Heute.")}
     else{const s=sickNow(DATA);if(s){const y=addDays(today(),-1);await sickEnd(s,y<s.start?s.start:y);store.set("imSickAsk",String(s.id))}fin("Ausgetragen. Schön, dass es dir besser geht.")}
     await load()}catch(er){b.disabled=false;$("qErr").textContent=er.message}});
 
@@ -5012,13 +5025,13 @@ function whyFix(w){if(!w||!w.topic)return w;const N=whyNow(),tp=w.topic,x=Object
 whyHTML=(f=>function(o){try{if(o&&o.whyS&&o.whyS.length&&(!o.date||o.date===today()))o=Object.assign({},o,{whyS:o.whyS.map(whyFix)})}catch(e){}return f.call(this,o)})(whyHTML);
 /* 2.9 Bei Krankheit keine Auswahl, nur die eine Empfehlung bzw. Gute Besserung */
 coachHTML=(f=>function(n,D,t){try{const s=sickNow(D);if(s&&n&&n.date===t){const o=Object.assign({},n.o||parseNote(n.text));o.alts=[];o.opts=[];
-    if(s.type!=="oberhalb"){o.wo={sport:"Rest",title:"Gute Besserung",minutes:0,reason:s.type==="verletzung"?"Du bist als verletzt eingetragen. Training erst wieder nach ärztlicher oder physiotherapeutischer Freigabe.":"Du bist krank eingetragen. Heute kein Training, erhol dich gut. Nach dem Gesundmelden startet die App mit einer lockeren Rückkehrphase."};o.status="rot"}
+    if(s.type!=="oberhalb"){o.wo={sport:"Rest",title:s.type==="pause"?"Trainingspause":"Gute Besserung",minutes:0,reason:s.type==="pause"?`Trainingspause bis ${fD(s.end)}${s.note?" ("+s.note+")":""}. Heute kein Training. Danach startet die App mit einer lockeren Rückkehrphase.`:s.type==="verletzung"?"Du bist als verletzt eingetragen. Training erst wieder nach ärztlicher oder physiotherapeutischer Freigabe.":"Du bist krank eingetragen. Heute kein Training, erhol dich gut. Nach dem Gesundmelden startet die App mit einer lockeren Rückkehrphase."};o.status="rot"}
     else if(o.wo&&spKey(o.wo.sport)!=="rest"){o.wo=Object.assign({},o.wo);o.wo.reason="Nur Beschwerden oberhalb des Halses: wenn du dich danach fühlst, höchstens das hier, kurz und locker. Pause ist genauso gut."}
     n=Object.assign({},n,{o,__sick:1})}}catch(e){console.error(e)}
   let h=f.call(this,n,D,t);if(n&&n.__sick)h=h.replace(/<div class="cx-tabs">[\s\S]*?<\/div><div id="cxW">/,'<div id="cxW">');return h})(coachHTML);
 askTab=(f=>function(W,t){try{if(sickNow(DATA))return W}catch(e){}return f.apply(this,arguments)})(askTab);
 /* 2.9 Kalender: geplante Einheiten an Krankheitstagen als „fällt aus“ */
-function sickDay(d){return((DATA&&DATA.sick)||[]).some(s=>d>=s.start&&d<=s.end)}
+function sickDay(d){const t=today(),ask=store.get("imSickAsk","");return((DATA&&DATA.sick)||[]).some(s=>{let e=s.end;if(s.type!=="pause"&&s.end>=addDays(t,-2)&&s.end<t&&ask!==String(s.id))e=t;return d>=s.start&&d<=e})}
 function markSickCal(){try{if(!DATA||!(DATA.sick||[]).length)return;document.querySelectorAll(".dday[data-day]").forEach(el=>{const on=sickDay(el.dataset.day);el.querySelectorAll(".pi[data-pl]").forEach(p=>{p.classList.toggle("pisick",on);if(on&&!p.querySelector(".sicktag"))p.insertAdjacentHTML("beforeend",'<span class="sicktag">fällt aus</span>')})})}catch(e){}}
 render=(f=>function(){const r=f.apply(this,arguments);markSickCal();return r})(render);
 document.addEventListener("click",()=>setTimeout(markSickCal,30),true);
@@ -5029,6 +5042,31 @@ renderExtra=(f=>function(D){const r=f.apply(this,arguments);try{const box=$("fbx
   box.outerHTML=`<div class="fbmini" id="fbx"><span>${CKI_S}Deine Rückmeldung: <b>${L}</b>${x.rpe!=null?`, Anstrengung ${x.rpe} von 10`:""}</span><button class="lnk" id="fbEdit">Ändern</button></div>`;
   $("fbEdit").onclick=()=>{FBOPEN=last.id;renderExtra(DATA)}}catch(e){console.log("fb57",e)}return r})(renderExtra);
 const CKI_S='<svg viewBox="0 0 24 24" class="fbck"><path d="M5 12l4 4 10-10"/></svg>';
+/* ---------- v58 ---------- */
+/* Rückkehr nach V57-Feedback: Bedienung und Krankheit/Pause */
+/* Form unter „Warum“ mit Erklärung statt nur der Zahl */
+function formNote(){const tsb=DATA&&DATA.pmc?DATA.pmc.tsb:null;if(tsb==null)return"";
+  return tsb>5?"Du bist ausgeruht. Gute Voraussetzung für eine harte oder lange Einheit.":tsb>=-20?"Normale Ermüdung durch das Training. Du bist belastbar.":tsb>=-30?"Die letzten Tage stecken dir noch in den Beinen. Harte Einheiten nur mit Bedacht.":"Stark ermüdet. Belastung zurücknehmen und erholen."}
+whyFix=(f=>function(w){const x=f.apply(this,arguments);try{if(x&&/form|tsb/i.test(x.topic||"")&&!/ermüd|fitness/i.test(x.topic||"")){const rest=String(x.note||"").replace(/Form|[+\-−]?\d+(?:,\d+)?|[.:,\s]|liegt|bei|ist|von/gi,"");if(rest.length<12)x.note=formNote()}}catch(e){}return x})(whyFix);
+/* Ladeanzeige beim Coach nur um die Box */
+let ASKING=false;
+aiBar=(f=>function(on){if(on&&ASKING)return;return f.apply(this,arguments)})(aiBar);
+ask=(f=>async function(){ASKING=true;const c=$("askCard");if(c)c.classList.add("asking");try{return await f.apply(this,arguments)}finally{ASKING=false;if(c)c.classList.remove("asking")}})(ask);
+/* „Noch etwas machen?“: Empfehlung direkt unter der Erledigt-Karte */
+afterDone=(f=>function(D){const r=f.apply(this,arguments);try{const cc=$("coachCard"),c=$("doneCard");if(!cc)return r;if(!cc.__home)cc.__home={p:cc.parentNode,n:cc.nextSibling};
+  const dn=(D.activities||[]).some(a=>a.date===today());if(dn&&c&&c.style.display!=="none"){if(c.nextSibling!==cc)c.after(cc)}else if(cc.__home.p&&cc.parentNode!==cc.__home.p){cc.__home.p.insertBefore(cc,cc.__home.n&&cc.__home.n.parentNode===cc.__home.p?cc.__home.n:null)}}catch(e){}return r})(afterDone);
+/* Rückmeldung: einklappbar, kein Springen beim Tippen */
+document.addEventListener("click",e=>{const b=e.target.closest("[data-fb],#fbEdit,#fbDone,[data-fbm]");if(!b)return;const y=window.scrollY;setTimeout(()=>window.scrollTo(0,y),0);setTimeout(()=>window.scrollTo(0,y),120);
+  if(b.dataset.fb!=null){FBOPEN=null}},true);
+renderExtra=(f=>function(D){const r=f.apply(this,arguments);try{const box=$("fbx");if(box&&box.classList.contains("fbx")&&FBOPEN&&!$("fbDone")){box.insertAdjacentHTML("beforeend",'<button class="lnk" id="fbDone" style="margin-top:8px">Fertig</button>');$("fbDone").onclick=()=>{FBOPEN=null;renderExtra(DATA)}}}catch(e){}return r})(renderExtra);
+/* Rückmeldung auch in den Details einer Einheit */
+function fbmdHTML(a){const x=fbOf(a),R=[[-1,"Zu leicht"],[0,"Passend"],[1,"Zu schwer"]];return`<div class="fbmd" data-aid="${esc(String(a.id))}"><b>Deine Rückmeldung</b><div class="fbb">${R.map(([v,l])=>`<button class="fbbtn${x.own&&x.r===v?" on":""}" data-fbm="${v}">${l}</button>`).join("")}</div><span class="sub">${x.rpe!=null?`Anstrengung ${x.rpe} von 10${x.src==="uhr"?" (von der Uhr)":""}`:"Anstrengung noch nicht angegeben"}. Passend wäre etwa ${x.e.lo} bis ${x.e.hi}.</span></div>`}
+actInfo=(f=>function(a){f.apply(this,arguments);try{if(!a||!a.id)return;const b=$("iBody");if(!b)return;const old=b.querySelector(".fbmd");if(old)old.remove();const k=b.querySelector(".kv")||b.querySelector(".act");if(k)k.insertAdjacentHTML("afterend",fbmdHTML(a));else b.insertAdjacentHTML("beforeend",fbmdHTML(a))}catch(e){console.log("fbmd",e)}})(actInfo);
+document.addEventListener("click",e=>{const k=e.target.closest(".fbmd [data-fbm]");if(!k)return;const box=k.closest(".fbmd"),a=(DATA.activities||[]).find(x=>String(x.id)===box.dataset.aid);if(!a)return;fbSet(a.id,{r:+k.dataset.fbm});box.outerHTML=fbmdHTML(a);try{renderExtra(DATA);renderFbAdj(DATA)}catch(er){}});
+/* Pause in Plänen der KI beachten */
+coachText=(f=>function(){const s=f.apply(this,arguments);try{const t=today(),P=((DATA&&DATA.sick)||[]).filter(x=>x.type==="pause"&&x.end>=t);if(!P.length)return s;const x="\nTRAININGSPAUSE EINGETRAGEN: "+P.map(p=>`${p.start} bis ${p.end}${p.note?" ("+p.note+")":""}`).join(", ")+". An diesen Tagen keine Einheiten planen, danach mit einer lockeren Rückkehrwoche beginnen.";const i=s.indexOf("\nANTWORTFORMAT");return i<0?s+x:s.slice(0,i)+x+s.slice(i)}catch(e){return s}})(coachText);
+askCtx=(f=>function(){const s=f.apply(this,arguments);try{const t=today(),P=((DATA&&DATA.sick)||[]).filter(x=>x.type==="pause"&&x.end>=t);return P.length?s+"\nEINGETRAGENE TRAININGSPAUSE: "+P.map(p=>`${p.start} bis ${p.end}${p.note?" ("+p.note+")":""}`).join(", "):s}catch(e){return s}})(askCtx);
+planGate=(f=>function(items){const r=f.apply(this,arguments);try{const P=((DATA&&DATA.sick)||[]).filter(x=>x.type==="pause");(items||[]).forEach(it=>{if(P.some(p=>it.date>=p.start&&it.date<=p.end))r.issues.push({t:`${it.date}: An diesem Tag ist eine Trainingspause eingetragen, keine Einheit planen.`})})}catch(e){}return r})(planGate);
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
 $("btnRace").onclick=()=>openRace(null);
