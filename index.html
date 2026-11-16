@@ -935,6 +935,12 @@ h3>.tag,.cx-h>.tag{display:table;margin:8px 0 2px;font-size:12px}
 @keyframes askrot{to{--askang:360deg}}
 @media (prefers-reduced-motion:reduce){#askCard.asking::before{animation:none;background:var(--acc)}}
 .fbmd{margin:10px 0;padding:10px 12px;border-radius:12px;background:var(--card2)}.fbmd .fbb{margin:8px 0 6px}.fbmd .sub{display:block;font-size:12px}
+.fbmini .lnk,#fbEdit{display:inline-block;margin:0;padding:4px 0;align-self:center;flex:none}
+.fbmini span{line-height:1.35}
+.rcopt{display:flex;align-items:center;gap:10px;margin-top:8px}.rcopt .btn{flex:none}.rcopt span{font-size:12.5px;color:var(--muted)}
+#rcHide{border:1px solid var(--line);cursor:pointer}#rcHide:hover{background:var(--line)}
+#rcCancel{margin-top:8px}
+.fbmd .fbl{display:block;margin-top:4px;font-size:13px}.fbmd .rpe{width:100%}
 </style>
 </head>
 <body>
@@ -1117,7 +1123,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="58";
+const VERSION="59";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -4834,13 +4840,14 @@ ruleNote=(f=>function(D){const o=f.apply(this,arguments),rc=raceRecent(D);if(!rc
   else if(lv==="easy"){if(hardPlan||!o.wo||o.wo.sport==="Rest"||/Z[4-6]/.test(o.wo.description||"")){const k=spKey(o.wo&&o.wo.sport);const kk=TPL[k]?k:(low||"run");o.wo=Object.assign({},TPL[kk][1],{reason:`${wd}. ${txt}`})}else o.wo.reason=`${wd}. ${txt} ${o.wo.reason||""}`;if(hardPlan)o.ps={status:"angepasst",original:o.ps.original||"",change:"Nach dem Wettkampf nur locker, harte Abschnitte weglassen."}}
   else if(o.wo)o.wo.reason=`${wd}. ${txt} ${o.wo.reason||""}`;
   o.goal="Erholen nach dem Wettkampf";return o})(ruleNote);
-function renderRaceCard(D){let el=$("raceCard");const rc=raceRecent(D);if(!rc){if(el)el.remove();return}
+function renderRaceCard(D){let el=$("raceCard");const rc=raceRecent(D);if(!rc||store.get("imRaceHide","")===rc.date){if(el)el.remove();return}
   if(!el){el=document.createElement("div");el.className="card";el.id="raceCard";const w=$("weekNew");if(!w)return;w.parentNode.insertBefore(el,w)}
   const P=rc.R.ph.concat([[rc.R.end,"light","Wieder normales Training."]]);let from=0;
   el.innerHTML=`<div class="cx-k" style="color:var(--acc)">Erholung nach dem Wettkampf</div><div class="cx-h">${esc(rc.name)} · Tag ${rc.day} von ${rc.R.end}</div>
    <div class="rcbar"><i style="width:${Math.min(100,Math.round(rc.day/rc.R.end*100))}%"></i></div><p style="margin:8px 0 4px"><b>Jetzt:</b> ${esc(rc.ph[2])}</p>
    <ul class="rclist">${rc.R.ph.map(p=>{const li=`<li class="${rc.day>from&&rc.day<=p[0]||(from===0&&rc.day===0&&p===rc.R.ph[0])?"on":rc.day>p[0]?"done":""}"><b>Tag ${from+1===p[0]||from===p[0]?p[0]:(from+1)+" bis "+p[0]}</b> ${esc(p[2])}</li>`;from=p[0];return li}).join("")}<li class="${rc.day>=rc.R.hard?"done":""}"><b>Ab Tag ${rc.R.hard}</b> harte Einheiten wieder möglich, ab Tag ${rc.R.end} normales Training.</li></ul>
-   <button class="rcmenu" id="rcMenu" aria-label="Mehr">⋯</button><div class="rcask" id="rcAsk" hidden><span>War ${esc(rc.name)} kein Wettkampf? Dann blendet die App die Erholung aus und plant normal weiter.</span><div class="btnrow"><button class="btn sm" id="rcNo">Kein Wettkampf</button><button class="lnk" id="rcCancel">Abbrechen</button></div></div>`;
+   <button class="rcmenu" id="rcMenu" aria-label="Mehr">⋯</button><div class="rcask" id="rcAsk" hidden><div class="rcopt"><button class="btn sm" id="rcHide">Karte ausblenden</button><span>Die Erholungsregeln gelten weiter, nur die Karte verschwindet.</span></div><div class="rcopt"><button class="btn sm" id="rcNo">Kein Wettkampf</button><span>War ${esc(rc.name)} kein Wettkampf, plant die App wieder normal.</span></div><button class="lnk" id="rcCancel">Abbrechen</button></div>`;
+  $("rcHide").onclick=()=>{store.set("imRaceHide",rc.date);el.remove()};
   $("rcMenu").onclick=()=>{$("rcAsk").hidden=!$("rcAsk").hidden};$("rcCancel").onclick=()=>{$("rcAsk").hidden=true};
   $("rcNo").onclick=()=>{const l=store.get("imRaceIgnore",[]);l.push(rc.date);store.set("imRaceIgnore",l.slice(-20));el.remove();try{render()}catch(e){}raceUndoToast(rc.date)}}
 render=(f=>function(){const r=f.apply(this,arguments);try{renderRaceCard(DATA)}catch(e){}return r})(render);
@@ -5058,15 +5065,22 @@ afterDone=(f=>function(D){const r=f.apply(this,arguments);try{const cc=$("coachC
 /* Rückmeldung: einklappbar, kein Springen beim Tippen */
 document.addEventListener("click",e=>{const b=e.target.closest("[data-fb],#fbEdit,#fbDone,[data-fbm]");if(!b)return;const y=window.scrollY;setTimeout(()=>window.scrollTo(0,y),0);setTimeout(()=>window.scrollTo(0,y),120);
   if(b.dataset.fb!=null){FBOPEN=null}},true);
-renderExtra=(f=>function(D){const r=f.apply(this,arguments);try{const box=$("fbx");if(box&&box.classList.contains("fbx")&&FBOPEN&&!$("fbDone")){box.insertAdjacentHTML("beforeend",'<button class="lnk" id="fbDone" style="margin-top:8px">Fertig</button>');$("fbDone").onclick=()=>{FBOPEN=null;renderExtra(DATA)}}}catch(e){}return r})(renderExtra);
+renderExtra=(f=>function(D){const r=f.apply(this,arguments);try{const box=$("fbx");if(box&&box.classList.contains("fbx")&&FBOPEN&&!$("fbDone")){box.insertAdjacentHTML("beforeend",'<button class="btn sm blue" id="fbDone" style="margin-top:10px">Fertig</button>');$("fbDone").onclick=()=>{FBOPEN=null;renderExtra(DATA)}}}catch(e){}return r})(renderExtra);
 /* Rückmeldung auch in den Details einer Einheit */
-function fbmdHTML(a){const x=fbOf(a),R=[[-1,"Zu leicht"],[0,"Passend"],[1,"Zu schwer"]];return`<div class="fbmd" data-aid="${esc(String(a.id))}"><b>Deine Rückmeldung</b><div class="fbb">${R.map(([v,l])=>`<button class="fbbtn${x.own&&x.r===v?" on":""}" data-fbm="${v}">${l}</button>`).join("")}</div><span class="sub">${x.rpe!=null?`Anstrengung ${x.rpe} von 10${x.src==="uhr"?" (von der Uhr)":""}`:"Anstrengung noch nicht angegeben"}. Passend wäre etwa ${x.e.lo} bis ${x.e.hi}.</span></div>`}
+function fbmdHTML(a){const x=fbOf(a),R=[[-1,"Zu leicht"],[0,"Passend"],[1,"Zu schwer"]];return`<div class="fbmd" data-aid="${esc(String(a.id))}"><b>Deine Rückmeldung</b><div class="fbb">${R.map(([v,l])=>`<button class="fbbtn${x.own&&x.r===v?" on":""}" data-fbm="${v}">${l}</button>`).join("")}</div><label class="fbl">Anstrengung <b class="fbmv">${x.rpe!=null?x.rpe+" · "+RPEL[x.rpe]:"noch nicht angegeben"}</b>${x.src==="uhr"?" <em>von der Uhr</em>":""}</label><input type="range" min="0" max="10" step="1" class="rpe" data-fbr="1" value="${x.rpe!=null?x.rpe:5}"><div class="rpel"><span>0 Ruhe</span><span>5 schwer</span><span>10 maximal</span></div><span class="sub">Passend wäre etwa ${x.e.lo} bis ${x.e.hi} von 10.</span></div>`}
+document.addEventListener("input",e=>{const r=e.target.closest(".fbmd [data-fbr]");if(!r)return;const v=r.closest(".fbmd").querySelector(".fbmv");if(v)v.textContent=r.value+" · "+RPEL[+r.value]});
+document.addEventListener("change",e=>{const r=e.target.closest(".fbmd [data-fbr]");if(!r)return;const a=(DATA.activities||[]).find(x=>String(x.id)===r.closest(".fbmd").dataset.aid);if(!a)return;const v=+r.value;fbSet(a.id,{rpe:v});fbPushRpe(a,v);try{renderExtra(DATA);renderFbAdj(DATA)}catch(er){}});
 actInfo=(f=>function(a){f.apply(this,arguments);try{if(!a||!a.id)return;const b=$("iBody");if(!b)return;const old=b.querySelector(".fbmd");if(old)old.remove();const k=b.querySelector(".kv")||b.querySelector(".act");if(k)k.insertAdjacentHTML("afterend",fbmdHTML(a));else b.insertAdjacentHTML("beforeend",fbmdHTML(a))}catch(e){console.log("fbmd",e)}})(actInfo);
 document.addEventListener("click",e=>{const k=e.target.closest(".fbmd [data-fbm]");if(!k)return;const box=k.closest(".fbmd"),a=(DATA.activities||[]).find(x=>String(x.id)===box.dataset.aid);if(!a)return;fbSet(a.id,{r:+k.dataset.fbm});box.outerHTML=fbmdHTML(a);try{renderExtra(DATA);renderFbAdj(DATA)}catch(er){}});
 /* Pause in Plänen der KI beachten */
 coachText=(f=>function(){const s=f.apply(this,arguments);try{const t=today(),P=((DATA&&DATA.sick)||[]).filter(x=>x.type==="pause"&&x.end>=t);if(!P.length)return s;const x="\nTRAININGSPAUSE EINGETRAGEN: "+P.map(p=>`${p.start} bis ${p.end}${p.note?" ("+p.note+")":""}`).join(", ")+". An diesen Tagen keine Einheiten planen, danach mit einer lockeren Rückkehrwoche beginnen.";const i=s.indexOf("\nANTWORTFORMAT");return i<0?s+x:s.slice(0,i)+x+s.slice(i)}catch(e){return s}})(coachText);
 askCtx=(f=>function(){const s=f.apply(this,arguments);try{const t=today(),P=((DATA&&DATA.sick)||[]).filter(x=>x.type==="pause"&&x.end>=t);return P.length?s+"\nEINGETRAGENE TRAININGSPAUSE: "+P.map(p=>`${p.start} bis ${p.end}${p.note?" ("+p.note+")":""}`).join(", "):s}catch(e){return s}})(askCtx);
 planGate=(f=>function(items){const r=f.apply(this,arguments);try{const P=((DATA&&DATA.sick)||[]).filter(x=>x.type==="pause");(items||[]).forEach(it=>{if(P.some(p=>it.date>=p.start&&it.date<=p.end))r.issues.push({t:`${it.date}: An diesem Tag ist eine Trainingspause eingetragen, keine Einheit planen.`})})}catch(e){}return r})(planGate);
+/* ---------- v59 ---------- */
+/* Empfehlung nach „Noch etwas machen?“ immer direkt unter der Erledigt-Karte */
+function ccUnderDone(){const cc=$("coachCard"),c=$("doneCard");if(!cc||!c||c.style.display==="none")return;if(!(DATA&&(DATA.activities||[]).some(a=>a.date===today())))return;if(c.nextElementSibling!==cc)c.after(cc)}
+render=(f=>function(){const r=f.apply(this,arguments);try{ccUnderDone();setTimeout(ccUnderDone,0)}catch(e){}return r})(render);
+document.addEventListener("click",e=>{if(e.target.closest("[data-showrec]"))ccUnderDone()},true);
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
 $("btnRace").onclick=()=>openRace(null);
