@@ -989,6 +989,20 @@ h3>.tag,.cx-h>.tag{display:table;margin:8px 0 2px;font-size:12px}
 .owd{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
 .owd button{background:var(--card2);border-radius:12px;padding:8px 0;font:700 14px "Barlow Semi Condensed",sans-serif;color:var(--muted)}
 .owd button.on{background:var(--acc);color:#fff}
+/* v78 */
+.tp-pr{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.tp-pr div{min-width:0}.tp-pr b{display:block;font-size:14px}.tp-pr span,.tp-pr em{display:block;font-size:12px;color:var(--muted);font-style:normal;margin-top:2px}
+.tp-run{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--line)}.tp-run div{flex:1;min-width:0}.tp-run b{display:block;font-size:14px}.tp-run span{display:block;font-size:12px;color:var(--muted)}
+.tp-run .ib{width:30px;height:30px;flex:0 0 auto}
+.tp-chk,.tp-ph{list-style:none;padding:0;margin:6px 0}.tp-chk li,.tp-ph li{font-size:13px;padding:4px 0 4px 22px;position:relative;line-height:1.35}
+.tp-chk li:before{position:absolute;left:0;top:4px;font-weight:700}.tp-chk li.ok:before{content:"✓";color:var(--green)}.tp-chk li.no:before{content:"✗";color:var(--red)}
+.tp-ph li{padding-left:0}
+.tp-tbl{overflow-x:auto;margin:6px 0;-webkit-overflow-scrolling:touch}.tp-tbl table{border-collapse:collapse;font-size:12.5px;min-width:100%}
+.tp-tbl th,.tp-tbl td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}.tp-tbl td:first-child{white-space:nowrap;color:var(--muted)}.tp-tbl td.w{min-width:170px}
+.tp-it summary{cursor:pointer;font-size:13px;padding:6px 0;line-height:1.35}.tp-it pre{white-space:pre-wrap;font-size:12px;background:var(--card2);padding:8px;border-radius:8px;margin:4px 0 8px;font-family:inherit}
+.tp-res{font-size:12.5px;white-space:pre-wrap;line-height:1.45;margin:4px 0}.tp-err{color:var(--red);font-size:13px;margin:8px 0}.tp-h{font-weight:700;color:var(--red)}
+.tp-rate{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 0;flex-wrap:wrap}.tp-rate>span{font-size:13px}.tp-rate .tchips button{padding:6px 10px;font-size:12.5px}
+#tpMemo{width:100%;min-height:90px;margin-top:4px}
 </style>
 </head>
 <body>
@@ -1171,7 +1185,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="77";
+const VERSION="78";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -5775,6 +5789,169 @@ function promptV77(p){
 aiPost=(f=>async function(body){try{const m=body&&body.messages&&body.messages[0];
   if(m&&typeof m.content==="string"&&(body.system===COACH_SYS||body.system===HEALTH_SYS)){body.system=sysV77();m.content=promptV77(m.content)}}catch(e){}
   return f.apply(this,arguments)})(aiPost);
+
+/* ---------- v78 ---------- */
+/* 5.1 Plan-Prüfstand (Entwickleroption): Pläne für feste Beispielprofile erstellen und bewerten. Nichts geht in den Kalender oder zu intervals.icu.
+   Abgeschottet: store liest und schreibt während des Laufs nur im Arbeitsspeicher (außer imAiSpend), eigene Einstellungen und Beispieldaten,
+   Schreibzugriffe auf intervals.icu gesperrt, Hintergrundaufgaben pausiert. Ergebnisse in imTestPlans, Recherche je Profil in imTPRes. */
+var TPRUN=false,TPOV=null;
+const TPPASS=["imAiSpend"],tpc=v=>v===undefined?undefined:JSON.parse(JSON.stringify(v));
+const tpReal=(k,d)=>{try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},tpSave=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+store.get=(f=>function(k,d){if(TPRUN&&!TPPASS.includes(k))return TPOV[k]!==undefined?tpc(TPOV[k]):d;return f.apply(this,arguments)})(store.get);
+store.set=(f=>function(k,v){if(TPRUN&&!TPPASS.includes(k)){TPOV[k]=tpc(v);return}return f.apply(this,arguments)})(store.set);
+window.fetch=(f=>function(u,o){try{if(TPRUN&&/intervals\.icu/i.test(String((u&&u.url)||u))&&String((o&&o.method)||(u&&u.method)||"GET").toUpperCase()!=="GET")return Promise.resolve(new Response("{}",{status:200,headers:{"content-type":"application/json"}}))}catch(e){}return f.apply(this,arguments)})(window.fetch);
+["render","aiAuto","planAuto","aiDaily","aiActivity","aiWeekly","aiProg","aiRaceInfo","autoWatch","wkRepair","aiFbAdjust"].forEach(n=>{try{const d=Object.getOwnPropertyDescriptor(window,n);if(!d||!d.writable||typeof window[n]!=="function")return;
+  const f=window[n];window[n]=function(){if(TPRUN)return n==="render"?undefined:Promise.resolve();return f.apply(this,arguments)}}catch(e){}});
+const TPN={run:"Laufen",bike:"Rad",swim:"Schwimmen",kraft:"Kraft",other:"Gehen"};
+const TPZ=(mx,lt,f)=>(f||[.84,.9,.95,1,1.035,1.07]).map(x=>Math.round(lt*x)).concat([mx]);
+const TPP=[
+ {id:"im_noah",n:"Ironman nach Marathon (wie Noah)",d:"Triathlon mit Kraft, bisher etwa 9 h pro Woche, Marathon vor 22 Tagen, Langdistanz in gut 7 Monaten, höchstens 12 h",seed:21,
+  set:{sports:["swim","bike","run","kraft"],purpose:"race",mode:"sport",birthYear:"2000",sex:"m",equip:["body"],equip2:["pool","watt","rolle"]},
+  goal:{gSet:"1",gSrc:"claude",gSport:"Triathlon",gDist:"Langdistanz (Ironman)",gRace:"tp_a",gDate:"",gTime:"11:00:00",gHours:"12",gDays:"1,1,1,1,0,2,2",gExp:"mittel",gFocus:"",gInj:""},
+  wk:[[["swim",60,"e"]],[["run",60,"h"],["kraft",30,"e"]],[["bike",75,"e"],["swim",60,"e"]],[["run",60,"e"]],[],[["bike",150,"l"]],[["run",90,"l"]]],
+  past:{ago:22,sport:"run",name:"Frankfurt Marathon",km:42.4,secs:11509,hr:168,if:.86,cal:"Marathon (Beispiel)"},
+  races:[[223,"Ironman Frankfurt (Beispiel)","A"],[90,"Halbmarathon (Beispiel)","B"]],hr:{mx:198,lt:178},ftp:240,tp:3.27,css:.847,wv:{hrv:63,rhr:48,sl:7},pace:5.3},
+ {id:"im_neu",n:"Ironman-Einsteigerin",d:"Erste Langdistanz in 10 Monaten, bisher Olympisch, etwa 6 h pro Woche, Kraft mit Kurzhanteln, Schwerpunkt Schwimmen, höchstens 14 h",seed:32,
+  set:{sports:["swim","bike","run","kraft"],purpose:"race",mode:"sport",birthYear:"1988",sex:"w",equip:["home"],equip2:["pool","rolle"]},
+  goal:{gSet:"1",gSrc:"claude",gSport:"Triathlon",gDist:"Langdistanz (Ironman)",gRace:"tp_a",gDate:"",gTime:"",gHours:"14",gDays:"1,1,1,1,0,2,2",gExp:"mittel",gFocus:"swim",gInj:""},
+  wk:[[["swim",45,"e"]],[["run",45,"e"]],[["bike",60,"e"],["kraft",30,"e"]],[["swim",45,"e"]],[],[["bike",120,"l"]],[["run",70,"l"]]],
+  races:[[300,"Ironman Hamburg (Beispiel)","A"],[230,"Mitteldistanz (Beispiel)","B"]],hr:{mx:188,lt:168},ftp:190,tp:2.86,css:.74,wv:{hrv:52,rhr:55,sl:7.2},pace:6},
+ {id:"mara_neu",n:"Marathon-Einsteiger",d:"Erster Marathon in 16 Wochen, bisher 3 Läufe pro Woche (etwa 20 km), ohne Kraft, 4 mögliche Lauftage, höchstens 5 h",seed:43,
+  set:{sports:["run"],purpose:"race",mode:"sport",birthYear:"1995",sex:"m",equip:[],equip2:[]},
+  goal:{gSet:"1",gSrc:"claude",gSport:"Laufen",gDist:"Marathon",gRace:"tp_a",gDate:"",gTime:"4:30:00",gHours:"5",gDays:"0,1,1,0,1,0,2",gExp:"neu",gFocus:"",gInj:""},
+  wk:[[],[["run",35,"e"]],[],[],[["run",40,"e"]],[],[["run",55,"l"]]],races:[[112,"Marathon (Beispiel)","A"]],hr:{mx:190,lt:168},tp:null,wv:{hrv:58,rhr:56,sl:7},pace:6.4},
+ {id:"zehn_ohne",n:"10 km ohne Uhr",d:"60 Jahre, ohne Uhr (eigene Einträge ohne Puls), 10 km in 10 Wochen, Kraft mit Körpergewicht, Knie empfindlich, höchstens 3 h",seed:54,nw:true,
+  set:{sports:["run","kraft"],purpose:"race",mode:"sport",birthYear:"1966",sex:"w",equip:["body"],equip2:[],noWatch:true},
+  goal:{gSet:"1",gSrc:"claude",gSport:"Laufen",gDist:"10 km",gRace:"tp_a",gDate:"",gTime:"1:05:00",gHours:"3",gDays:"1,0,1,0,0,2,0",gExp:"mittel",gFocus:"",gInj:"Knie empfindlich bergab"},
+  wk:[[["run",30,"e"]],[],[["run",30,"e"]],[],[],[["run",45,"l"]],[]],races:[[70,"Stadtlauf 10 km (Beispiel)","A"]],pace:7.2},
+ {id:"kraft",n:"Nur Kraft im Studio",d:"Muskelaufbau Ganzkörper, 3 Tage pro Woche im Fitnessstudio, kein Ausdauersport, höchstens 4 h",seed:65,
+  set:{sports:["kraft"],purpose:"fit",mode:"sport",birthYear:"1990",sex:"m",equip:["gym"],equip2:[]},
+  goal:{gSet:"1",gSrc:"claude",gSport:"Krafttraining",gDist:"",gRace:"",gDate:"",gTime:"",gHours:"4",gDays:"1,0,1,0,1,0,0",gExp:"mittel",gFocus:"",gInj:"",gKFoc:"ganz",gKArt:"aufbau"},
+  wk:[[["kraft",60,"e"]],[],[["kraft",60,"e"]],[],[["kraft",60,"e"]],[],[]],races:[],hr:{mx:190,lt:170},wv:{hrv:60,rhr:58,sl:7.1}},
+ {id:"olymp_4h",n:"Olympisch mit 4 Stunden",d:"Olympische Distanz in 24 Wochen, nur 4 h pro Woche, Kraft mit Körpergewicht",seed:76,
+  set:{sports:["swim","bike","run","kraft"],purpose:"race",mode:"sport",birthYear:"1982",sex:"m",equip:["body"],equip2:["pool"]},
+  goal:{gSet:"1",gSrc:"claude",gSport:"Triathlon",gDist:"Olympisch",gRace:"tp_a",gDate:"",gTime:"2:45:00",gHours:"4",gDays:"0,1,0,1,0,2,1",gExp:"mittel",gFocus:"",gInj:""},
+  wk:[[],[["swim",45,"e"]],[],[["run",40,"h"]],[],[["bike",90,"l"]],[["run",50,"e"]]],races:[[168,"Triathlon Olympisch (Beispiel)","A"]],hr:{mx:186,lt:172},ftp:220,tp:3,css:.8,wv:{hrv:55,rhr:52,sl:6.8},pace:5.7},
+ {id:"gesund",n:"Gesundheit: nur Gehen",d:"68 Jahre, Gesundheitsmodus, Spaziergänge an 4 Tagen, höchstens 3 h",seed:87,
+  set:{sports:["walk"],purpose:"health",mode:"gesundheit",birthYear:"1958",sex:"w",equip:["body"],equip2:[]},
+  goal:{gSet:"1",gSrc:"claude",gSport:"Gesundheit",gDist:"",gRace:"",gDate:"",gTime:"",gHours:"3",gDays:"1,1,1,1,1,0,0",gExp:"neu",gFocus:"",gInj:""},
+  wk:[[["walk",30,"e"]],[["walk",35,"e"]],[],[["walk",30,"e"]],[["walk",40,"e"]],[],[]],races:[],hr:{mx:155,lt:135},wv:{hrv:32,rhr:64,sl:6.9}}];
+function tpRaw(p){const r=rng(p.seed),t=today(),A=[],W=[],R=[],nw=!!p.nw,eq2=p.set.equip2||[];
+  const ga=()=>{let u=0,v=0;while(!u)u=r();while(!v)v=r();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)};
+  const pd=p.past?addDays(t,-p.past.ago):null,vf=d=>{if(!pd)return 1;const x=diffDays(pd,d);return x>=-7&&x<0?.6:x>0&&x<=21?.5:1};
+  for(let i=84;i>=0;i--){const d=addDays(t,-i),wd=(new Date(d+"T12:00:00").getDay()+6)%7;
+    if(i>0&&d===pd){const q=p.past;A.push({id:"tp"+d+"race",type:"Run",date:d,sport:q.sport,name:q.name,secs:q.secs,km:q.km,load:Math.round(q.secs/60*1.6),hr:nw?null:q.hr,if:nw?null:q.if,maxhr:nw?null:q.hr+12})}
+    else if(i>0)(p.wk[wd]||[]).forEach(([s,m,k],j)=>{if(r()<.1)return;const H=k==="h",L=k==="l",mins=Math.max(15,Math.round(m*vf(d)*(.9+r()*.2)*(1+(84-i)/84*.1)));
+      const km=s==="run"?mins/(p.pace||6)*(H?1.08:1):s==="bike"?mins*.5:s==="swim"?mins/22:s==="walk"?mins/12:0,lt=p.hr?p.hr.lt:160;
+      A.push({id:"tp"+d+s+j,type:{swim:"Swim",bike:"Ride",run:"Run",kraft:"WeightTraining",walk:"Walk"}[s],date:d,sport:s==="kraft"||s==="walk"?"other":s,
+        name:{swim:"Schwimmen",bike:L?"Lange Radausfahrt":H?"Rad Intervalle":"Rad",run:L?"Langer Lauf":H?"Intervalle":"Lauf",kraft:"Krafttraining",walk:"Spaziergang"}[s],
+        secs:mins*60,km:+km.toFixed(2),load:Math.round(mins*{swim:.75,bike:.85,run:1.05,kraft:.5,walk:.3}[s]*(H?1.35:1)),
+        hr:nw||!p.hr?null:Math.round((s==="kraft"?.65:s==="walk"?.72:s==="swim"?.74:H?.9:.8)*lt+ga()*3),
+        np:s==="bike"&&p.ftp&&!nw&&eq2.includes("watt")?Math.round(p.ftp*(H?.88:.68)+ga()*6):null,if:nw||!p.hr||s==="kraft"||s==="walk"?null:(H?.88:L?.72:.7),ftp:s==="bike"&&p.ftp?p.ftp:null})});
+    if(!nw&&p.wv)W.push({date:d,hrv:Math.round(p.wv.hrv+ga()*4),rhr:Math.round(p.wv.rhr+ga()*1.3),sleepH:Math.max(5,+(p.wv.sl+ga()*.6).toFixed(2))})}
+  const Z={},us=p.set.sports||[];if(p.hr&&!nw){const hz=TPZ(p.hr.mx,p.hr.lt);Z.run={hr:hz,lthr:p.hr.lt,max:p.hr.mx,tp:p.tp||null};
+    if(us.includes("bike"))Z.bike={hr:TPZ(p.hr.mx,p.hr.lt,[.8,.89,.94,.99,1.035,1.07]),lthr:p.hr.lt,max:p.hr.mx,ftp:p.ftp||null,pz:[55,75,90,105,120,150,999]};
+    if(us.includes("swim"))Z.swim={hr:hz,tp:p.css||null}}
+  (p.races||[]).forEach(([dd,n,pr],k)=>R.push({id:k===0?"tp_a":"tp_"+k,date:addDays(t,dd),name:n,prio:pr,type:""}));
+  if(pd&&p.past.cal)R.push({id:"tp_p",date:pd,name:p.past.cal,prio:"A",type:"Run"});
+  return{activities:A.sort((a,b)=>a.date.localeCompare(b.date)),wellness:W,sick:[],planned:[],races:R,notes:[],zones:Z,eftp:p.ftp&&!nw?Math.round(p.ftp*1.03):null,city:"",source:"Prüfstand"}}
+async function tpRun(id){if(TPRUN)throw new Error("Es läuft schon ein Testplan.");if(!settings.aiKey)throw new Error("Kein KI-Schlüssel eingetragen.");
+  const p=TPP.find(x=>x.id===id);if(!p)throw new Error("Profil fehlt.");
+  const S0=settings,D0=DATA,K0=[KRT,KRNO],F0={writeNote,delCoachFrom,ensureExArt,load,saveGoal,api,planImportRaw},RES=tpReal("imTPRes",{})||{},usd0=spend().usd,t0=Date.now(),from=addDays(today(),1);
+  const ch=$("coachHint"),chT=ch?ch.textContent:null,cap={items:[],phases:""};
+  const s=Object.assign({},DEFAULTS,tpc(p.set),{aiKey:S0.aiKey,tier:"max",dev:true,pal:S0.pal,theme:S0.theme,own:{},ownDays:{},healthOk:true});if(!p.nw)s.apiKey="pruefstand";
+  const goal=Object.assign({gNote:""},tpc(p.goal));let err=null,avg=0,rc=null,ov=null;
+  TPOV={imOnb:true,imSettings:s,imGoal:goal};if(RES[id])TPOV.imPlanRes=RES[id];TPRUN=true;
+  try{settings=s;KRT=Date.now();KRNO=!s.sports.includes("kraft");DATA=prep(tpRaw(p));avg=avgHours(DATA);rc=raceRecent(DATA);
+    writeNote=async(d,txt,nm)=>{if(/Plan Übersicht/.test(nm||""))cap.phases=String(txt||"");return 1};
+    delCoachFrom=async()=>{};ensureExArt=async()=>{};load=async()=>{};saveGoal=()=>store.get("imGoal",{});api=async()=>[];
+    planImportRaw=async L=>{cap.items=(L||[]).map(x=>({date:x.date,sport:x.sport,name:x.name,minutes:+x.minutes||0,description:x.description||""}));return cap.items.length};
+    await aiPlan(true)}
+  catch(e){err=(e&&e.message)||String(e)}
+  finally{ov=TPOV||{};writeNote=F0.writeNote;delCoachFrom=F0.delCoachFrom;ensureExArt=F0.ensureExArt;load=F0.load;saveGoal=F0.saveGoal;api=F0.api;planImportRaw=F0.planImportRaw;
+    settings=S0;DATA=D0;KRT=K0[0];KRNO=K0[1];TPRUN=false;TPOV=null;if(ch&&chT!=null)ch.textContent=chT}
+  if(ov.imPlanRes&&ov.imPlanRes.v){RES[id]=ov.imPlanRes;tpSave("imTPRes",RES)}
+  if(!err&&!cap.items.length)err="Die KI hat keine Einheiten geliefert.";
+  const run={id:"tp"+Date.now().toString(36),pid:id,pn:p.n,v:VERSION,ts:new Date().toISOString(),day:today(),from,sec:Math.round((Date.now()-t0)/1000),usd:+(spend().usd-usd0).toFixed(3),err,
+    items:cap.items,phases:cap.phases,note:(ov.imPlanNote||{}).note||"",chk:ov.imPlanCheck||null,res:(ov.imPlanRes||{}).v||"",avg:+avg.toFixed(2),goal,
+    race:rc?{kind:rc.R.n,date:rc.date,hard:rc.R.hard,end:rc.R.end}:null,rate:{},memo:""};
+  try{run.m=tpMetrics(run,p)}catch(e){run.m=null}
+  const L=tpReal("imTestPlans",[])||[];L.unshift(run);tpSave("imTestPlans",L.slice(0,40));
+  try{if(DATA)render()}catch(e){}return run}
+function tpMetrics(run,p){const I=(run.items||[]).slice().sort((a,b)=>a.date.localeCompare(b.date));if(!I.length)return null;
+  const g=run.goal||{},cap=+g.gHours||0,wa=weekArr(g),us=(p.set.sports||[]).filter(k=>["run","bike","swim","kraft"].includes(k)),fr=run.from||I[0].date,B=[],C=[];
+  for(let w=0;w<2;w++){const days=[...Array(7)].map((_,i)=>addDays(fr,w*7+i)),L=I.filter(x=>days.includes(x.date)),o={min:0,end:0,hard:0,hd:0,rest:0,n:{},m:{},lg:{}};
+    L.forEach(x=>{const k=gSk(x),mi=+x.minutes||0;o.min+=mi;o.n[k]=(o.n[k]||0)+1;o.m[k]=(o.m[k]||0)+mi;o.lg[k]=Math.max(o.lg[k]||0,mi);if(k!=="kraft"){o.end+=mi;o.hard+=Math.min(mi,gHard(x))}});
+    days.forEach(d=>{const X=L.filter(x=>x.date===d);if(!X.length)o.rest++;if(X.some(x=>gHard(x)>=5))o.hd++});B.push(o)}
+  const add=(k,ok,t)=>C.push({k,ok:!!ok,t}),left=(run.chk&&run.chk.left)||[],found=(run.chk&&run.chk.found)||[];
+  add("regel",!left.length,left.length?`Regelprüfung: ${left.length} Punkte offen`:found.length?`Regelprüfung: ${found.length} Punkte von der KI korrigiert`:"Regelprüfung: alle Regeln eingehalten");
+  if(cap)add("cap",B.every(b=>b.min<=cap*60*1.05),`Höchstzeit ${cap} h: ${B.map(b=>nf(b.min/60,1)+" h").join(" und ")}`);
+  const a=run.avg*60;if(a>45){const r1=B[0].min/a;add("start",(r1>=.8&&r1<=1.25)||(run.race&&r1<.8),`Woche 1 zum bisherigen Umfang (${nf(run.avg,1)} h): ${Math.round(r1*100)} Prozent${run.race&&r1<.8?", nach Wettkampf weniger":""}`)}
+  if(B[1]&&B[0].min>0){const r2=B[1].min/B[0].min;add("steig",r2<=1.12,`Woche 2 zu Woche 1: ${r2>=1?"plus":"minus"} ${Math.abs(Math.round((r2-1)*100))} Prozent`)}
+  const end=B[0].end+B[1].end,hm=B[0].hard+B[1].hard;if(end>0)add("int",hm/end<=.2,`Minuten in Zone 4 oder höher: ${Math.round(hm/end*100)} Prozent der Ausdauerzeit`);
+  add("hart",B.every(b=>b.hd<=2),`Harte Tage je Woche: ${B.map(b=>b.hd).join(" und ")}`);add("ruhe",B.every(b=>b.rest>=1),`Ruhetage je Woche: ${B.map(b=>b.rest).join(" und ")}`);
+  if(us.length){const miss=us.filter(k=>B.some(b=>!b.n[k]));add("sport",!miss.length,miss.length?`Fehlt in einer Woche: ${miss.map(k=>TPN[k]).join(", ")}`:"Alle Sportarten in beiden Wochen")}
+  if(us.includes("kraft")){const mx=us.length===1?4:2;add("kraft",B.every(b=>(b.n.kraft||0)>=1&&(b.n.kraft||0)<=mx),`Krafteinheiten je Woche: ${B.map(b=>b.n.kraft||0).join(" und ")}`)}
+  if(!us.some(k=>k!=="kraft")){const mv=B.map(b=>b.min-(us.length?(b.m.kraft||0):0));add("who",mv.every(v=>v>=150),`Bewegung ohne Kraft je Woche: ${mv.join(" und ")} min (WHO mindestens 150)`)}
+  const T=I.filter(x=>TRX.test(x.name||""));add("test",T.length<=1,`Tests: ${T.length?T.map(x=>fD(x.date)+" "+x.name).join(", "):"keiner"}`);
+  if(run.race){const hb=addDays(run.race.date,run.race.hard),bad=I.filter(x=>x.date<hb&&gHard(x)>=5);add("rec",!bad.length,`Nach ${run.race.kind}: harte Einheiten erst ab ${fD(hb)}${bad.length?", geplant am "+bad.map(x=>fD(x.date)).join(", "):""}`)}
+  const fx=I.filter(x=>wa[gDow(x.date)]===0);add("tage",!fx.length,fx.length?`Auf freien Tagen: ${fx.map(x=>fD(x.date)).join(", ")}`:"Nur an möglichen Trainingstagen");
+  return{B,C}}
+/* Ansicht */
+const TPCR=[["regeln","Planregeln"],["umfang","Umfang"],["vert","Verteilung"],["steig","Steigerung"],["entl","Entlastungswochen"],["abw","Abwechslung"]],TPRV=[[2,"passt"],[1,"teilweise"],[0,"passt nicht"]];
+var TPV={view:"list",run:null,busy:null,t0:0,msg:"",all:false,sure:false},TPTM=null;
+(function(){if($("mTP"))return;const m=document.createElement("div");m.className="modal";m.id="mTP";m.innerHTML='<div class="sheet"><div class="mh"><h3>Plan-Prüfstand</h3><button class="ib" data-tpx="1" aria-label="Schließen"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div><div id="tpBody"></div></div>';document.body.appendChild(m)})();
+const tpRuns=()=>tpReal("imTestPlans",[])||[],tpTs=r=>{const d=new Date(r.ts);return fD(r.day||r.ts.slice(0,10))+" "+d.toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"})};
+function tpSum(r){const m=r.m;if(r.err)return"Fehler: "+r.err;if(!m)return(r.items||[]).length+" Einheiten";const no=m.C.filter(c=>!c.ok).length;
+  return`Woche 1 ${nf(m.B[0].min/60,1)} h, Woche 2 ${nf(m.B[1].min/60,1)} h, ${no?no+" Prüfungen nicht erfüllt":"alle Prüfungen erfüllt"}`}
+function tpList(){const R=tpRuns(),b=TPV.busy;
+  return`<p class="hint" style="margin-top:0">Erstellt Pläne für feste Beispielprofile mit eigenen Beispieldaten. Nichts wird in den Kalender oder zu intervals.icu geschrieben, deine Einstellungen bleiben unverändert. Ein Plan dauert 1 bis 3 Minuten und kostet etwa 0,20 bis 0,35 $, die Recherche je Profil nur beim ersten Mal.</p>
+   <div>${TPP.map(p=>{const l=R.find(r=>r.pid===p.id);return`<div class="tp-pr"><div><b>${esc(p.n)}</b><span>${esc(p.d)}</span>${l?`<em>Zuletzt ${esc(tpTs(l))}: ${esc(tpSum(l))}</em>`:""}</div><button class="btn sm" data-tprun="${p.id}"${b?" disabled":""}>${b===p.id?"Läuft …":"Testplan"}</button></div>`}).join("")}</div>
+   <div class="devb" style="margin-top:10px"><button class="btn sm" data-tpall="1"${b?" disabled":""}>${TPV.sure?"Wirklich alle? Etwa "+TPP.length*0.3+" $":"Alle nacheinander"}</button><button class="btn sm" data-tpcmp="1"${R.length?"":" disabled"}>Vergleich</button></div>
+   <div class="hint" id="tpMsg">${esc(TPV.msg)}</div>
+   ${R.length?`<h4 class="cx-sh">Ergebnisse</h4>${R.map(r=>`<div class="tp-run"><div><b>${esc(r.pn)}</b><span>${esc(tpTs(r))} · Version ${esc(r.v)} · ${esc(tpSum(r))}</span></div><button class="btn sm" data-tpopen="${r.id}">Ansehen</button><button class="ib" data-tpdel="${r.id}" aria-label="Löschen"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>`).join("")}`:""}`}
+function tpPh(t){return String(t||"").split("\n").map(l=>{const m=l.match(/^Phase:\s*([\d-]+)\s*\|\s*([\d-]+)\s*\|\s*([^|]*)\|?\s*(.*)$/);return m?`<li><b>${esc(m[3].trim())}</b> ${esc(fD(m[1]))} bis ${esc(fD(m[2]))}${m[4]?": "+esc(m[4]):""}</li>`:l.trim()?`<li>${esc(l)}</li>`:""}).join("")}
+function tpOne(r){const m=r.m,I=(r.items||[]).slice().sort((a,b)=>a.date.localeCompare(b.date)),c=r.chk||{};
+  const wk=m?`<div class="tp-tbl"><table><tr><th></th><th>Woche 1</th><th>Woche 2</th></tr>${["run","bike","swim","kraft","other"].filter(k=>m.B.some(b=>b.n[k])).map(k=>`<tr><td>${TPN[k]}</td>${m.B.map(b=>`<td>${b.n[k]||0} × · ${b.m[k]||0} min · längste ${b.lg[k]||0}</td>`).join("")}</tr>`).join("")}<tr><td>Gesamt</td>${m.B.map(b=>`<td>${nf(b.min/60,1)} h · ${b.hd} hart · ${b.rest} Ruhetage</td>`).join("")}</tr></table></div>`:"";
+  return`<button class="lnk" data-tpback="1">Zurück</button><h4 class="cx-sh">${esc(r.pn)}</h4><div class="hint" style="margin-top:0">${esc(tpTs(r))} · Version ${esc(r.v)} · ${r.sec} s · ${String(r.usd).replace(".",",")} $ · bisher ${nf(r.avg,1)} h pro Woche${r.race?` · ${esc(r.race.kind)} am ${esc(fD(r.race.date))}`:""}</div>
+   ${r.err?`<div class="tp-err">Fehler: ${esc(r.err)}</div>`:""}
+   ${m?`<h4 class="cx-sh">Prüfungen</h4><ul class="tp-chk">${m.C.map(x=>`<li class="${x.ok?"ok":"no"}">${esc(x.t)}</li>`).join("")}</ul>`:""}
+   ${r.note?`<h4 class="cx-sh">Hinweis der KI</h4><p class="tp-res">${esc(r.note)}</p>`:""}
+   ${r.phases?`<h4 class="cx-sh">Phasen</h4><ul class="tp-ph">${tpPh(r.phases)}</ul>`:""}
+   ${(c.found||[]).length?`<h4 class="cx-sh">Regelprüfung</h4><div class="hint" style="margin-top:0">Gefunden: ${esc(c.found.join(" · "))}${c.fixed&&c.fixed.length?"<br>Repariert: "+esc(c.fixed.join(" · ")):""}${c.left&&c.left.length?"<br>Offen: "+esc(c.left.join(" · ")):""}</div>`:""}
+   ${wk}<h4 class="cx-sh">Einheiten</h4>${I.map(x=>{const h=gHard(x)>=5;return`<details class="tp-it"><summary>${esc(fD(x.date))} · ${TPN[gSk(x)]||esc(x.sport)} · ${esc(x.name)} · ${x.minutes} min${h?' · <span class="tp-h">hart</span>':""}</summary><pre>${esc(x.description)}</pre></details>`}).join("")}
+   ${r.res?`<details class="tp-it"><summary><b>Recherche veröffentlichter Pläne</b></summary><div class="tp-res">${esc(r.res)}</div></details>`:""}
+   <h4 class="cx-sh">Bewertung</h4>${TPCR.map(([k,n])=>`<div class="tp-rate"><span>${n}</span><div class="tchips">${TPRV.map(([v,t])=>`<button data-tprate="${k}" data-v="${v}" class="${r.rate&&r.rate[k]===v?"on":""}">${t}</button>`).join("")}</div></div>`).join("")}
+   <label class="f" for="tpMemo">Notiz</label><textarea id="tpMemo" placeholder="Was fällt auf, was soll sich an Regeln oder Anweisungen ändern?">${esc(r.memo||"")}</textarea>`}
+function tpCmp(){const R=tpRuns(),L=TPP.map(p=>R.find(r=>r.pid===p.id&&!r.err)).filter(Boolean);if(!L.length)return'<button class="lnk" data-tpback="1">Zurück</button><p class="hint">Noch keine Ergebnisse.</p>';
+  const K=[];L.forEach(r=>((r.m&&r.m.C)||[]).forEach(c=>{if(!K.includes(c.k))K.push(c.k)}));
+  const KN={regel:"Regelprüfung",cap:"Höchstzeit",start:"Start",steig:"Steigerung",int:"Anteil hart",hart:"Harte Tage",ruhe:"Ruhetage",sport:"Sportarten",kraft:"Kraft",who:"Bewegung",test:"Tests",rec:"Erholung",tage:"Trainingstage"};
+  const row=(n,f)=>`<tr><td>${n}</td>${L.map(r=>`<td class="w">${f(r)}</td>`).join("")}</tr>`;
+  return`<button class="lnk" data-tpback="1">Zurück</button><p class="hint" style="margin-top:0">Je Profil das neueste Ergebnis ohne Fehler. ✓ erfüllt, ✗ nicht erfüllt.</p><div class="tp-tbl"><table><tr><th></th>${L.map(r=>`<th>${esc(r.pn)}</th>`).join("")}</tr>
+   ${row("Stand",r=>esc(tpTs(r))+"<br>Version "+esc(r.v))}${row("Bisher",r=>nf(r.avg,1)+" h")}${row("Woche 1",r=>r.m?nf(r.m.B[0].min/60,1)+" h":"")}${row("Woche 2",r=>r.m?nf(r.m.B[1].min/60,1)+" h":"")}${row("Höchstzeit",r=>(r.goal&&r.goal.gHours?r.goal.gHours+" h":"offen"))}
+   ${K.map(k=>row(KN[k]||k,r=>{const c=r.m&&r.m.C.find(x=>x.k===k);return c?(c.ok?"✓ ":"✗ ")+esc(c.t):"–"})).join("")}
+   ${row("Zielprüfung",r=>{const mm=String(r.note||"").match(/^Zielprüfung:\s*(\w+)/i);return mm?esc(mm[1]):"–"})}
+   ${TPCR.map(([k,n])=>row(n,r=>{const v=r.rate&&r.rate[k];return v==null?"–":esc((TPRV.find(x=>x[0]===v)||[,""])[1])})).join("")}
+   ${row("Notiz",r=>esc(r.memo||""))}</table></div>`}
+function tpDraw(){const el=$("tpBody");if(!el)return;const r=TPV.run&&tpRuns().find(x=>x.id===TPV.run);
+  el.innerHTML=TPV.view==="run"&&r?tpOne(r):TPV.view==="cmp"?tpCmp():tpList();
+  const mm=$("tpMemo");if(mm&&r)mm.oninput=()=>{const L=tpRuns(),x=L.find(y=>y.id===r.id);if(x){x.memo=mm.value.slice(0,2000);tpSave("imTestPlans",L)}}}
+function tpTick(){const e=$("tpMsg");if(e&&TPV.busy){const p=TPP.find(x=>x.id===TPV.busy);e.textContent=`Testplan für ${p?p.n:""} läuft seit ${Math.round((Date.now()-TPV.t0)/1000)} Sekunden …`}}
+async function tpStart(ids){if(TPV.busy)return;const L=ids.slice();clearInterval(TPTM);TPTM=setInterval(tpTick,1000);
+  try{for(const id of L){TPV.busy=id;TPV.t0=Date.now();TPV.msg="";tpDraw();tpTick();
+    try{const r=await tpRun(id);TPV.msg=`${r.pn}: ${tpSum(r)}`}catch(e){TPV.msg="Fehler: "+e.message;if(/Monatslimit|Guthaben/.test(e.message))break}}}
+  finally{TPV.busy=null;clearInterval(TPTM);if(TPV.view==="list")tpDraw()}}
+$("mTP").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;
+  if(b.dataset.tpx){close("mTP");return}
+  if(b.dataset.tprun){tpStart([b.dataset.tprun]);return}
+  if(b.dataset.tpall){if(!TPV.sure){TPV.sure=true;tpDraw();setTimeout(()=>{TPV.sure=false;if(TPV.view==="list"&&!TPV.busy)tpDraw()},6000);return}TPV.sure=false;tpStart(TPP.map(p=>p.id));return}
+  if(b.dataset.tpcmp){TPV.view="cmp";tpDraw();return}
+  if(b.dataset.tpback){TPV.view="list";TPV.run=null;tpDraw();return}
+  if(b.dataset.tpopen){TPV.view="run";TPV.run=b.dataset.tpopen;tpDraw();$("mTP").querySelector(".sheet").scrollTop=0;return}
+  if(b.dataset.tpdel){tpSave("imTestPlans",tpRuns().filter(r=>r.id!==b.dataset.tpdel));tpDraw();return}
+  if(b.dataset.tprate&&TPV.run){const L=tpRuns(),x=L.find(y=>y.id===TPV.run);if(x){x.rate=x.rate||{};const v=+b.dataset.v;if(x.rate[b.dataset.tprate]===v)delete x.rate[b.dataset.tprate];else x.rate[b.dataset.tprate]=v;tpSave("imTestPlans",L);tpDraw()}}});
+drawDev=(f=>function(){f.apply(this,arguments);try{if(!settings.dev)return;const d=$("sgDevDyn"),b=d&&d.querySelector(".devb");if(b&&!b.querySelector('[data-tp="open"]'))b.insertAdjacentHTML("beforeend",'<button class="btn sm" data-tp="open">Plan-Prüfstand</button>')}catch(e){}})(drawDev);
+document.addEventListener("click",e=>{if(!e.target.closest('[data-tp="open"]'))return;close("mSet");setTimeout(()=>{if(!TPV.busy){TPV.view="list";TPV.run=null}tpDraw();open("mTP")},200)});
 
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
