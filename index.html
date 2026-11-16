@@ -942,6 +942,7 @@ h3>.tag,.cx-h>.tag{display:table;margin:8px 0 2px;font-size:12px}
 #rcCancel{margin-top:8px}
 .fbmd .fbl{display:block;margin-top:4px;font-size:13px}.fbmd .rpe{width:100%}
 #chkRec,#raceHid{margin-bottom:14px}
+.sfut{margin-top:12px;padding:10px 12px;border-radius:12px;background:var(--card2);font-size:13px}.sfut .btnrow{display:flex;gap:14px;align-items:center;margin-top:8px}.sfut .lnk{margin:0;display:inline-block}
 </style>
 </head>
 <body>
@@ -1124,7 +1125,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="61";
+const VERSION="62";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -5102,6 +5103,15 @@ renderChkCard=(f=>function(D){f.apply(this,arguments);try{const c=$("chkCard"),k
   if(!r){r=document.createElement("div");r.className="card";r.id="chkRec";sec.insertBefore(r,sec.firstChild)}
   const T=[];if(k.sq)T.push(["Schlaf",k.sq,CHQ[0][2][k.sq-1]]);if(k.en)T.push(["Energie",k.en,CHQ[1][2][k.en-1]]);if(k.so)T.push(["Muskelkater",6-k.so,CHQ[2][2][k.so-1]]);
   r.innerHTML=`<h2>Dein Check-in heute</h2><div class="chkdone"><div class="chkv">${T.map(([n,v,l])=>`<div><i style="--lv:${v}"></i><span>${n}</span><b>${l}</b></div>`).join("")}</div><button class="lnk" data-chk="1">Ändern</button></div>`}catch(e){}})(renderChkCard);
+/* ---------- v62 ---------- */
+/* 2.10 Krankheit: Einheiten der nächsten zwei Tage ausfallen lassen */
+function sickFut(D){const t=today(),s=sickNow(D);if(!s||s.type==="pause")return null;const until=addDays(t,2);if(s.end>=until)return null;
+  const ps=(D.planned||[]).filter(p=>p.date>t&&p.date<=until);if(!ps.length)return null;if(store.get("imSickFut","")===s.id+"|"+t)return null;return{s,ps,until}}
+renderSickBar=(f=>function(D){f.apply(this,arguments);try{const b=$("sickBar"),x=sickFut(D);if(!b||!x)return;const n=x.ps.length;
+  b.insertAdjacentHTML("beforeend",`<div class="sfut"><span>In den nächsten zwei Tagen ${n===1?"steht 1 Einheit":"stehen "+n+" Einheiten"} im Plan (${x.ps.map(p=>esc(cleanT(p.name))).join(", ")}). Sollen sie ausfallen? Dann nimmt die App die KI-Einheiten aus dem Plan und von der Uhr, eigene Einträge werden ausgegraut.</span><div class="btnrow"><button class="btn sm blue" data-sfut="yes">Ausfallen lassen</button><button class="lnk" data-sfut="no">Erstmal stehen lassen</button></div></div>`)}catch(e){console.log("sfut",e)}})(renderSickBar);
+document.addEventListener("click",async e=>{const b=e.target.closest("[data-sfut]");if(!b)return;e.preventDefault();const x=sickFut(DATA);if(!x)return;store.set("imSickFut",x.s.id+"|"+today());
+  if(b.dataset.sfut==="no"){renderSickBar(DATA);return}b.disabled=true;b.textContent="Wird angepasst …";
+  try{await sickEnd(x.s,x.until);if(isLive())for(const p of x.ps.filter(p=>p.coach))await api("/events/"+encodeURIComponent(p.id),{method:"DELETE"});await load()}catch(er){b.disabled=false;b.textContent="Ausfallen lassen";alert37("Hat nicht geklappt: "+er.message)}});
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
 $("btnRace").onclick=()=>openRace(null);
