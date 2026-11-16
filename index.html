@@ -1171,7 +1171,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="75";
+const VERSION="76";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -5657,6 +5657,74 @@ $("mProf").addEventListener("click",e=>{const b=e.target.closest("[data-pfod]");
   if(e.target.closest("#pfSave")&&PF.od&&(PF.sports||[]).length){const o={};MSPOWN.filter(k=>PF.sports.includes(k)&&(PF.od[k]||[]).length).forEach(k=>o[k]=PF.od[k].slice());settings.ownDays=o;store.set("imSettings",settings)}});
 /* Einrichtung: Hinweis auf die freiwilligen festen Tage */
 obDraw=(f=>function(){f.apply(this,arguments);try{if(OB.i!==2)return;const p=[...$("obBody").querySelectorAll("p.hint")].find(x=>/Yoga, Tennis/.test(x.textContent));if(p)p.textContent+=" Feste Tage dafür kannst du später unter Profil ändern angeben, musst du aber nicht."}catch(e){}})(obDraw);
+
+/* ---------- v76 ---------- */
+/* 1.2 KI-Antworten: Sonnet 5.5 denkt vor jeder Antwort nach, das zählt zu max_tokens. Mehr Platz, Kosten immer zählen, Abbruch auch bei claudeX erkennen.
+   claude() und claudeX() sind hier neu gefasst (spätere Deklaration ersetzt die alten, alle Umhüllungen greifen weiter). */
+var AICUT="Die Antwort von der KI war zu lang und wurde abgeschnitten. Bitte nochmal tippen.";
+function aiCap(m){m=+m||1000;return Math.min(64000,Math.max(2*m,m+8000))}
+function aiCost(u){if(!u)return;const s=spend();s.usd+=(u.input_tokens||0)*2e-6+(u.output_tokens||0)*10e-6+((u.server_tool_use||{}).web_search_requests||0)*0.01;store.set("imAiSpend",s)}
+async function aiPost(body){let res;
+  try{res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"content-type":"application/json","x-api-key":settings.aiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify(body)})}
+  catch(e){throw new Error("KI-Dienst nicht erreichbar.")}
+  const j=await res.json().catch(()=>({}));aiCost(j.usage);return{res,j}}
+function aiText(j){return(j.content||[]).filter(c=>c.type==="text").map(c=>c.text).join("")}
+async function claude(prompt,maxTokens){
+  if(spend().usd>=AI_LIMIT)throw new Error("Das Monatslimit für die KI auf diesem Gerät ist erreicht. Ab dem 1. geht es weiter.");
+  const{res,j}=await aiPost({model:"claude-sonnet-5-5",max_tokens:aiCap(maxTokens),system:isHealth()?HEALTH_SYS:COACH_SYS,messages:[{role:"user",content:prompt}]});
+  if(!res.ok){const m=(j.error&&j.error.message)||("Status "+res.status);throw new Error(/credit|balance|billing/i.test(m)?"Das Guthaben für die KI ist aufgebraucht. Im nächsten Monat kommt neues Guthaben.":"KI-Dienst: "+m)}
+  if(j.stop_reason==="max_tokens")throw new Error(AICUT);
+  return aiText(j)}
+async function claudeX(prompt,maxTokens,tools){
+  if(spend().usd>=AI_LIMIT)throw new Error("Das Monatslimit für die KI auf diesem Gerät ist erreicht. Ab dem 1. geht es weiter.");
+  const body={model:"claude-sonnet-5-5",max_tokens:aiCap(maxTokens),system:COACH_SYS,messages:[{role:"user",content:prompt}]};if(tools)body.tools=tools;
+  const{res,j}=await aiPost(body);
+  if(!res.ok){const m=(j.error&&j.error.message)||("Status "+res.status);const er=new Error("KI-Dienst: "+m);er.tool=/tool|web_search|search/i.test(m);throw er}
+  if(j.stop_reason==="max_tokens")throw new Error(AICUT);
+  return aiText(j)}
+
+/* 1.2, 2.12 Nach einem Fehler nicht bei jedem Laden neu starten: höchstens 2 automatische Versuche am Tag, dazwischen mindestens 1 Stunde. Von Hand geht es immer. */
+function aiRetryOk(e){return!(e&&e.d===today()&&((e.n||0)>=2||Date.now()-(e.t||0)<36e5))}
+function aiRetryMark(e){const t=today();return{d:t,n:e&&e.d===t?(e.n||0)+1:1,t:Date.now()}}
+function aiFailSet(key,k){try{const F=store.get(key,{})||{},t=today();Object.keys(F).forEach(x=>{if(!F[x]||F[x].d!==t)delete F[x]});F[k]=aiRetryMark(F[k]);store.set(key,F)}catch(e){}}
+lockOnce=(f=>function(k){try{if(!aiRetryOk((store.get("imAiFail",{})||{})[k]))return false}catch(e){}return f.apply(this,arguments)})(lockOnce);
+unlock=(f=>function(k){aiFailSet("imAiFail",k);return f.apply(this,arguments)})(unlock);
+aiDaily=(o=>async function(m){const t=today(),E=store.get("imAiDayErr",null);
+  if(!m&&!aiRetryOk(E)&&!noteBy("Coach "+t))return;
+  const run=!aiBusy&&hasAi()&&isLive()&&DATA&&(m||(!noteBy("Coach "+t)&&store.get("imAiDay","")!==t));
+  await o.apply(this,arguments);
+  if(run&&aiErrMsg)store.set("imAiDayErr",aiRetryMark(E))})(aiDaily);
+ensureExArt=(f=>async function(list){const F=store.get("imExFail",{})||{},nm=x=>typeof x==="string"?x:x&&x.name;
+  const L=(list||[]).filter(x=>{const n=nm(x);return n&&aiRetryOk(F[exKey(n)])});if(!L.length)return;
+  const run=!EXBUSY&&hasAi();await f.call(this,L);if(!run)return;
+  try{const C=store.get("imExArt",{})||{};[...new Set(L.map(nm))].filter(n=>!exFind(n)&&!C[exKey(n)]&&!/pause|aufwärm|cooldown|locker/i.test(n)).slice(0,10).forEach(n=>aiFailSet("imExFail",exKey(n)))}catch(e){}})(ensureExArt);
+
+/* 2.14 Coach: Angebot zum Eintragen (Krankheit, Trainingspause) nur einmal je Gespräch, „Nein“ gilt fürs ganze Gespräch */
+function askActSeen(a){if(!a||(a.k!=="sick"&&a.k!=="pause"))return false;const H=store.get("imAskH",[])||[];
+  return H.some(x=>x&&x.act&&x.act.k===a.k&&(a.k==="sick"?x.act.type===a.type:x.act.start===a.start&&x.act.end===a.end))}
+claude=(f=>async function(){const r=await f.apply(this,arguments);try{if(ASKF&&ASKACT&&askActSeen(ASKACT))ASKACT=null}catch(e){}return r})(claude);
+askCtx=(f=>function(){const s=f.apply(this,arguments);try{const A=(store.get("imAskH",[])||[]).map(x=>x&&x.act).filter(a=>a&&(a.k==="sick"||a.k==="pause"));if(!A.length)return s;
+  return s+"\nSCHON ANGEBOTEN: In diesem Gespräch hat die App das Eintragen schon angeboten ("+A.map(a=>a.k==="pause"?`Trainingspause ${a.start} bis ${a.end}`:`${a.type==="verletzung"?"Verletzung":"krank, "+a.type+" des Halses"} seit ${a.start}`).join(", ")+"). Schreib dafür keine Zeile [[KRANK|…]] oder [[PAUSE|…]] mehr. Nur wenn sich die Art ändert (z. B. jetzt Fieber) oder ein anderer Zeitraum für eine Pause genannt wird."}catch(e){return s}})(askCtx);
+
+/* 5.12 Wiederholungen in einer Zeile („- 4x50mtr Abschlagschwimmen Z1, Pause 20s“) als eigenen Block schreiben, für Anzeige und Kalender */
+function wkReps(desc){const L=String(desc||"").split("\n"),RX=/^-\s*(\d{1,2})\s*[x×]\s*(\d+(?:[.,]\d+)?\s*(?:mtr|km|m|min|sek|s|h)\b.*)$/i;
+  if(!L.some(l=>RX.test(l.trim())))return desc;
+  const pz=b=>{let p="";b=b.replace(/[,;]?\s*(?:Pause|Erholung)\s*:?\s*(\d+)\s*(sek|sec|s|min|m)\b\.?/i,(x,v,u)=>{p=v+(/^m/i.test(u)?"m":"s");return""});
+    if(!p)b=b.replace(/[,;]?\s*(\d+)\s*(sek|sec|s)\s*(?:Pause|Erholung)\b/i,(x,v)=>{p=v+"s";return""});return[b.replace(/[\s,;]+$/,"").trim(),p]};
+  const O=[];let H="",rep=false,n=0,need=false;
+  L.forEach(raw=>{const l=raw.trim();
+    if(!l){if(O.length&&O[O.length-1]!=="")O.push("");return}
+    if(!l.startsWith("-")){H=l;rep=/\b\d+\s*[x×](\s|$)/i.test(l);n=0;need=false;O.push(l);return}
+    const m=RX.exec(l);
+    if(!m){if(need){if(O.length&&O[O.length-1]!=="")O.push("");O.push(H||"Weiter");need=false}O.push(l);n++;return}
+    const N=+m[1],[b,p]=pz(m[2]);
+    if(rep){for(let i=0;i<N;i++){O.push("- "+b);if(p&&i<N-1)O.push("- "+p+" Pause")}n++;return}
+    if(n===0&&H&&O.length&&O[O.length-1]===H)O.pop();else if(O.length&&O[O.length-1]!=="")O.push("");
+    O.push(`${H||"Serie"} ${N}x`);O.push("- "+b);if(p)O.push("- "+p+" Pause");need=true;n=0});
+  while(O.length&&O[O.length-1]==="")O.pop();return O.join("\n")}
+wkFix=(f=>function(desc,type){try{if(desc&&!/weight|strength/i.test(String(type||"")))desc=wkReps(desc)}catch(e){}return f.call(this,desc,type)})(wkFix);
+parseWo=(f=>function(txt,sport){try{if(txt&&!/kraft|weight|strength/i.test(String(sport||"")))txt=wkReps(txt)}catch(e){}return f.call(this,txt,sport)})(parseWo);
+planFmt=(f=>function(){return f.apply(this,arguments)+" Wiederholungen immer als eigenen Block: Zeile mit Name und Anzahl (z. B. „Technik 4x“), darunter jeder Schritt in einer eigenen Zeile, eine Pause als eigener Schritt (z. B. „- 20s Pause“). Nie „- 4x50mtr …“ in eine Zeile schreiben."})(planFmt);
 
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
