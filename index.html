@@ -948,6 +948,41 @@ h3>.tag,.cx-h>.tag{display:table;margin:8px 0 2px;font-size:12px}
 [data-theme=dark]{color-scheme:dark}[data-theme=light]{color-scheme:light}
 #qOut{display:flex;flex-direction:column-reverse;margin:4px 0 10px}#qOut:empty{display:none}#qOut:not(:empty)+.qsug{display:none}
 .wvm{display:grid;gap:8px;margin:14px 0;text-align:left}.wvm div{display:grid;grid-template-columns:1fr auto 72px;gap:10px;align-items:baseline;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.15)}.wvm span{opacity:.8}.wvm em{font-style:normal;text-align:right;opacity:.85}.wvm em.up{color:#7dffb0;opacity:1}.wvm em.down{color:#ffb3b3;opacity:1}
+/* v72 */
+.rcsec{margin:0 0 12px;padding:12px 14px;border-radius:14px;background:color-mix(in srgb,#f2b300 12%,var(--card2))}
+.rch b{display:block;font:600 16px "Barlow Semi Condensed",sans-serif}
+.rch span{display:block;color:var(--muted);font-size:13px;margin-top:2px}
+.rcres{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;flex-wrap:wrap}
+.rcres[hidden],.rcform[hidden],.trform[hidden],.trt[hidden],.rcbtns[hidden],.rcf[hidden]{display:none}
+.rcres em{display:block;font-style:normal;font-size:12px;color:var(--muted)}
+.rcres b{display:block;font:700 20px/1.15 "Barlow Semi Condensed",sans-serif;font-variant-numeric:tabular-nums}
+.rcres span{display:block;font-size:13px;color:var(--muted)}
+.rcbtns{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.rcbtns .btn{margin-top:0;flex:none}
+.rcsec .btn:not(.blue){background:var(--card)}
+.rcmk .btn{background:var(--card2)}
+.rcf{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.rcf label{display:block;font-size:12px;font-weight:600;color:var(--muted)}
+.rcf input,.rcf select{margin-top:4px;background:var(--card);color:var(--ink)}
+.rcno{display:block;color:var(--red);margin-top:12px;background:none;border:0;padding:0}
+.act .m .rchd{display:block;margin-top:4px;color:var(--ink);font-size:13.5px}
+.act .m .rchd b{display:inline;font-size:16px;font-variant-numeric:tabular-nums}
+.rcmk{margin-top:16px}
+.pboff{font-style:normal;font-size:11px;font-weight:700;color:#f2b300}
+.trtot{margin:2px 0 10px}.trtot b{display:block;font:700 40px/1 "Barlow Semi Condensed",sans-serif;font-variant-numeric:tabular-nums}.trtot span{font-size:13px;color:var(--muted)}
+.trt{display:flex;flex-direction:column;gap:6px}
+.trr{display:flex;align-items:center;gap:10px;background:var(--card2);border-radius:14px;padding:9px 12px}
+.trr>i{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;flex:none}
+.trr>i svg{width:16px;height:16px;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.trr.tz{background:none;padding:0 12px}.trr.tz>i{height:18px}.trr.tz .trv b,.trr.tz .trv span{display:inline}.trr.tz .trv span{margin-left:6px}.trr.tz b,.trr.tz .trv b{font-size:13px;color:var(--muted);font-weight:600}
+.trl{flex:1;min-width:0}.trl b{display:block;font-size:14px}.trl span{font-size:12px;color:var(--muted)}
+.trv{text-align:right;font-variant-numeric:tabular-nums}.trv b{display:block;font-size:16px}.trv span{font-size:12px;color:var(--muted)}
+.trform{margin-top:4px}
+.trg{display:grid;grid-template-columns:auto 92px 1fr;gap:8px 8px;align-items:center}
+.trgl{font-size:14px;font-weight:600}
+.trgd{display:flex;align-items:center;gap:4px}.trgd em{font-style:normal;font-size:12px;color:var(--muted)}
+.trg input{padding:9px 10px}
+.trform .rcbtns{margin-top:12px}
 </style>
 </head>
 <body>
@@ -1130,7 +1165,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="71";
+const VERSION="72";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -1196,7 +1231,7 @@ async function loadLive(){
   const activities=(acts||[]).filter(a=>a&&a.start_date_local).map(a=>({
     date:a.start_date_local.slice(0,10),tm:a.start_date_local.slice(11,13),sport:sportOf(a.type),name:a.name||a.type||"",
     secs:a.moving_time||a.elapsed_time||0,km:(a.distance||0)/1000,load:a.icu_training_load||0,hr:a.average_heartrate||null,
-    id:a.id,type:a.type,np:a.icu_weighted_avg_watts||null,ftp:a.icu_ftp||null,elev:a.total_elevation_gain||0,dec:a.decoupling!=null?a.decoupling:null,if:a.icu_intensity!=null?a.icu_intensity/100:null,maxhr:a.max_heartrate||null,hz:a.icu_hr_zone_times||null,is:a.interval_summary||null,trainer:!!a.trainer,cad:a.average_cadence||null,rpe:a.icu_rpe!=null?a.icu_rpe:null,feel:a.feel||null}));
+    id:a.id,type:a.type,np:a.icu_weighted_avg_watts||null,ftp:a.icu_ftp||null,elev:a.total_elevation_gain||0,dec:a.decoupling!=null?a.decoupling:null,if:a.icu_intensity!=null?a.icu_intensity/100:null,maxhr:a.max_heartrate||null,hz:a.icu_hr_zone_times||null,is:a.interval_summary||null,st:a.start_date_local||null,et:a.elapsed_time||null,grp:a.group||null,race:!!a.race,trainer:!!a.trainer,cad:a.average_cadence||null,rpe:a.icu_rpe!=null?a.icu_rpe:null,feel:a.feel||null}));
   const wellness=(well||[]).map(w=>({date:w.id,ctl:w.ctl,atl:w.atl,hrv:w.hrv||null,rhr:w.restingHR||null,
     sleepH:w.sleepSecs?w.sleepSecs/3600:null,sleepS:w.sleepScore||null,sleepQ:w.sleepQuality||null,steps:w.steps||null,weight:w.weight||null,vo2:w.vo2max||null}));
   const sick=[],planned=[],races=[],notes=[];
@@ -2161,7 +2196,7 @@ function catOf(a){if(a.sport==="other")return/weight|strength/i.test(a.type||"")
   const hz=a.hz,tot=hz?hz.reduce((s,v)=>s+(v||0),0):0,long=(a.sport==="run"&&a.secs>=5400)||(a.sport==="bike"&&a.secs>=9000)||(a.sport==="swim"&&a.km>=3);
   if(!tot||tot<a.secs*.3)return long?CAT.long:CAT.base;
   const hi=hz.slice(3).reduce((s,v)=>s+(v||0),0)/tot,mid=(hz[2]||0)/tot,lo=(hz[0]||0)/tot;
-  const reps=(a.is||[]).some(s=>{const m=String(s).match(/^(\d+)x/);return m&&+m[1]>=3});
+  const reps=isReps(a);
   if(hi>=.12&&reps)return CAT.int;if(hi>=.18)return CAT.thr;if(mid+hi>=.3)return CAT.tempo;if(long)return CAT.long;if(lo>=.85&&a.secs<=3300)return CAT.rec;return CAT.base}
 function actRow(a){const c=catOf(a),n=a.id?noteBy("Coach Einheit "+a.id):null,o=n?kv(n.text):null;
   return`<div class="act tap" data-act="${esc(String(a.id||""))}"><div class="ico" style="background:${SPORTS[a.sport].c}">${svgI(a.sport,"#fff")}</div><div class="m"><b>${esc(a.name)}</b><span>${fDL(a.date)} · <em class="ctg" style="--cc:${c.c}">${c.n}</em>${a.hr?" · Ø "+Math.round(a.hr)+" bpm":""}</span>${o?`<span class="cm">Coach: ${esc(o.title)}${o.rating?" · "+esc(o.rating):""}</span>`:""}</div><div class="r"><b>${fH(a.secs)} h</b><span>${a.km?nf(a.km,a.sport==="swim"?2:1)+" km":""}</span></div></div>`}
@@ -3017,7 +3052,7 @@ function catOf(a){if(a.sport!=="other")return _catOf16r(a);if(/weight|strength/i
 function _catOf16r(a){const hz=a.hz,tot=hz?hz.reduce((s,v)=>s+(v||0),0):0,long=(a.sport==="run"&&a.secs>=5400)||(a.sport==="bike"&&a.secs>=9000)||(a.sport==="swim"&&a.km>=3);
   if(!tot||tot<a.secs*.3)return long?CAT.long:CAT.base;
   const hi=hz.slice(3).reduce((s,v)=>s+(v||0),0)/tot,mid=(hz[2]||0)/tot,lo=(hz[0]||0)/tot;
-  const reps=(a.is||[]).some(s=>{const m=String(s).match(/^(\d+)x/);return m&&+m[1]>=3});
+  const reps=isReps(a);
   if(hi>=.12&&reps)return CAT.int;if(hi>=.18)return CAT.thr;if(mid+hi>=.3)return CAT.tempo;if(long)return CAT.long;if(lo>=.85&&a.secs<=3300)return CAT.rec;return CAT.base}
 function renderRecent(){if(!DATA)return;const q=($("rq").value||"").toLowerCase().trim(),F=freqTypes(),rf=$("rf");
   rf.querySelectorAll("[data-ft]").forEach(b=>{if(!F.includes(b.dataset.f.slice(2)))b.remove()});
@@ -5279,7 +5314,7 @@ PRD.time=(V,d)=>{let lo=d/1000*120,hi=d/1000*720;for(let i=0;i<60;i++){const m=(
 function predModel(D){try{if(!D||!D.activities)return null;const t=today(),Z=(D.zones&&D.zones.run)||{},mx=Z.max||(settings.own&&settings.own.max),lt=Z.lthr;if(!mx)return null;
   const R=D.activities.filter(a=>a.sport==="run"&&a.type==="Run"&&a.km>=4&&a.hr&&a.secs>=1200&&a.date>=addDays(t,-365));
   const eV=a=>PRD.vo2(a.km*1000/(a.secs/60))/Math.min(1,(a.hr/mx-.37)/.64);
-  const hard=a=>/wettkampf|race|rennen|marathon|parkrun|volkslauf|lauf\s*\d|\d+\s*km/i.test(a.name||"")&&a.hr||(lt&&a.hr>=lt*.9);
+  const hard=a=>(raceAct(a)||/wettkampf|race|rennen|marathon|parkrun|volkslauf|lauf\s*\d|\d+\s*km/i.test(a.name||""))&&a.hr||(lt&&a.hr>=lt*.9);
   const C=R.filter(a=>a.km>=5&&a.date>=addDays(t,-180)&&hard(a)).map(a=>({a,v:PRD.vdot(a.km*1000,a.secs)})).sort((x,y)=>y.v-x.v);if(!C.length)return null;const an=C[0];
   const E=R.filter(a=>a.hr>=mx*.78),med=L=>{L=L.slice().sort((x,y)=>x-y);const n=L.length;return n?(n%2?L[(n-1)/2]:(L[n/2-1]+L[n/2])/2):null};
   const lvl=to=>{let w=30,L;do{L=E.filter(a=>a.date>=addDays(to,-w)&&a.date<to).map(eV);w+=15}while(L.length<4&&w<=90);return L.length>=3?med(L):null};
@@ -5313,6 +5348,191 @@ actInfo=(f=>function(a){f.apply(this,arguments);try{if(!a||!a.id||a.sport!=="run
 document.addEventListener("click",e=>{const s=e.target.closest("[data-offsave]"),d=e.target.closest("[data-offdel]");if(!s&&!d)return;const id=(s||d).dataset.offsave||(s||d).dataset.offdel,a=(DATA.activities||[]).find(x=>String(x.id)===id);if(!a)return;const O=offAll();
   if(d){delete O[id];store.set("imOff",O)}else{const t=parseHMS($("offT").value);if(!t||t<300){$("offT").focus();return}O[id]={t,d:offDist(a)};store.set("imOff",O)}
   try{renderBench(DATA)}catch(x){}const r=b=>b&&b.remove();r(document.querySelector("#iBody .offrow"));actInfo(a)});
+
+/* ---------- v72 ---------- */
+/* 3.13 Wettkämpfe: jede Einheit als Wettkampf markieren oder entfernen, offizielle Zeit und Strecke, Triathlon aus mehreren Einheiten eines Tages,
+   Bestzeiten mit offiziellen Zeiten, Lauf nach dem Rad nicht als Grundlage der Laufprognose.
+   Speicher lokal: imRaceMk {id:{r:1|0}} (von Hand Wettkampf ja/nein), imOff {id:{t,d}} (offizielle Zeit, seit V70),
+   imTri {Datum:{ids?,no?,n?,kind?,dist:{swim,bike,run},off:{swim,t1,bike,t2,run}}}.
+   Einordnung „Intervalle“: Wiederholungen zählen nur, wenn sie nicht die ganze Einheit abdecken (Auto-Runden der Uhr, z. B. 41x 1 km beim Marathon)
+   oder deutlich härter sind als der Schnitt der Einheit. */
+const TRID={Sprint:{n:"Sprintdistanz",d:{swim:750,bike:20000,run:5000}},Olympisch:{n:"Olympische Distanz",d:{swim:1500,bike:40000,run:10000}},"70.3":{n:"Mitteldistanz (70.3)",d:{swim:1900,bike:90000,run:21097.5}},Langdistanz:{n:"Langdistanz",d:{swim:3800,bike:180000,run:42195}}};
+const RSTD={run:[[5000,"5 km"],[10000,"10 km"],[21097.5,"Halbmarathon"],[42195,"Marathon"]],bike:[[20000,"20 km"],[40000,"40 km"],[90000,"90 km"],[180000,"180 km"]],swim:[[750,"750 m"],[1500,"1,5 km"],[1900,"1,9 km"],[3800,"3,8 km"]]};
+CAT.race={n:"Wettkampf",d:"Wettkampf mit voller Anstrengung. Zählt für Bestzeiten und Prognosen.",c:"#f2b300"};
+CAT.raceT={n:"Wettkampf",d:"Teil deines Triathlons.",c:"#f2b300"};
+CAT.tz={n:"Wechsel",d:"Wechselzone beim Triathlon.",c:"#9a9a9a"};
+const rmkAll=()=>store.get("imRaceMk",{}),triStore=()=>store.get("imTri",{});
+const tS=a=>a&&a.st?Date.parse(a.st):null,tE=a=>tS(a)==null?null:tS(a)+(a.et||a.secs||0)*1000,aDur=a=>a?(a.et||a.secs||0):0;
+const dayActs=d=>((DATA&&DATA.activities)||[]).filter(a=>a.date===d);
+function fmtD(d){if(d==null)return"";if(d<1000)return nf(d,0)+" m";if(Math.abs(d-42195)<1)return"42,195 km";const k=d/1000;return nf(k,Math.abs(k-Math.round(k))<.005?0:1)+" km"}
+function kmIn(d){return Math.abs(d-42195)<1?"42,195":nf(d/1000,d<10000?2:1).replace(/,?0+$/,"")}
+function snapD(m){const S=[750,1500,1900,3800,5000,10000,20000,21097.5,40000,42195,90000,180000];return S.find(x=>Math.abs(m-x)/x<=.003)||m}
+function rcPace(sp,t,d){if(!t||!d)return"";return sp==="run"?fT(t/(d/1000))+" /km":sp==="swim"?fT(t/(d/100))+" /100 m":sp==="bike"?nf(d/1000/(t/3600),1)+" km/h":""}
+/* Wiederholungen: echte Intervalle statt Runden der Uhr */
+function isReps(a){const L=(a.is||[]).map(s=>{const m=String(s).trim().match(/^(\d+)x\s+(\S+)\s+(\d+(?:\.\d+)?)(bpm|w)?/i);if(!m)return null;const n=+m[1],tok=m[2];let sec=null;
+    const km=tok.match(/^(\d+(?:\.\d+)?)km$/i),mm=tok.match(/^(\d+)m$/);
+    if(km&&a.km>0)sec=+km[1]/a.km*a.secs;else if(mm&&a.sport==="swim"&&+mm[1]>=25&&a.km>0)sec=+mm[1]/1000/a.km*a.secs;
+    else{const t=tok.match(/^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$/);if(t&&(t[1]||t[2]||t[3]))sec=(+t[1]||0)*3600+(+t[2]||0)*60+(+t[3]||0)}
+    return{n,sec,v:+m[3],u:(m[4]||"").toLowerCase()}}).filter(Boolean);
+  const R=L.filter(x=>x.n>=3);if(!R.length)return false;
+  const cov=L.reduce((s,x)=>s+(x.sec||0)*x.n,0)/(a.secs||1);if(cov<.8)return true;
+  return R.some(x=>{const share=(x.sec||0)*x.n/(a.secs||1),ref=x.u==="w"?a.np:a.hr;return share<=.6&&ref&&x.v>=ref*(x.u==="w"?1.05:1.04)})}
+/* Triathlon: Einheiten eines Tages zusammenfassen */
+let TRIV=0,TRIC={A:null,v:-1,m:{}};
+function triKind(L){const r=L.run&&L.run.km||0,b=L.bike&&L.bike.km||0;if(r>=30||b>=140)return"Langdistanz";if(r>=15||b>=65)return"70.3";if(r>=7||b>=30)return"Olympisch";return"Sprint"}
+function triBuild(d){const rec=triStore()[d]||{};if(rec.no)return null;const as=dayActs(d);if(as.length<3)return null;let G=null,auto=true;
+  if(rec.ids&&rec.ids.length){G=as.filter(a=>rec.ids.includes(String(a.id)));auto=false}
+  else{const by={};as.forEach(a=>{if(a.grp)(by[a.grp]=by[a.grp]||[]).push(a)});G=Object.values(by).find(g=>["swim","bike","run"].every(k=>g.some(a=>a.sport===k)))||null;
+    if(!G){const L=as.filter(a=>tS(a)!=null&&(a.sport!=="other"||a.type==="Transition")&&!a.trainer&&!/virtual/i.test(a.type||"")).sort((x,y)=>tS(x)-tS(y));
+      for(let i=0;i<L.length&&!G;i++){if(L[i].sport!=="swim")continue;const seq=[L[i]];let last=L[i];const need=["bike","run"];
+        for(let j=i+1;j<L.length&&need.length;j++){const a=L[j],gap=(tS(a)-tE(last))/60000;if(gap>20)break;if(gap<-10)continue;
+          if(a.type==="Transition"){seq.push(a);last=a;continue}if(a.sport===need[0]){seq.push(a);last=a;need.shift()}}
+        if(!need.length)G=seq}}}
+  if(!G)return null;
+  const pick=k=>G.filter(a=>a.sport===k).sort((x,y)=>aDur(y)-aDur(x))[0]||null,L={swim:pick("swim"),bike:pick("bike"),run:pick("run")};if(!L.swim||!L.bike||!L.run)return null;
+  const tz=G.filter(a=>a.type==="Transition").sort((x,y)=>(tS(x)||0)-(tS(y)||0)),btw=(a,x,y)=>tS(a)!=null&&tS(x)!=null&&tS(y)!=null&&tS(a)>=tS(x)&&tS(a)<tS(y);
+  L.t1=tz.find(a=>btw(a,L.swim,L.bike))||(tz.length===2&&tS(tz[0])==null?tz[0]:null);L.t2=tz.find(a=>btw(a,L.bike,L.run))||(tz.length===2&&tS(tz[1])==null?tz[1]:null);
+  const legs=[L.swim,L.t1,L.bike,L.t2,L.run].filter(Boolean),w0=tS(L.swim),w1=tE(L.run);
+  const dups=as.filter(a=>!legs.includes(a)&&(a.sport!=="other"||a.type==="Transition")&&(G.includes(a)||(w0!=null&&tS(a)!=null&&tS(a)<w1&&tE(a)>w0)));
+  const kind=TRID[rec.kind]?rec.kind:triKind(L),cal=((DATA&&DATA.races)||[]).find(r=>r.date===d);
+  return{date:d,L,legs,dups,all:legs.concat(dups).map(a=>String(a.id)),kind,auto,rec,name:rec.n||(cal&&cal.name)||"Triathlon"}}
+function triOfDate(d){const A=(DATA&&DATA.activities)||[];if(TRIC.A!==A||TRIC.v!==TRIV)TRIC={A,v:TRIV,m:{}};if(!(d in TRIC.m)){try{TRIC.m[d]=triBuild(d)}catch(e){TRIC.m[d]=null}}return TRIC.m[d]}
+function triOf(a){if(!a||!a.date||!a.id)return null;const tr=triOfDate(a.date);return tr&&tr.all.includes(String(a.id))?tr:null}
+function triLeg(tr,a){return["swim","t1","bike","t2","run"].find(k=>tr.L[k]&&String(tr.L[k].id)===String(a.id))||null}
+function triTimes(tr){const L=tr.L,o=Object.assign({},tr.rec.off||{}),gap=(a,b)=>tS(a)!=null&&tS(b)!=null?Math.max(0,Math.round((tS(b)-tE(a))/1000)):null;
+  const w={swim:aDur(L.swim),t1:L.t1?aDur(L.t1):gap(L.swim,L.bike),bike:aDur(L.bike),t2:L.t2?aDur(L.t2):gap(L.bike,L.run),run:aDur(L.run)};
+  const D=Object.assign({},TRID[tr.kind].d,tr.rec.dist||{}),P=["swim","t1","bike","t2","run"];
+  const offTot=["swim","bike","run"].every(k=>o[k]!=null)?P.reduce((s,k)=>s+(o[k]||0),0):null;
+  return{w,o,D,offTot,watchTot:P.reduce((s,k)=>s+(w[k]||0),0)}}
+function triSave(d,fn){const S=triStore(),r=S[d]||{};fn(r);S[d]=r;store.set("imTri",S);TRIV++}
+/* Ist eine Einheit ein Wettkampf? */
+const RXN=/wettkampf|\brace\b|rennen|marathon|parkrun|volkslauf|stadtlauf|citylauf|silvesterlauf|firmenlauf|crosslauf|berglauf|ultra|triathlon|ironman|70[.,]3|duathlon|radmarathon|gran ?fondo|zeitfahren/i,
+  RXNO=/training|vorbereitung|intervall|locker|pace|tempo|zwift|rouvy|mywhoosh|virtual/i;
+function raceAct(a){if(!a||!a.date||!a.id)return null;const m=rmkAll()[a.id];if(m&&m.r===0)return null;if(m&&m.r===1)return{src:"hand"};
+  if(store.get("imRaceIgnore",[]).includes(a.date))return null;
+  const tr=triOf(a);if(tr)return{src:"tri",tri:tr};
+  if(a.sport==="other")return null;if(a.race)return{src:"icu"};
+  if(a.trainer||/virtual/i.test(a.type||"")||a.secs<600)return null;
+  const cal=((DATA&&DATA.races)||[]).find(r=>r.date===a.date);
+  if(cal){const sp=sportOf(cal.type),C=dayActs(a.date).filter(x=>x.sport!=="other"&&!x.trainer&&(sp==="other"||x.sport===sp)).sort((x,y)=>(y.load||0)-(x.load||0)||y.secs-x.secs)[0];if(C&&String(C.id)===String(a.id))return{src:"cal",cal}}
+  const nm=a.name||"";if(RXN.test(nm)&&!RXNO.test(nm))return{src:"name"};
+  if(a.sport==="run"&&a.km>0){const Z=(DATA&&DATA.zones&&DATA.zones.run)||{},x=a.if!=null?a.if:(Z.lthr&&a.hr?a.hr/Z.lthr:0);
+    for(const [d,need] of [[5000,.93],[10000,.93],[21097.5,.9],[42195,.84]])if(Math.abs(a.km*1000-d)/d<=.03&&x>=need)return{src:"auto"}}
+  return null}
+catOf=(f=>function(a){try{if(a&&a.type==="Transition")return CAT.tz;const r=raceAct(a);if(r)return r.src==="tri"?CAT.raceT:CAT.race}catch(e){}return f.apply(this,arguments)})(catOf);
+/* Offizielle Zeit auch für Triathlon-Abschnitte */
+offOf=(f=>function(a){const r=f.apply(this,arguments);if(r||!a)return r;try{const tr=triOf(a);if(!tr)return null;const k=triLeg(tr,a);if(!k||!["swim","bike","run"].includes(k))return null;const T=triTimes(tr);return T.o[k]?{t:T.o[k],d:T.D[k],tri:true}:null}catch(e){return null}})(offOf);
+/* Erholung nach dem Wettkampf: gleiche Erkennung wie überall */
+raceRecent=function(D){if(!D||!D.activities)return null;const t=today(),byDay={};D.activities.filter(a=>a.date>=addDays(t,-42)&&a.date<=t).forEach(a=>{(byDay[a.date]=byDay[a.date]||[]).push(a)});
+  for(const d of Object.keys(byDay).sort().reverse()){const R=byDay[d].filter(a=>raceAct(a));if(!R.length)continue;const tr=triOfDate(d)&&triOf(R[0]),cal=(D.races||[]).find(r=>r.date===d);
+    const k=tr?tr.kind:raceKind(R.map(a=>{const o=offOf(a);return o?Object.assign({},a,{km:o.d/1000}):a}));if(!k)continue;const Rc=RECOV[k],day=diffDays(d,t);if(day>Rc.end)continue;
+    const ph=Rc.ph.find(p=>day<=p[0])||[Rc.end,"light","Locker, flotte Abschnitte wieder möglich."];
+    return{date:d,kind:k,R:Rc,day,ph,name:(cal&&cal.name)||(tr&&tr.name)||R.map(a=>a.name).find(Boolean)||Rc.n}}
+  return null};
+/* Lauf nach dem Rad (Triathlon, Koppellauf) zählt nicht für die Laufprognose */
+function isBrick(a){if(!a||a.sport!=="run")return false;if(triOf(a))return true;const s=tS(a);if(s==null)return false;
+  return dayActs(a.date).some(b=>b.sport==="bike"&&tS(b)!=null&&tS(b)<s&&s-tE(b)<=30*60000&&s-tE(b)>=-5*60000)}
+predModel=(f=>function(D){try{if(D&&D.activities){const A=D.activities.filter(a=>!isBrick(a));if(A.length!==D.activities.length)return f.call(this,Object.assign({},D,{activities:A}))}}catch(e){}return f.apply(this,arguments)})(predModel);
+/* Bestzeiten: offizielle Zeiten zählen */
+function offList(k){const L=[];((DATA&&DATA.activities)||[]).forEach(a=>{if(a.sport!==k)return;const tr=triOf(a);if(tr&&!triLeg(tr,a))return;const o=offOf(a);if(o)L.push({t:o.t,d:o.d,aid:a.id,date:a.date})});return L}
+pbData=(f=>function(D){const P=f.apply(this,arguments);if(!P||!isLive())return P;try{const Q={};Object.keys(P).forEach(k=>{Q[k]=Array.isArray(P[k])?P[k].map(x=>Object.assign({},x)):P[k]});
+  ["run","swim"].forEach(k=>{if(!PBD[k])return;const O=offList(k);if(!O.length)return;const L=Array.isArray(Q[k])?Q[k]:(Q[k]=[]);
+    PBD[k].pts.forEach(([w,lab])=>{O.filter(o=>Math.abs(o.d-w)<=w*.005).forEach(o=>{let x=L.find(z=>z.lab===lab);
+      if(x&&String(x.aid)===String(o.aid)){x.v=o.t;x.off=true;x.date=o.date}else if(!x||o.t<x.v){if(!x){x={lab,prev:null};L.push(x)}Object.assign(x,{v:o.t,aid:o.aid,date:o.date,off:true})}})});
+    const ix=lab=>PBD[k].pts.findIndex(p=>p[1]===lab);L.sort((a,b)=>ix(a.lab)-ix(b.lab))});return Q}catch(e){return P}})(pbData);
+bikeKm=function(D){const R=[];D.activities.forEach(a=>{if(a.sport!=="bike"||a.trainer||!(a.km>0)||!(a.secs>0))return;const tr=triOf(a);
+    if(tr&&!triLeg(tr,a)&&offOf(tr.L.bike))return;const o=offOf(a);R.push(o?{a,km:o.d/1000,s:o.t,off:true}:{a,km:a.km,s:a.secs})});
+  return[[20,"20 km"],[40,"40 km"],[90,"90 km"],[180,"180 km"]].map(([x,lab])=>{const C=R.filter(r=>r.km>=x*.995).map(r=>({a:r.a,off:r.off,t:r.s*x/r.km})).sort((p,q)=>p.t-q.t)[0];
+    return C?{lab,v:C.t,kmh:x/(C.t/3600),aid:C.a.id,date:C.a.date,off:!!C.off}:null}).filter(Boolean)};
+renderPB=(f=>function(D){f.apply(this,arguments);try{const c=$("pbCard");if(!c||c.classList.contains("lockc")||!isLive())return;const P=pbData(D);
+  c.querySelectorAll(".pbh").forEach(h=>{const L=h.nextElementSibling;if(!L)return;const rows=L.querySelectorAll(".pbr");
+    if(h.classList.contains("pbsub")){const B=bikeKm(D);B.forEach((x,i)=>{if(x.off&&rows[i]){const em=rows[i].querySelector("em");if(em)em.insertAdjacentHTML("afterbegin",'<i class="pboff">offiziell</i> ')}});
+      if(B.some(x=>x.off)){const p=L.nextElementSibling;if(p&&p.classList.contains("hint")&&!/Wettkämpfen/.test(p.textContent))p.textContent+=" Bei Wettkämpfen zählt die offizielle Zeit."}return}
+    const k=Object.keys(PBD).find(x=>PBD[x].lab===h.textContent.trim());if(!k||!P||!P[k])return;P[k].forEach((x,i)=>{if(x.off&&rows[i]){const em=rows[i].querySelector("em");if(em)em.insertAdjacentHTML("afterbegin",'<i class="pboff">offiziell</i> ')}})})}catch(e){}})(renderPB);
+/* Liste: offizielle Zeit rechts, Triathlon als eine Zeile */
+actRow=(f=>function(a){let h=f.apply(this,arguments);try{const o=offOf(a);if(o)h=h.replace(/<div class="r"><b>[^<]*<\/b>/,`<div class="r"><b>${fT(o.t)}</b>`)}catch(e){}return h})(actRow);
+const TRICO=MEDI.replace('<svg viewBox="0 0 24 24">','<svg viewBox="0 0 24 24" style="stroke:#fff">');
+function triRow(tr){const T=triTimes(tr),km=["swim","bike","run"].reduce((s,k)=>s+(T.o[k]!=null?T.D[k]/1000:(tr.L[k].km||0)),0);
+  return`<div class="act tap" data-tri="${esc(tr.date)}"><div class="ico" style="background:#f2b300">${TRICO}</div><div class="m"><b>${esc(tr.name)}</b><span>${fDL(tr.date)} · <em class="ctg" style="--cc:#f2b300">Wettkampf</em> · ${esc(TRID[tr.kind].n)}</span></div><div class="r"><b>${T.offTot?fT(T.offTot):fT(T.watchTot)}</b><span>${nf(km,km<60?1:0)} km</span></div></div>`}
+function triCollapse(box){if(!box||!DATA)return;const seen={};box.querySelectorAll(".act[data-act]").forEach(el=>{const a=DATA.activities.find(x=>String(x.id)===el.dataset.act),tr=a&&triOf(a);if(!tr)return;
+  if(seen[tr.date]){el.remove();return}seen[tr.date]=1;el.outerHTML=triRow(tr)})}
+renderRecent=(f=>function(){const r=f.apply(this,arguments);try{triCollapse($("recent"))}catch(e){}return r})(renderRecent);
+try{$("rq").addEventListener("input",()=>{try{triCollapse($("recent"))}catch(e){}})}catch(e){}
+weekInfo=(f=>function(w){f.apply(this,arguments);try{triCollapse(document.querySelector("#iBody .list"))}catch(e){}})(weekInfo);
+document.addEventListener("click",e=>{const el=e.target.closest("[data-tri]");if(!el||!DATA)return;triInfo(el.dataset.tri)});
+/* Triathlon im Detail */
+const TRP=[["swim","Schwimmen"],["t1","Wechsel 1"],["bike","Rad"],["t2","Wechsel 2"],["run","Laufen"]],isSp=k=>k==="swim"||k==="bike"||k==="run";
+function triInfo(d,edit){const tr=triOfDate(d);if(!tr){toast("An diesem Tag ist kein Triathlon eingetragen");return}const T=triTimes(tr);
+  const view=TRP.map(([k,lab])=>{const has=T.o[k]!=null,t=has?T.o[k]:T.w[k];return`<div class="trr${isSp(k)?"":" tz"}"><i style="background:${isSp(k)?SPORTS[k].c:"transparent"}">${isSp(k)?svgI(k,"#fff"):""}</i><div class="trl"><b>${lab}</b><span>${isSp(k)?fmtD(T.D[k]):""}</span></div><div class="trv"><b>${t!=null?fT(t):"–"}</b><span>${has?(isSp(k)?rcPace(k,t,T.D[k]):"offiziell"):"laut Uhr"}</span></div></div>`}).join("");
+  const form=`<div class="trform" id="trForm"${edit?"":" hidden"}><label class="f" for="trN">Name</label><input id="trN" maxlength="60" value="${esc(tr.name)}">
+    <label class="f" for="trK">Distanz</label><select id="trK">${Object.entries(TRID).map(([k,x])=>`<option value="${k}"${k===tr.kind?" selected":""}>${x.n}</option>`).join("")}</select>
+    <label class="f">Offizielle Zeiten aus der Ergebnisliste</label><div class="trg">${TRP.map(([k,lab])=>`<span class="trgl">${lab}</span>${isSp(k)?`<span class="trgd"><input id="trD_${k}" inputmode="decimal" value="${kmIn(T.D[k])}"><em>km</em></span>`:"<span></span>"}<input id="trT_${k}" inputmode="numeric" placeholder="${T.w[k]!=null?fT(T.w[k]):"0:00"}" value="${T.o[k]!=null?fT(T.o[k]):""}">`).join("")}</div>
+    <p class="hint">Zeit als h:mm:ss oder mm:ss. Grau steht die Zeit der Uhr.</p><div class="err" id="trErr"></div>
+    <div class="rcbtns"><button class="btn sm blue" data-trisave="${esc(d)}">Speichern</button><button class="btn sm" data-tricancel="${esc(d)}">Abbrechen</button></div></div>`;
+  info(`<div class="act" style="margin:0 0 10px;background:none;padding:0"><div class="ico" style="background:#f2b300">${TRICO}</div><div class="m"><b style="font-size:17px">${esc(tr.name)}</b><span>${esc(TRID[tr.kind].n)} · ${fDL(tr.date)}</span></div></div>
+   <div class="catbox" style="--cc:#f2b300"><span class="cat">Wettkampf</span><p>${tr.auto?"Die App hat die Einheiten des Tages als Triathlon zusammengefasst.":"Von dir als Triathlon zusammengefasst."}</p></div>
+   <div class="trtot"><b>${T.offTot?fT(T.offTot):fT(T.watchTot)}</b><span>${T.offTot?"Gesamtzeit offiziell":"Gesamtzeit laut Uhr"}${T.offTot?" · Uhr "+fT(T.watchTot):""}</span></div>
+   <div class="trt" id="trView"${edit?" hidden":""}>${view}</div>
+   <div class="rcbtns" id="trEditB"${edit?" hidden":""} style="margin-top:10px"><button class="btn sm blue" data-triedit="${esc(d)}">${Object.keys(T.o).length?"Zeiten ändern":"Offizielle Zeiten eintragen"}</button></div>${form}
+   <p class="hint">Offizielle Zeiten zählen für deine Bestzeiten. Der Lauf nach dem Rad zählt wegen der Vorermüdung nicht für die Laufprognose.</p>
+   <h4 class="cx-sh">Aufzeichnungen</h4><div class="list">${tr.legs.concat(tr.dups).map(actRow).join("")}</div>${tr.dups.some(a=>a.sport!=="other")?'<p class="hint">Ein Abschnitt wurde doppelt aufgezeichnet, z. B. von Uhr und Radcomputer.</p>':""}
+   <button class="lnk rcno" data-trino="${esc(d)}">Kein Triathlon</button>`);
+  const k=$("trK");if(k)k.onchange=()=>{const D=TRID[k.value].d;["swim","bike","run"].forEach(s=>{const i=$("trD_"+s);if(i)i.value=kmIn(D[s])})}}
+document.addEventListener("click",e=>{const g=n=>e.target.closest("["+n+"]");let b;
+  if(b=g("data-triedit")){$("trForm").hidden=false;$("trView").hidden=true;$("trEditB").hidden=true;return}
+  if(b=g("data-tricancel")){triInfo(b.dataset.tricancel);return}
+  if(b=g("data-trino")){const d=b.dataset.trino;triSave(d,r=>{for(const x in r)delete r[x];r.no=true});close("mInfo");toast("Die Einheiten zählen wieder einzeln");try{render()}catch(x){}return}
+  if(b=g("data-trisave")){const d=b.dataset.trisave,tr=triOfDate(d);if(!tr)return;const err=$("trErr");err.textContent="";const off={},dist={};
+    for(const [k,lab] of TRP){const v=$("trT_"+k).value.trim();if(isSp(k)){const km=parseFloat(String($("trD_"+k).value).replace(",","."));if(!(km>0)){err.textContent=`Strecke ${lab} fehlt.`;return}dist[k]=snapD(Math.round(km*1000*10)/10)}
+      if(!v)continue;const t=parseHMS(v);if(t==null){err.textContent=`Zeit ${lab}: bitte als h:mm:ss oder mm:ss eingeben.`;return}
+      if(isSp(k)){const sp=k==="run"?t/(dist[k]/1000):k==="swim"?t/(dist[k]/100):dist[k]/1000/(t/3600),ok=k==="run"?sp>=150&&sp<=900:k==="swim"?sp>=45&&sp<=360:sp>=10&&sp<=60;
+        if(!ok){err.textContent=`Zeit ${lab} passt nicht zur Strecke. Format h:mm:ss, z. B. 2:45:15.`;return}}else if(t>3600){err.textContent=`${lab} ist länger als eine Stunde. Bitte prüfen.`;return}
+      off[k]=t}
+    const nm=$("trN").value.trim(),kd=$("trK").value;triSave(d,r=>{r.n=nm&&nm!=="Triathlon"?nm:undefined;r.kind=kd;r.dist=dist;r.off=off;delete r.no;if(!tr.auto)r.ids=tr.all.slice()});
+    try{renderBench(DATA);renderPB(DATA);renderRecent()}catch(x){}triInfo(d);toast("Gespeichert");return}
+  if(b=g("data-triopen")){triInfo(b.dataset.triopen);return}});
+/* Einzelner Wettkampf im Detail: Kopfzeile, offizielle Zeit, markieren */
+function rcWhy(r){return{hand:"Von dir als Wettkampf markiert.",icu:"In deinen Daten als Wettkampf markiert.",cal:"Im Kalender als Wettkampf eingetragen."}[r.src]||"Die App hat das als Wettkampf erkannt."}
+function rcDistOpts(a,o){const sp=a.sport,st=RSTD[sp]||[],meas=Math.round((a.km||0)*1000),near=st.find(([d])=>meas&&Math.abs(meas-d)/d<=.06),sel=o?o.d:near?near[0]:meas;
+  const L=st.map(([d,l])=>[d,l]);if(meas&&!st.some(([d])=>d===meas))L.push([meas,"Gemessen, "+fmtD(meas)]);const cust=o&&!L.some(([d])=>Math.abs(d-o.d)<1);if(cust)L.push([o.d,fmtD(o.d)]);
+  return L.map(([d,l])=>`<option value="${d}"${Math.abs(d-sel)<1?" selected":""}>${esc(l)}</option>`).join("")+'<option value="x">Andere Strecke</option>'}
+function rcSec(a,r){const o=offOf(a),sp=a.sport,canT=["run","bike","swim"].includes(sp),use=sp==="run"?"Zählt für Bestzeiten und deine Zeitprognose.":"Zählt für deine Bestzeiten.";
+  return`<div class="rcsec" id="rcSec">
+   ${canT&&o?`<div class="rcres" id="rcRes" style="margin-top:0"><div><em>Offizielle Zeit</em><b>${fT(o.t)}</b><span>${fmtD(o.d)} · ${rcPace(sp,o.t,o.d)}</span></div><div class="rcbtns"><button class="btn sm" data-rcedit>Ändern</button><button class="btn sm" data-rcdel>Entfernen</button></div></div><p class="hint">${use}</p>`:""}
+   ${canT?`<div class="rcform" id="rcForm"${o?" hidden":""}>${o?"":`<div class="rch"><b>Offizielle Zeit</b><span>Trag die Zeit aus der Ergebnisliste ein. ${use}</span></div>`}
+     <div class="rcf"><label>Offizielle Zeit<input id="rcT" inputmode="numeric" placeholder="${sp==="run"?"z. B. 1:29:40":sp==="bike"?"z. B. 2:45:15":"z. B. 38:20"}" value="${o?fT(o.t):""}"></label><label>Strecke<select id="rcD">${rcDistOpts(a,o)}</select></label></div>
+     <div class="rcf" id="rcXw" hidden><label>Strecke in km<input id="rcX" inputmode="decimal" placeholder="z. B. 15,5"></label><span></span></div><div class="err" id="rcErr"></div>
+     <div class="rcbtns" style="margin-top:10px"><button class="btn sm blue" data-rcsave>Speichern</button>${o?'<button class="btn sm" data-rccancel>Abbrechen</button>':""}</div></div>`:""}
+   <button class="lnk rcno" data-rcno>Kein Wettkampf</button></div>`}
+function rcTriBox(a,tr){const k=triLeg(tr,a),lab=(TRP.find(x=>x[0]===k)||[])[1];
+  return`<div class="rcsec" id="rcSec"><div class="rch"><b>${esc(tr.name)}</b><span>${TRID[tr.kind].n}${lab?" · Abschnitt "+lab:" · zweite Aufzeichnung"}</span></div>
+   <div class="rcbtns" style="margin-top:10px"><button class="btn sm blue" data-triopen="${esc(tr.date)}">Ganzen Wettkampf ansehen</button></div></div>`}
+actInfo=(f=>function(a){f.apply(this,arguments);try{if(!a||!a.id)return;const b=$("iBody");if(!b)return;const old=b.querySelector(".offrow");if(old)old.remove();if(b.querySelector("#rcSec,.rcmk"))return;
+  const r=raceAct(a),tr=r&&r.src==="tri"?r.tri:null,o=offOf(a),cb=b.querySelector(".catbox");
+  if(o){const m=b.querySelector(".act .m");if(m)m.insertAdjacentHTML("beforeend",`<span class="rchd"><b>${fT(o.t)}</b> offiziell · ${rcPace(a.sport,o.t,o.d)} · ${fmtD(o.d)}</span>`);
+    b.querySelectorAll(".kv > div > span").forEach(s=>{const t=s.textContent;if(t==="Dauer")s.textContent="Zeit der Uhr";else if(t==="Pace"||t==="Tempo")s.textContent=t+" der Uhr";else if(t==="Distanz")s.textContent="Distanz der Uhr"})}
+  if(r&&!tr&&cb){const p=cb.querySelector("p");if(p)p.textContent=rcWhy(r)}
+  if(r){const h=tr?rcTriBox(a,tr):rcSec(a,r);if(cb)cb.insertAdjacentHTML("afterend",h);else b.insertAdjacentHTML("afterbegin",h);
+    const sel=$("rcD");if(sel)sel.onchange=()=>{$("rcXw").hidden=sel.value!=="x"}}
+  else if(a.type!=="Transition")b.insertAdjacentHTML("beforeend",`<div class="rcmk" id="rcMk"><button class="btn sm" data-rcmark>Als Wettkampf markieren</button></div>`)}catch(e){console.error(e)}})(actInfo);
+function rcCur(){return CUR_ACT&&DATA?DATA.activities.find(x=>String(x.id)===String(CUR_ACT)):null}
+function rcRefresh(a){TRIV++;try{render()}catch(e){}try{renderPB(DATA);renderBench(DATA)}catch(e){}if(a)actInfo(DATA.activities.find(x=>String(x.id)===String(a.id))||a)}
+document.addEventListener("click",e=>{const g=n=>e.target.closest("["+n+"]");if(!e.target.closest("#iBody"))return;const a=rcCur();if(!a)return;let b;
+  if(g("data-rcedit")){$("rcForm").hidden=false;$("rcRes").hidden=true;$("rcT").focus();return}
+  if(g("data-rccancel")){$("rcForm").hidden=true;$("rcRes").hidden=false;return}
+  if(g("data-rcdel")){const O=offAll();delete O[a.id];store.set("imOff",O);rcRefresh(a);toast("Offizielle Zeit entfernt");return}
+  if(g("data-rcsave")){const err=$("rcErr");err.textContent="";const t=parseHMS($("rcT").value);let d=$("rcD").value;
+    if(d==="x"){const km=parseFloat(String($("rcX").value).replace(",","."));if(!(km>0)){err.textContent="Bitte die Strecke in km eingeben.";return}d=snapD(km*1000)}else d=+d;
+    if(t==null||!d){err.textContent="Bitte die Zeit als h:mm:ss oder mm:ss eingeben.";return}
+    const sp=a.sport,v=sp==="run"?t/(d/1000):sp==="swim"?t/(d/100):d/1000/(t/3600),ok=sp==="run"?v>=150&&v<=900:sp==="swim"?v>=45&&v<=360:v>=10&&v<=60;
+    if(!ok){err.textContent="Die Zeit passt nicht zur Strecke. Format h:mm:ss, z. B. 1:29:40.";return}
+    const O=offAll();O[a.id]={t,d};store.set("imOff",O);rcRefresh(a);toast("Offizielle Zeit gespeichert");return}
+  if(g("data-rcno")){const M=rmkAll();M[a.id]={r:0};store.set("imRaceMk",M);const O=offAll();if(O[a.id]){delete O[a.id];store.set("imOff",O)}rcRefresh(a);toast("Als Training eingeordnet");return}
+  if(b=g("data-rcmark")){const as=dayActs(a.date),tri=["swim","bike","run"].every(k=>as.some(x=>x.sport===k&&!x.trainer));
+    if(tri&&["swim","bike","run"].includes(a.sport)&&!b.dataset.one){$("rcMk").innerHTML=`<p class="hint" style="margin:0 0 8px">An diesem Tag gibt es Schwimmen, Rad und Laufen. Wie willst du markieren?</p><div class="rcbtns"><button class="btn sm" data-rcmark data-one="1">Nur diese Einheit</button><button class="btn sm blue" data-rcmtri>Triathlon aus allen Einheiten</button></div>`;return}
+    const M=rmkAll();M[a.id]={r:1};store.set("imRaceMk",M);const I=store.get("imRaceIgnore",[]);if(I.includes(a.date))store.set("imRaceIgnore",I.filter(x=>x!==a.date));rcRefresh(a);toast("Als Wettkampf markiert");return}
+  if(g("data-rcmtri")){const d=a.date;triSave(d,r=>{delete r.no;r.ids=dayActs(d).filter(x=>x.sport!=="other"||x.type==="Transition").map(x=>String(x.id))});
+    const I=store.get("imRaceIgnore",[]);if(I.includes(d))store.set("imRaceIgnore",I.filter(x=>x!==d));try{render()}catch(x){}triInfo(d,true);return}});
 
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
