@@ -942,6 +942,7 @@ h3>.tag,.cx-h>.tag{display:table;margin:8px 0 2px;font-size:12px}
 #rcCancel{margin-top:8px}
 .fbmd .fbl{display:block;margin-top:4px;font-size:13px}.fbmd .rpe{width:100%}
 #chkRec,#raceHid{margin-bottom:14px}
+.wos .wosm{color:var(--muted)}.qctx{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:10px 0 0;padding:8px 12px;border-radius:12px;background:color-mix(in srgb,var(--acc) 14%,transparent);font-size:14px}.qctx button{font-size:16px;padding:2px 6px}.askwo{margin-top:16px;display:flex;align-items:center;justify-content:center;gap:8px}.askwo svg{width:18px;height:18px}
 </style>
 </head>
 <body>
@@ -1124,7 +1125,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="64";
+const VERSION="65";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -2008,7 +2009,7 @@ function parseStep(s,sport){let sec=0,dist=0,m,rest=s;const re=/(\d+(?:[.,]\d+)?
     if(u==="h")sec+=v*3600;else if(u==="min")sec+=v*60;else if(u==="s")sec+=v;else if(u==="km")dist+=v*1000;else if(u==="mtr")dist+=v;else if(sport==="swim"&&v>=25)dist+=v;else sec+=v*60;rest=rest.replace(m[0],"")}
   let z=0;const zm=s.match(/Z(\d)(?:\s*-\s*Z?(\d))?/i);if(zm){z=+zm[1];rest=rest.replace(zm[0],"")}
   else{const pm=s.match(/(\d+)(?:\s*-\s*(\d+))?\s*%/);if(pm){const p=pm[2]?(+pm[1]+ +pm[2])/2:+pm[1];z=p<60?1:p<76?2:p<90?3:p<105?4:p<120?5:6;rest=rest.replace(pm[0],"")}}
-  return{sec,dist,z:Math.min(7,z),text:rest.replace(/\s+/g," ").replace(/^[\s,;:·-]+|[\s,;:·-]+$/g,"")}}
+  return{sec,dist,z:Math.min(7,z),text:rest.replace(/\b(LTHR|HR|Pace|Power)\b/g," ").replace(/\s+/g," ").replace(/^[\s,;:·-]+|[\s,;:·-]+$/g,"")}}
 function parseWo(txt,sport){const B=[];let cur=null;const nb=(t,r)=>{cur={title:t,reps:r||1,steps:[]};B.push(cur)};
   String(txt||"").split(/\n/).map(l=>l.trim()).forEach(l=>{if(!l){cur=null;return}
     if(/^[-•*]/.test(l)){if(!cur)nb("",1);cur.steps.push(parseStep(l.replace(/^[-•*]\s*/,""),sport));return}
@@ -2794,7 +2795,7 @@ function playBtn(desc,sport,title){if(!desc)return"";const i=PLAYS.push({desc,sp
 const _woHTML15=(desc,sport)=>{const B=parseWo(desc,sport);if(!B.length)return desc?`<pre class="wo">${esc(desc)}</pre>`+exHTML(desc):"";
   const used=[...new Set(B.flatMap(b=>b.steps.map(x=>x.z)).filter(Boolean))].sort();
   return`<div class="wop-wrap">${woSvg(B,64)}</div><div class="zleg">${used.map(z=>`<span><i style="background:${ZC[z-1]}"></i>Z${z} ${ZN[z-1]}</span>`).join("")}</div>`+
-   B.map(b=>`<div class="wob">${b.title||b.reps>1?`<div class="wobh">${esc(b.title||"Block")}${b.reps>1?`<span>${b.reps}×</span>`:""}</div>`:""}${b.steps.map(x=>`<div class="wos"><i style="background:${ZC[(x.z||1)-1]}"></i><div><b>${[x.sec?fDur(x.sec):"",x.dist?fDist(x.dist):"",x.z?`Z${x.z} ${ZN[x.z-1]}`:""].filter(Boolean).join(" · ")}</b>${x.z?`<span>${ZF[x.z-1]}${zoneRange(sport,x.z)?" · "+zoneRange(sport,x.z):""}</span>`:""}${x.text?`<span>${esc(x.text)}</span>`:""}</div></div>`).join("")}</div>`).join("")+exHTML(desc)};
+   B.map(b=>`<div class="wob">${b.title||b.reps>1?`<div class="wobh">${esc(b.title||"Block")}${b.reps>1?`<span>${b.reps}×</span>`:""}</div>`:""}${b.steps.map(x=>`<div class="wos"><i style="background:${ZC[(x.z||1)-1]}"></i><div>${(()=>{const mt=[x.sec?fDur(x.sec):"",x.dist?fDist(x.dist):"",x.z?`Z${x.z} ${ZN[x.z-1]}`:""].filter(Boolean).join(" · ");return x.text?`<b>${esc(x.text.charAt(0).toUpperCase()+x.text.slice(1))}</b><span class="wosm">${mt}</span>`:`<b>${mt}</b>`})()}${x.z?`<span>${ZF[x.z-1]}${zoneRange(sport,x.z)?" · "+zoneRange(sport,x.z):""}</span>`:""}</div></div>`).join("")}</div>`).join("")+exHTML(desc)};
 function woHTML(desc,sport,title){if(!desc)return"";const sp=sport==="kraft"||sport==="other"?"other":sport;
   if(isStr(desc,sport,title))return playBtn(desc,"kraft",title)+strHTML(desc,title);
   const B=parseWo(desc,sp);return(B.length?playBtn(desc,sp,title):"")+_woHTML15(desc,sp)}
@@ -5142,6 +5143,30 @@ renderChkCard=(f=>function(D){f.apply(this,arguments);try{const c=$("chkCard"),k
   r.innerHTML=`<h2>Dein Check-in heute</h2><div class="chkdone"><div class="chkv">${T.map(([n,v,l])=>`<div><i style="--lv:${v}"></i><span>${n}</span><b>${l}</b></div>`).join("")}</div><button class="lnk" data-chk="1">Ändern</button></div>`}catch(e){}})(renderChkCard);
 /* ---------- v62/v63 ---------- */
 /* 2.10: Keine Rückfrage zu künftigen Einheiten. Jeden Tag entscheiden Krankheitseintrag und Erholungswerte (Tagesempfehlung, automatischer Tausch auf der Uhr seit V56). */
+/* ---------- v65 ---------- */
+/* Technikschritte ohne konkrete Übung: Auswahl erklären. KI soll Übungen immer benennen. */
+let LASTWO=null,WOQ=null;
+exHTML=(f=>function(txt){const h=f.apply(this,arguments);try{const t=String(txt||"");if(!/technik|drill/i.test(t)||EX.some(e=>e[0].test(t)))return h;
+  const sw=/schwimm|kraul|wasserlage|\d+\s*mtr/i.test(t)||!!(LASTWO&&/schwimm/i.test(LASTWO.sport||""));
+  const pick=EX.filter(e=>sw?/Abschlag|Faust|Einarmig|Seitlage/.test(e[1]):/Lauf-ABC|Steigerung/.test(e[1]));if(!pick.length)return h;
+  return h+`<h3 style="margin:18px 0 6px">Technikübungen</h3><p class="hint">Im Plan steht keine bestimmte Übung. Nimm in jedem Technikblock eine dieser Übungen, gern im Wechsel.</p>`+pick.map(e=>`<div class="ex"><b>${e[1]}</b><p>${e[2]}</p><a href="https://www.youtube.com/results?search_query=${encodeURIComponent(e[3])}" target="_blank" rel="noopener">Videos dazu suchen</a></div>`).join("")}catch(e){return h}})(exHTML);
+planFmt=(f=>function(){return f.apply(this,arguments)+' Technikschritte nennen immer die konkrete Übung (z. B. Abschlagschwimmen, Faustschwimmen, Einarmig, 6-1-6, Lauf-ABC, Steigerungen), nie nur „Technikübung“.'})(planFmt);
+/* Frag den Coach zu einer Einheit */
+function woqTag(){const q=$("askCard");if(!q)return;let el=$("qCtx");if(!WOQ){if(el)el.remove();const i=$("qIn");if(i)i.placeholder="Eigene Frage stellen …";return}
+  if(!el){el=document.createElement("div");el.id="qCtx";el.className="qctx";const r=q.querySelector(".qrow");r?r.before(el):q.appendChild(el)}
+  el.innerHTML=`<span>Frage zu: <b>${esc(cleanT(WOQ.title||"Einheit"))}</b></span><button class="lnk" data-woqx="1" aria-label="Bezug entfernen">✕</button>`;
+  const i=$("qIn");if(i)i.placeholder="z. B. Was ist mit Technikübung gemeint?"}
+function woqBtn(){if(!LASTWO||!hasAi())return;try{if(sickNow(DATA))return}catch(e){}const b=$("iBody");if(!b||b.querySelector("[data-askwo]"))return;
+  b.insertAdjacentHTML("beforeend",`<button class="btn wide askwo" data-askwo="1">${typeof ICS!=="undefined"?ICS:""}Frag den Coach zu diesem Training</button>`)}
+woInfo=(f=>function(w){LASTWO=w?{title:w.title,sport:spInfo(spKey(w.sport||w.label)).n,date:today(),desc:w.description||"",minutes:w.minutes,zone:w.zone,purpose:w.purpose}:null;const r=f.apply(this,arguments);woqBtn();return r})(woInfo);
+plInfo=(f=>function(p){LASTWO=p?{title:p.name,sport:(SPORTS[p.sport]||{}).n||"",date:p.date,desc:p.desc||"",minutes:p.secs?Math.round(p.secs/60):null}:null;const r=f.apply(this,arguments);woqBtn();return r})(plInfo);
+document.addEventListener("click",e=>{
+  if(e.target.closest("[data-askwo]")){WOQ=LASTWO;close("mInfo");setTab("heute");woqTag();const q=$("askCard");if(q)q.scrollIntoView({behavior:"smooth",block:"center"});setTimeout(()=>{const i=$("qIn");if(i)i.focus({preventScroll:true})},350);return}
+  if(e.target.closest("[data-woqx]")){WOQ=null;woqTag()}});
+askCtx=(f=>function(){const s=f.apply(this,arguments);if(!WOQ)return s;const w=WOQ;
+  return s+`\n\nDIE FRAGE BEZIEHT SICH AUF DIESE EINHEIT\n${w.date||""} ${w.sport||""}: ${cleanT(w.title||"")}${w.minutes?", "+w.minutes+" min":""}${w.zone?", "+w.zone:""}${w.purpose?"\nNutzen: "+w.purpose:""}\nAblauf:\n${String(w.desc||"").slice(0,1500)}\nErkläre Begriffe, Zonen und Übungen dieser Einheit konkret und in einfachen Worten: was genau zu tun ist, wie die Übung geht und worauf man achtet. Steht nur „Technikübung“ ohne Namen, nenne zwei bis drei passende Übungen. Kürzel wie HR (Puls), Z1 oder Z2 erklärst du in Worten.`})(askCtx);
+ask=(f=>function(qs){if(WOQ&&qs&&qs.trim()&&!/^Zu „/.test(qs.trim()))qs=`Zu „${cleanT(WOQ.title||"Einheit")}“: ${qs.trim()}`;return f.call(this,qs)})(ask);
+
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
 $("btnRace").onclick=()=>openRace(null);
