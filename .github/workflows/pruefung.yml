@@ -1,0 +1,31 @@
+name: Prüfung
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+jobs:
+  pruefung:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Playwright installieren
+        run: |
+          pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Syntax und Prüfdurchlauf
+        run: python werkzeuge/ci_pruefung.py index.html
+      - name: Bildschirmfotos aufheben
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pruefung-bildschirme
+          path: pruefung/
+          retention-days: 7
