@@ -1129,7 +1129,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="68";
+const VERSION="69";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -5267,6 +5267,35 @@ fuelList=(f=>function(){const L=f.apply(this,arguments).filter(x=>!/^Wettkampf /
 benchInfo=(f=>function(k){const r=f.apply(this,arguments);try{if(!/^e\d/.test(k))return r;const b=$("iBody");if(!b)return r;
   b.querySelectorAll("p").forEach(p=>{const t=p.textContent;if(/^Wie sicher:/.test(t)){const lv=(t.match(/^Wie sicher:\s*([^.]+)/)||[])[1]||"";const why=/lockeren Lauf/.test(t)?" Die Grundlage war ein lockerer Lauf.":/längerer Lauf/.test(t)?" Für die lange Strecke fehlt noch ein langer schneller Lauf.":"";p.innerHTML=`<b>Genauigkeit:</b> ${esc(lv)}.${esc(why)}`}
     if(/^So gerechnet:/.test(t)&&/Riegel/.test(t))p.innerHTML=`<b>So gerechnet:</b> Die App prüft alle deine Bestzeiten der letzten 90 Tage (1 km bis Marathon) und rechnet jede auf diese Strecke um. Angezeigt wird die schnellste Hochrechnung, hier aus dieser Grundlage.`})}catch(e){}return r})(benchInfo);
+
+/* ---------- v69 ---------- */
+/* 3.12 Zeitprognose: Anker (schnellster harter Lauf der letzten 180 Tage, VDOT nach Daniels) mal Formtrend.
+   Formtrend = effektive VO2max aus Puls und Tempo (Runalyze-Prinzip: Sauerstoffbedarf nach Daniels, Anteil der VO2max nach Swain 1994)
+   der letzten 30 Tage geteilt durch den Wert vor dem Anker. Ausdauerabzug HM/M nach Runalyze-Prinzip (Wochenkm 2/3, langer Lauf 1/3), Stärke 5 % bzw. 2 % an Noahs Marathon geeicht (Erfahrungswert). Rückrechnung: Marathon 25.10. aus HM 27.09. → 3:10:33 (echt 3:10:37). */
+const PRD={vo2:v=>-4.6+0.182258*v+0.000104*v*v,pct:t=>0.8+0.1894393*Math.exp(-0.012778*t)+0.2989558*Math.exp(-0.1932605*t)};
+PRD.vdot=(d,s)=>{const t=s/60;return PRD.vo2(d/t)/PRD.pct(t)};
+PRD.time=(V,d)=>{let lo=d/1000*120,hi=d/1000*720;for(let i=0;i<60;i++){const m=(lo+hi)/2;if(PRD.vdot(d,m)>V)lo=m;else hi=m}return(lo+hi)/2};
+function predModel(D){try{if(!D||!D.activities)return null;const t=today(),Z=(D.zones&&D.zones.run)||{},mx=Z.max||(settings.own&&settings.own.max),lt=Z.lthr;if(!mx)return null;
+  const R=D.activities.filter(a=>a.sport==="run"&&a.type==="Run"&&a.km>=4&&a.hr&&a.secs>=1200&&a.date>=addDays(t,-365));
+  const eV=a=>PRD.vo2(a.km*1000/(a.secs/60))/Math.min(1,(a.hr/mx-.37)/.64);
+  const hard=a=>/wettkampf|race|rennen|marathon|parkrun|volkslauf|lauf\s*\d|\d+\s*km/i.test(a.name||"")&&a.hr||(lt&&a.hr>=lt*.9);
+  const C=R.filter(a=>a.km>=5&&a.date>=addDays(t,-180)&&hard(a)).map(a=>({a,v:PRD.vdot(a.km*1000,a.secs)})).sort((x,y)=>y.v-x.v);if(!C.length)return null;const an=C[0];
+  const E=R.filter(a=>a.hr>=mx*.78),med=L=>{L=L.slice().sort((x,y)=>x-y);const n=L.length;return n?(n%2?L[(n-1)/2]:(L[n/2-1]+L[n/2])/2):null};
+  const lvl=to=>{let w=30,L;do{L=E.filter(a=>a.date>=addDays(to,-w)&&a.date<to).map(eV);w+=15}while(L.length<4&&w<=90);return L.length>=3?med(L):null};
+  const v0=lvl(addDays(an.a.date,1)),v1=lvl(addDays(t,1));let tr=v0&&v1?v1/v0:1;tr=Math.max(.9,Math.min(1.05,tr));
+  const wk=R.filter(a=>a.date>=addDays(t,-56)).reduce((s,a)=>s+a.km,0)/8,lg=Math.max(0,...R.filter(a=>a.date>=addDays(t,-70)).map(a=>a.km));
+  const end=(tw,tl)=>Math.min(1,.67*Math.min(1,wk/tw)+.33*Math.min(1,lg/tl));
+  return{a:an.a,v:an.v,tr,V:an.v*tr,wk,lg,f21:end(40,18),f42:end(60,30)}}catch(e){return null}}
+runEst=(f=>function(D){const L=f.apply(this,arguments);try{if(!D||!D.activities)return L;const M=predModel(D);if(!M)return L;
+  const X={e5:[5000,"5 km"],e10:[10000,"10 km"],e21:[21097.5,"Halbmarathon"],e42:[42195,"Marathon"]};
+  return Object.entries(X).map(([k,[d,n]])=>{const o=L.find(z=>z.k===k)||{},pen=k==="e42"?1+.05*(1-M.f42):k==="e21"?1+.02*(1-M.f21):1;return Object.assign({},o,{n,k,v:PRD.time(M.V,d)*pen,pen,fromThr:true,model:M,src:`aus ${M.a.name||"deinem Lauf"} (${fD(M.a.date)}), angepasst an deine aktuelle Form`})})}catch(e){return L}})(runEst);
+prevEst=function(){return[]};
+renderBench=(f=>function(D){f.apply(this,arguments);try{if(!predModel(D))return;const bs=document.querySelector("#bench .nob .bs");if(bs)bs.textContent="So schnell könntest du gerade ungefähr laufen: aus deinem schnellsten harten Lauf, angepasst an deine aktuelle Form."}catch(e){}})(renderBench);
+benchInfo=(f=>function(k){if(!/^e\d/.test(k)||!DATA)return f.apply(this,arguments);try{const e=runEst(DATA).find(z=>z.k===k);if(!e||!e.model)return f.apply(this,arguments);const M=e.model,a=M.a,pc=Math.round((M.tr-1)*1000)/10;
+  info(`<h3>Geschätzte Zeit ${e.n}</h3><div class="ibig" style="color:var(--run)">${fT(e.v)}</div>
+   <div class="kv"><div><span>Grundlage</span><b>${esc(a.name||"Lauf")}, ${fD(a.date)}</b></div><div><span>Strecke und Zeit</span><b>${nf(a.km,1)} km in ${fT(a.secs)}</b></div><div><span>Form seitdem</span><b>${Math.abs(pc)<1?"etwa gleich":(pc>0?"+":"−")+nf(Math.abs(pc),1)+" %"}</b></div>${e.pen>1.003?`<div><span>Ausdauer für die Strecke</span><b>+${nf((e.pen-1)*100,1)} %</b></div>`:""}</div>
+   <p><b>So gerechnet:</b> Grundlage ist dein schnellster harter Lauf der letzten 6 Monate. Daraus rechnet die App mit den Tabellen von Jack Daniels auf jede Strecke um. Danach passt sie die Zeit an deine Form an: Aus Puls und Tempo deiner Läufe der letzten 30 Tage schätzt sie, ob du fitter oder weniger fit bist als damals.${e.pen>1.003?" Für Halbmarathon und Marathon zählen auch deine Wochenkilometer und dein längster Lauf: Fehlt dafür noch Umfang, rechnet sie etwas langsamer.":""}</p>
+   <p class="hint">Gilt für einen Wettkampf mit voller Anstrengung, ausgeruht und auf flacher Strecke. Für Halbmarathon und Marathon brauchst du dazu genug lange Läufe im Training.</p>`)}catch(x){return f.apply(this,arguments)}})(benchInfo);
 
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
