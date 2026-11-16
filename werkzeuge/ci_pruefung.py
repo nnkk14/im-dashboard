@@ -1,7 +1,8 @@
 # Automatische Prüfung bei jedem Hochladen (GitHub Actions) und lokal:
 #   python werkzeuge/ci_pruefung.py [Pfad zu index.html]
 # 1. Syntax des Skripts in index.html mit Node prüfen
-# 2. Alle Bereiche der App mit Beispieldaten auf Handy und großem Bildschirm öffnen
+# 2. Alle Bereiche der App mit Beispieldaten auf Handy, Tablet (hochkant und quer, seit V82) und großem Bildschirm öffnen
+# 3. Meldet Elemente, die auf einer Seite breiter als der Bildschirm sind (außer seitlich wischbare Leisten)
 # Beendet sich mit Fehlercode, wenn etwas kaputt ist.
 import os, re, subprocess, sys, tempfile
 from playwright.sync_api import sync_playwright
@@ -25,7 +26,7 @@ SCHRITTE = [("heute", "setTab('heute')"), ("plan", "setTab('training');setSub('p
 os.makedirs("pruefung", exist_ok=True)
 with sync_playwright() as p:
     b = p.chromium.launch()
-    for name, w, h in [("handy", 390, 844), ("gross", 1280, 860)]:
+    for name, w, h in [("handy", 390, 844), ("tablet_hoch", 820, 1180), ("tablet_quer", 1180, 820), ("gross", 1280, 860)]:
         ctx = b.new_context(viewport={"width": w, "height": h}, timezone_id="Europe/Berlin")
         pg = ctx.new_page()
         pg.on("pageerror", lambda e, n=name: fehler.append(f"{n} JS: {e}"))
@@ -36,6 +37,11 @@ with sync_playwright() as p:
         for s, code in SCHRITTE:
             try:
                 pg.evaluate(code); pg.wait_for_timeout(400); pg.screenshot(path=f"pruefung/{name}_{s}.png")
+                if s in ("heute", "plan", "fortschritt", "verlauf", "erholung"):
+                    zu = pg.evaluate("""(()=>{const W=document.documentElement.clientWidth;const sc=e=>{for(let a=e.parentElement;a;a=a.parentElement){const o=getComputedStyle(a).overflowX;if(o==='auto'||o==='scroll'||o==='hidden')return true}return false};
+                      return [...document.querySelectorAll('section *')].filter(e=>{const r=e.getBoundingClientRect();return r.width>0&&r.right>W+2&&e.offsetParent&&!sc(e)}).slice(0,3).map(e=>(e.className&&e.className.baseVal===undefined?e.className:e.tagName)+' '+Math.round(e.getBoundingClientRect().right-W)+' px')})()""")
+                    if zu:
+                        print(f"Hinweis {name} {s}: breiter als der Bildschirm: {zu}")
             except Exception as e:
                 fehler.append(f"{name} {s}: {str(e)[:200]}")
         try:

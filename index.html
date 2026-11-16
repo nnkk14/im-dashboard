@@ -1005,6 +1005,11 @@ h3>.tag,.cx-h>.tag{display:table;margin:8px 0 2px;font-size:12px}
 #tpMemo{width:100%;min-height:90px;margin-top:4px}
 /* v80 */
 .pgate.tf b{color:var(--blue,#4ea1ff)}
+/* v82 */
+.px82{margin-top:12px;display:flex;flex-direction:column;gap:8px}.pxl{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:14px;color:var(--muted)}.pxl span{flex:1 1 220px}.pxl b{color:var(--text,#fff)}
+.lockbar{border-color:var(--hrv)}.lockbar .px82{margin-top:0}
+.chk82{display:flex;gap:10px;align-items:flex-start;margin:12px 0 4px;font-size:14px;line-height:1.35;cursor:pointer}.chk82 input{margin-top:3px;flex:none;width:18px;height:18px}
+#sKx{margin-top:10px}.tth{margin:6px 0 0}
 </style>
 </head>
 <body>
@@ -1187,7 +1192,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="81";
+const VERSION="82";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -6068,6 +6073,157 @@ rampIssues=(f=>function(items){let r=f.apply(this,arguments);try{const I=(items|
   Object.keys(wk).sort().forEach((m,wi)=>{const days=[...Array(7)].map((_,i)=>addDays(m,i)),full=days.every(d=>d>=fr&&d<=to),min=wk[m].reduce((s,x)=>s+(+x.minutes||0),0);
     const ref=wi===0?base:prev?Math.max(prev,base):r1,f=wi===0?1.25:1.2;if(full&&ref>45&&min>lim(ref,f))W.push({k:"steig",w:m,t:`Woche ab ${fD(m)}: ${nf(min/60,1)} h, das sind mehr als ${wi===0?25:20} Prozent über ${nf(ref/60,1)} h`});if(full)prev=min});
   r=r.filter(x=>!/^Woche ab/.test(x.t)).concat(W)}catch(e){}return r})(rampIssues);
+/* ---------- v82 ---------- */
+/* 2.15 Pause: KI-Einheiten mit Sicherung herausnehmen. Nur bei einer Trainingspause mit festem Ende. Bei Krankheit und Verletzung bleibt der Plan stehen,
+   weil das Ende offen ist (Entscheidung Noah 17.11.). Endet die Pause früher oder wird sie gelöscht, holt die App die restlichen Einheiten zurück.
+   2.11 Danach noch ohne: eine Sportart bleibt nach der Pause gesperrt (Merkmal im Pauseneintrag von intervals.icu, z. B. [ohne swim bis 2026-12-15]).
+   5.16 Test heute machen. 5.17 Langer Lauf: Spielraum statt fester 10 Prozent, nie mehr als 30 Prozent über dem längsten Lauf der letzten 30 Tage.
+   Quellen: quellen-trainingsumfang.md (Frandsen 2025, Nielsen 2013 und 2014, Buist 2008) */
+const LKN={run:"Laufen",bike:"Rad",swim:"Schwimmen",kraft:"Kraft"};
+const LKRX=/\s*\[ohne (run|bike|swim|kraft) bis (\d{4}-\d{2}-\d{2})\]/;
+sickFromEvent=(f=>function(e){const s=f.apply(this,arguments);try{const m=String((e&&e.description)||"").match(LKRX);if(m){s.lock={k:m[1],until:m[2]};s.note=String(s.note||"").replace(LKRX,"").trim()}}catch(x){}return s})(sickFromEvent);
+function sportLocks(D){D=D||DATA;const t=today();return((D&&D.sick)||[]).filter(s=>s.type==="pause"&&s.lock&&s.lock.until>=t).map(s=>({k:s.lock.k,until:s.lock.until,sid:String(s.id),note:s.note||"",start:s.start}))}
+function lockedOn(k,d,D){return sportLocks(D).some(L=>L.k===k&&d>=L.start&&d<=L.until)}
+function lockText(L){return`ohne ${LKN[L.k]} bis ${fD(L.until)}`}
+/* Sicherung herausgenommener Einheiten */
+function pbAll(){return store.get("imPauseBak",[])||[]}
+function pbSave(L){const y=addDays(today(),-1);L.forEach(b=>{b.items=b.items.filter(x=>x.date>=y)});store.set("imPauseBak",L.filter(b=>b.items.length).slice(-20))}
+function pbItem(p){return{date:p.date,type:WTYPE[p.sport]||SPAPI[p.sport]||"Workout",name:p.name||"",desc:p.desc||"",secs:p.secs||0,sport:p.sport}}
+async function pbTake(key,kind,list){if(!list||!list.length)return 0;const L=pbAll();let b=L.find(x=>x.key===key&&x.kind===kind);if(!b){b={key,kind,items:[]};L.push(b)}let n=0;
+  for(const p of list){if(isLive())await api("/events/"+encodeURIComponent(p.id),{method:"DELETE"});else DATA.planned=DATA.planned.filter(x=>x!==p);b.items.push(pbItem(p));n++;pbSave(L)}
+  return n}
+function pbCount(key,kind){const t=today();return pbAll().filter(b=>b.key===key&&(!kind||b.kind===kind)).reduce((s,b)=>s+b.items.filter(x=>x.date>=t).length,0)}
+async function pbBack(key,ok){const t=today(),L=pbAll();let n=0;
+  for(const b of L.filter(x=>x.key===key)){const keep=[];
+    for(const it of b.items){if(it.date<t)continue;if(!ok(it,b.kind)){keep.push(it);continue}
+      if(!((DATA&&DATA.planned)||[]).some(p=>p.date===it.date&&cleanT(p.name)===cleanT(it.name))){
+        if(isLive())await api("/events",{method:"POST",body:JSON.stringify({category:"WORKOUT",start_date_local:it.date+"T00:00:00",type:it.type,name:it.name,description:it.desc,moving_time:it.secs||undefined,external_id:"coach-"+it.date+"-r-"+Date.now().toString(36)+n})});
+        else DATA.planned.push({id:"r"+Date.now()+n,date:it.date,sport:it.sport,secs:it.secs,name:it.name,desc:it.desc,coach:true})}
+      n++}
+    b.items=keep}
+  pbSave(L);return n}
+function pauseUnits(s,D){D=D||DATA;const t=today(),a=s.start>t?s.start:t;return((D&&D.planned)||[]).filter(p=>p.coach&&p.date>=a&&p.date<=s.end)}
+function lockUnits(L,D){D=D||DATA;const t=today();return((D&&D.planned)||[]).filter(p=>p.coach&&p.sport===L.k&&p.date>=t&&p.date>=L.start&&p.date<=L.until)}
+function sickDesc(type,note,lock){return(type==="verletzung"?"":"["+type+"] ")+(lock&&lock.k?`[ohne ${lock.k} bis ${lock.until}] `:"")+(note||"")}
+/* Formular: bei Trainingspause Einheiten herausnehmen und „Danach noch ohne“ */
+(function(){const op=document.querySelector("#mSick .opts");if(!op)return;
+  const sel=id=>`<select id="${id}"><option value="">nichts</option>${Object.keys(LKN).map(k=>`<option value="${k}">${LKN[k]}</option>`).join("")}</select>`;
+  op.insertAdjacentHTML("afterend",`<div id="sPx" class="spx" hidden><label class="chk82"><input type="checkbox" id="sPxDel" checked><span>Geplante Einheiten der KI in dieser Zeit herausnehmen. Sie kommen dann nicht auf die Uhr. Endet die Pause früher, holt die App die restlichen zurück.</span></label>
+    <label class="f" for="sLk">Danach noch ohne</label><div class="row"><div>${sel("sLk")}</div><div><input type="date" id="sLkTo" aria-label="bis einschließlich"></div></div>
+    <div class="hint">Zum Beispiel nach einer Augen-OP noch 2 Wochen ohne Schwimmen. Die App plant diese Sportart bis zum Datum nicht ein.</div></div>
+    <div id="sKx" class="hint">Geplante Einheiten bleiben stehen, weil das Ende meist offen ist. Die App entscheidet jeden Tag neu, was passt.</div>`);
+  const sync=()=>{const c=document.querySelector('input[name="sType"]:checked'),p=c&&c.value==="pause";$("sPx").hidden=!p;$("sKx").hidden=p};
+  document.querySelectorAll('input[name="sType"]').forEach(r=>r.addEventListener("change",sync));
+  openSick=(f=>function(){f.apply(this,arguments);try{$("sLk").value="";$("sLkTo").value="";$("sPxDel").checked=true;sync()}catch(e){}})(openSick);
+  $("btnSick2").onclick=openSick;sync();
+  const o=$("sSave").onclick;
+  $("sSave").onclick=async function(){const c=document.querySelector('input[name="sType"]:checked');if(!c||c.value!=="pause")return o.apply(this,arguments);
+    const start=$("sStart").value,end=$("sEnd").value||start,note=$("sNote").value.trim(),err=$("sErr"),k=$("sLk").value,to=$("sLkTo").value;
+    if(!start){err.textContent="Bitte den Beginn angeben.";return}if(end<start){err.textContent="Das Ende liegt vor dem Beginn.";return}
+    if(k&&(!to||to<=end)){err.textContent="Bei „Danach noch ohne“ bitte ein Datum nach dem Ende der Pause wählen.";return}
+    const lock=k?{k,until:to}:null,b=$("sSave");b.disabled=true;
+    try{let sid;
+      if(!isLive()){const l=store.get("imDemoSick",[]);sid="d"+Date.now();l.push({id:sid,start,end,type:"pause",note,lock});store.set("imDemoSick",l)}
+      else{const ev=await api("/events",{method:"POST",body:JSON.stringify({category:"SICK",start_date_local:start+"T00:00:00",end_date_local:addDays(end,1)+"T00:00:00",name:"Trainingspause",description:sickDesc("pause",note,lock)})});sid=ev&&ev.id}
+      if($("sPxDel").checked&&sid!=null){await pbTake(String(sid),"pause",pauseUnits({start,end}));if(lock)await pbTake(String(sid),"lock",lockUnits(Object.assign({start},lock)).filter(p=>p.date>end))}
+      close("mSick");load()}catch(e){err.textContent=e.message}finally{b.disabled=false}}})();
+/* Coach: Trainingspause mit Sicherung statt einfachem Löschen */
+document.addEventListener("click",async e=>{const b=e.target.closest('[data-qact="pause"]');if(!b)return;e.preventDefault();e.stopImmediatePropagation();
+  const H=store.get("imAskH",[]),a=H[0]&&H[0].act;if(!a||a.k!=="pause")return;b.disabled=true;
+  try{let sid;if(!isLive()){const l=store.get("imDemoSick",[]);sid="d"+Date.now();l.push({id:sid,start:a.start,end:a.end,type:"pause",note:a.note||""});store.set("imDemoSick",l)}
+    else{const ev=await api("/events",{method:"POST",body:JSON.stringify({category:"SICK",start_date_local:a.start+"T00:00:00",end_date_local:addDays(a.end,1)+"T00:00:00",name:"Trainingspause",description:sickDesc("pause",a.note)})});sid=ev&&ev.id}
+    const n=sid!=null?await pbTake(String(sid),"pause",pauseUnits(a)):0;
+    a.done=true;store.set("imAskH",H);const c=b.closest(".qact");if(c)c.outerHTML=`<div class="qact ok">Eingetragen.${n?` ${n} Einheiten sind aus dem Plan genommen, die App merkt sie sich.`:""} Du findest die Pause unter Erholung, im Kalender und oben auf Heute.</div>`;
+    await load()}catch(er){b.disabled=false;if($("qErr"))$("qErr").textContent=er.message}},true);
+/* Früheres Ende oder Löschen: restliche Einheiten zurückholen (gesperrte Sportart nur nach der Sperre) */
+sickEnd=(f=>async function(s,end){const r=await f.apply(this,arguments);try{if(s&&s.type==="pause"&&end<s.end)await pbBack(String(s.id),(it,k)=>it.date>end&&(k==="pause"?!lockedOn(it.sport,it.date):false))}catch(e){console.error(e)}return r})(sickEnd);
+(function(){const el=$("sickList");if(!el)return;const o=el.onclick;
+  el.onclick=async function(ev){const btn=ev.target.closest("button"),del=btn&&btn.getAttribute("data-del"),heal=btn&&btn.getAttribute("data-heal"),go=del?btn.dataset.sure==="1":!!heal;
+    const s=go?((DATA&&DATA.sick)||[]).find(x=>String(x.id)===String(del||heal)):null;await o.apply(this,arguments);
+    if(!s||s.type!=="pause"||!pbCount(String(s.id)))return;
+    try{const y=addDays(today(),-1),end=y<s.start?s.start:y;
+      if(del)await pbBack(String(s.id),()=>true);else if(end<s.end)await pbBack(String(s.id),(it,k)=>it.date>end&&k==="pause"&&!lockedOn(it.sport,it.date));load()}catch(e){console.error(e)}}})();
+/* Fenster „Danach noch ohne“ für eine bestehende Pause */
+document.body.insertAdjacentHTML("beforeend",`<div class="modal" id="mLock"><div class="sheet"><h3>Danach noch ohne</h3><div class="sub">Eine Sportart bleibt nach der Pause noch gesperrt, zum Beispiel Schwimmen nach einer Augen-OP.</div>
+  <label class="f" for="lkK">Sportart</label><select id="lkK"><option value="">keine Einschränkung</option>${Object.keys(LKN).map(k=>`<option value="${k}">${LKN[k]}</option>`).join("")}</select>
+  <label class="f" for="lkTo">bis einschließlich</label><input type="date" id="lkTo">
+  <label class="chk82"><input type="checkbox" id="lkDel" checked><span>Geplante Einheiten dieser Sportart bis dahin herausnehmen. Die App merkt sie sich.</span></label>
+  <div class="err" id="lkErr"></div><div class="actions"><button class="btn" id="lkCancel">Abbrechen</button><button class="btn blue" id="lkSave">Speichern</button></div></div></div>`);
+let LKS=null;
+function openLock(sid){const s=((DATA&&DATA.sick)||[]).find(x=>String(x.id)===String(sid));if(!s)return;LKS=s;$("lkK").value=s.lock?s.lock.k:"";$("lkTo").value=s.lock?s.lock.until:"";$("lkTo").min=addDays(s.end,1);$("lkDel").checked=true;$("lkErr").textContent="";open("mLock")}
+$("lkCancel").onclick=()=>close("mLock");
+$("lkSave").onclick=async()=>{const s=LKS;if(!s)return;const k=$("lkK").value,to=$("lkTo").value,err=$("lkErr");
+  if(k&&(!to||to<=s.end)){err.textContent="Bitte ein Datum nach dem Ende der Pause wählen.";return}
+  const nl=k?{k,until:to}:null,ol=s.lock||null,b=$("lkSave");b.disabled=true;
+  try{if(!isLive()){const l=store.get("imDemoSick",[]);l.forEach(x=>{if(String(x.id)===String(s.id))x.lock=nl});store.set("imDemoSick",l)}
+    else await api("/events/"+encodeURIComponent(s.id),{method:"PUT",body:JSON.stringify({description:sickDesc(s.type,s.note,nl)})});
+    s.lock=nl;const sid=String(s.id);
+    if(ol)await pbBack(sid,(it,kd)=>kd==="lock"&&(!nl||it.sport!==nl.k||it.date>nl.until));
+    if(nl&&$("lkDel").checked)await pbTake(sid,"lock",lockUnits(Object.assign({start:s.start},nl)).filter(p=>p.date>s.end));
+    close("mLock");load()}catch(e){err.textContent=e.message}finally{b.disabled=false}};
+/* Heute: Hinweise im Pausen-Balken und eigene Karte für die Sperre */
+function lockLine(L){const u=lockUnits(L),n=pbCount(L.sid,"lock");return`<div class="pxl"><span><b>Danach noch ${esc(lockText(L))}</b>${u.length?` ${u.length} geplante ${LKN[L.k]}-Einheit${u.length>1?"en":""} (${u.map(p=>fD(p.date)).join(", ")}) ${u.length>1?"liegen":"liegt"} davor.`:""}${n?` ${n} herausgenommen.`:""}</span>${u.length?`<button class="btn sm" data-lkx="${esc(L.sid)}">Herausnehmen</button>`:""}<button class="lnk" data-lkset="${esc(L.sid)}">Ändern</button></div>`}
+renderSickBar=(f=>function(D){f.apply(this,arguments);try{const b=$("sickBar"),s=sickNow(D);
+    if(b&&s&&s.type==="pause"){const u=pauseUnits(s,D),n=pbCount(String(s.id),"pause"),L=sportLocks(D).find(x=>x.sid===String(s.id));let h="";
+      if(u.length)h+=`<div class="pxl"><span>${u.length} geplante Einheit${u.length>1?"en liegen":" liegt"} noch in der Pause und ${u.length>1?"kämen":"käme"} auf die Uhr.</span><button class="btn sm" data-px="${esc(String(s.id))}">Herausnehmen</button></div>`;
+      if(n)h+=`<div class="pxl"><span>${n} Einheit${n>1?"en":""} herausgenommen. Endet die Pause früher, kommen sie zurück.</span><button class="lnk" data-pxback="${esc(String(s.id))}">Zurückholen</button></div>`;
+      h+=L?lockLine(L):`<div class="pxl"><span>Darfst du danach eine Sportart noch nicht machen?</span><button class="lnk" data-lkset="${esc(String(s.id))}">Danach noch ohne …</button></div>`;
+      const hi=b.querySelector(".hint");if(hi)hi.insertAdjacentHTML("beforebegin",`<div class="px82">${h}</div>`);else b.insertAdjacentHTML("beforeend",`<div class="px82">${h}</div>`)}
+    const sec=document.querySelector('section[data-tab="heute"]');let c=$("lockBar");const cur=s&&s.type==="pause"?String(s.id):"",LS=sportLocks(D).filter(L=>L.sid!==cur);
+    if(!LS.length||!sec){if(c)c.remove();return}
+    if(!c){c=document.createElement("div");c.id="lockBar";c.className="card sickbar lockbar";const sb=$("sickBar");if(sb)sb.after(c);else sec.insertBefore(c,sec.firstChild)}
+    c.innerHTML=`<div class="px82">${LS.map(lockLine).join("")}</div>`}catch(e){console.error(e)}})(renderSickBar);
+document.addEventListener("click",async e=>{const b=e.target.closest("[data-px],[data-pxback],[data-lkx],[data-lkset]");if(!b)return;e.preventDefault();
+  if(b.dataset.lkset){openLock(b.dataset.lkset);return}
+  if((b.dataset.px||b.dataset.lkx)&&b.dataset.sure!=="1"){b.dataset.sure="1";b.textContent="Wirklich herausnehmen?";b.classList.add("red");return}
+  b.disabled=true;const id=b.dataset.px||b.dataset.pxback||b.dataset.lkx,s=((DATA&&DATA.sick)||[]).find(x=>String(x.id)===id);
+  try{if(b.dataset.px&&s)await pbTake(id,"pause",pauseUnits(s));
+    else if(b.dataset.lkx){const L=sportLocks().find(x=>x.sid===id);if(L)await pbTake(id,"lock",lockUnits(L))}
+    else if(b.dataset.pxback)await pbBack(id,k=>true);
+    await load()}catch(er){b.disabled=false;alert37("Hat nicht geklappt: "+er.message)}});
+/* KI: Sperre kennen, Regelprüfung meldet Einheiten der gesperrten Sportart, Reparatur entfernt sie */
+function lockKI(){const LS=sportLocks();if(!LS.length)return"";return"\nEINSCHRÄNKUNG NACH DER PAUSE: "+LS.map(L=>`kein ${LKN[L.k]} bis einschließlich ${L.until}${L.note?" ("+L.note+")":""}`).join(", ")+". Bis dahin keine Einheiten und keine Tests dieser Sportart planen, danach locker und kürzer wieder einsteigen."}
+coachText=(f=>function(){const s=f.apply(this,arguments);try{const x=lockKI();if(!x)return s;const i=s.indexOf("\nANTWORTFORMAT");return i<0?s+x:s.slice(0,i)+x+s.slice(i)}catch(e){return s}})(coachText);
+askCtx=(f=>function(){const s=f.apply(this,arguments);try{return s+lockKI()}catch(e){return s}})(askCtx);
+/* 5.17 Langer Lauf: höchstens 30 Prozent über dem längsten Lauf der 30 Tage davor (Frandsen 2025), Untergrenze 30 Minuten als Bezug */
+const LRMAX=1.3,LRMIN=30;
+function lrRef(d,I){const t=today(),a=addDays(d,-30),f=I&&I.length?I[0].date:"9999";let m=0;
+  ((DATA&&DATA.activities)||[]).forEach(x=>{if(x.sport==="run"&&x.date>=a&&x.date<d&&x.date<=t)m=Math.max(m,(x.secs||0)/60)});
+  ((DATA&&DATA.planned)||[]).forEach(p=>{if(p.sport==="run"&&p.date>t&&p.date<f&&p.date>=a&&p.date<d)m=Math.max(m,(p.secs||0)/60)});
+  (I||[]).forEach(x=>{if(gSk(x)==="run"&&x.date>=a&&x.date<d)m=Math.max(m,+x.minutes||0)});
+  return Math.max(m,LRMIN)}
+function lrIssues(items){const I=(items||[]).filter(x=>x&&x.date).slice().sort((a,b)=>a.date.localeCompare(b.date)),out=[];if(!DATA)return out;
+  I.forEach(x=>{if(gSk(x)!=="run")return;const r=lrRef(x.date,I),m=+x.minutes||0;if(m>r*LRMAX&&m-r>10)out.push({k:"lauf",d:x.date,t:`${fD(x.date)}: ${x.name||"Lauf"} dauert ${Math.round(m)} min, mehr als 30 Prozent über dem längsten Lauf der 30 Tage davor (${Math.round(r)} min)`})});return out}
+planGate=(f=>function(items){const r=f.apply(this,arguments);try{const I=items||[];
+    I.forEach(x=>{const k=gSk(x);if(LKN[k]&&lockedOn(k,x.date))r.issues.push({k:"sperre",d:x.date,t:`${fD(x.date)}: ${LKN[k]} ist bis ${fD(sportLocks().find(L=>L.k===k&&x.date<=L.until).until)} gesperrt`})});
+    lrIssues(I).forEach(x=>r.issues.push(x))}catch(e){}return r})(planGate);
+gateRepair=(f=>function(items){const r=f.apply(this,arguments);try{const n=r.items.length;r.items=r.items.filter(x=>!(LKN[gSk(x)]&&lockedOn(gSk(x),x.date)));if(r.items.length<n)r.fixed.push("gesperrte Sportart entfernt")}catch(e){}return r})(gateRepair);
+/* Steigerung mit Spielraum (Wunsch Noah 17.11.): Ziel etwa 10 Prozent, bis 20 Prozent wenn es dem Plan dient, nie über 30 Prozent */
+const V82RAMP="Umfang steigt schrittweise, als Ziel etwa 10 Prozent pro Woche. Spielraum bis 20 Prozent, wenn es dem Plan dient (z. B. nach einer Entlastungswoche, nach einer Pause oder bei kleinem Umfang), nie mehr als 30 Prozent.";
+const V82LONG="\n- LANGER LAUF: Ein einzelner Lauf ist möglichst höchstens 10 Prozent länger als der längste Lauf der letzten 30 Tage, mit Spielraum bis 20 Prozent, nie mehr als 30 Prozent. Steigere lieber die Zahl der Läufe als einen Lauf sprunghaft.";
+function v82Rules(s){return String(s).replace(/um höchstens etwa 10 Prozent pro Woche/g,"um etwa 10 Prozent pro Woche (Spielraum bis 20 Prozent, nie über 30 Prozent)").replace(/Umfang steigt schrittweise, höchstens etwa 10 Prozent pro Woche\./g,V82RAMP).replace(/Steigerung höchstens etwa 10 Prozent pro Woche/g,"Steigerung etwa 10 Prozent pro Woche mit Spielraum bis 20 Prozent, nie über 30 Prozent, langer Lauf nie mehr als 30 Prozent über dem längsten Lauf der letzten 30 Tage")}
+function lrInfo(){const t=today(),a=addDays(t,-30);let m=0;((DATA&&DATA.activities)||[]).forEach(x=>{if(x.sport==="run"&&x.date>=a&&x.date<=t)m=Math.max(m,(x.secs||0)/60)});return m?`\n- LÄNGSTER LAUF DER LETZTEN 30 TAGE: ${Math.round(m)} min`:"\n- LÄNGSTER LAUF DER LETZTEN 30 TAGE: keiner, erste Läufe höchstens etwa 30 bis 40 Minuten"}
+planRules=(f=>function(){const s=f.apply(this,arguments);try{if(typeof s!=="string")return s;const us=userSports();return v82Rules(s)+(us.includes("run")?V82LONG+lrInfo():"")}catch(e){return s}})(planRules);
+claude=(f=>async function(pr){if(typeof pr==="string"&&/REGELVERSTÖSSE:/.test(pr)){const a=[...arguments];a[0]=pr.replace("Umfang höchstens etwa 10 Prozent mehr pro Woche.","Umfang etwa 10 Prozent mehr pro Woche, höchstens 20 Prozent. Ein Lauf höchstens 30 Prozent länger als der längste Lauf der 30 Tage davor."+lockKI());return f.apply(this,a)}return f.apply(this,arguments)})(claude);
+try{WIKI.forEach(w=>{if(Array.isArray(w)&&typeof w[1]==="string")w[1]=w[1].replace("Steigerung um höchstens etwa 10 Prozent pro Woche","Steigerung um etwa 10 Prozent pro Woche (mit etwas Spielraum, nie mehr als 30 Prozent, lange Läufe nie sprunghaft länger)")})}catch(e){}
+/* 5.16 Test heute machen */
+async function mvPlanned(p,d){if(isLive())await api("/events/"+encodeURIComponent(p.id),{method:"PUT",body:JSON.stringify({start_date_local:d+"T00:00:00"})});p.date=d}
+function ttInfo(p){const t=today(),tf=tfNow(),inTf=!!(tf&&tfState(tf)==="wait"&&tf.tests.length===1&&tf.tests[0].k===p.sport&&tf.tests[0].date===p.date&&p.coach),tp=((DATA&&DATA.planned)||[]).filter(x=>x.date===t&&x.coach&&x!==p);
+  return{inTf,tf,tp,txt:inTf?"Die übrigen Einheiten bis dahin nimmt die App heraus. Die KI plant weiter, sobald dein Test ausgewertet ist.":tp.length?`${tp.map(x=>esc(cleanT(x.name))).join(", ")} von heute rückt auf den ${fD(p.date)}`:"Heute steht sonst nichts im Plan."}}
+async function testToday(id){const t=today(),p=((DATA&&DATA.planned)||[]).find(x=>String(x.id)===String(id));if(!p||p.date<=t)return;const I=ttInfo(p),old=p.date;
+  if(I.inTf){const rest=DATA.planned.filter(x=>x.coach&&x!==p&&x.date>=t&&x.date<=(I.tf.end||old));await pbTake("test-"+t,"test",rest);await mvPlanned(p,t);
+    store.set("imTestFirst",Object.assign({},I.tf,{tests:I.tf.tests.map(x=>Object.assign({},x,{date:t})),end:t,moved:t}))}
+  else{await mvPlanned(p,t);for(const x of I.tp)await mvPlanned(x,old)}
+  if(!isLive()){renderNext(DATA);renderPlanCheck()}else await load()}
+function ttBtn(p){return`<button class="btn blue wide" data-tt="${esc(String(p.id))}" style="margin-top:10px">Test heute machen</button><div class="hint tth">${ttInfo(p).txt}</div>`}
+plInfo=(f=>function(p){f.apply(this,arguments);try{if(p&&p.id&&p.date>today()&&TRX.test(p.name||"")&&$("iFoot"))$("iFoot").insertAdjacentHTML("beforeend",ttBtn(p))}catch(e){}})(plInfo);
+renderPlanCheck=(f=>function(){const r=f.apply(this,arguments);try{const h=$("tfHint"),s=tfNow();if(h&&s&&!h.querySelector("[data-tt]")){const t=today(),p=((DATA&&DATA.planned)||[]).filter(x=>x.coach&&x.date>t&&TRX.test(x.name||"")&&s.tests.some(y=>y.k===x.sport&&y.date===x.date)).sort((a,b)=>a.date.localeCompare(b.date))[0];
+    if(p)h.insertAdjacentHTML("beforeend",ttBtn(p).replace(" wide",""))}}catch(e){}return r})(renderPlanCheck);
+document.addEventListener("click",async e=>{const b=e.target.closest("[data-tt]");if(!b)return;e.preventDefault();
+  if(b.dataset.sure!=="1"){b.dataset.sure="1";b.textContent="Ja, heute testen";return}b.disabled=true;b.textContent="Überträgt …";
+  try{await testToday(b.dataset.tt);if($("mInfo")&&$("mInfo").classList.contains("open"))close("mInfo")}catch(er){b.disabled=false;b.textContent="Test heute machen";alert37("Hat nicht geklappt: "+er.message)}});
+/* Tagesempfehlung: gesperrte Sportart nicht als Alternative anbieten */
+coachHTML=(f=>function(){let h=f.apply(this,arguments);try{const t=today();Object.keys(LKN).forEach(k=>{if(lockedOn(k,t))h=String(h).replace(new RegExp(`<button data-w="[1-9]\\d*"[^>]*><i></i>${LKN[k]}</button>`,"g"),"")})}catch(e){}return h})(coachHTML);
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
 $("btnRace").onclick=()=>openRace(null);
