@@ -919,6 +919,13 @@ h3>.tag,.cx-h>.tag{display:table;margin:8px 0 2px;font-size:12px}
 .wwat>span{flex:1 1 180px;display:flex;align-items:center;gap:6px;color:var(--muted)}.wwat b{color:var(--text,#fff);font-weight:600}
 .wwi{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .wwat.off>span{color:var(--yellow)}.wwerr{flex-basis:100%;color:var(--red);font-size:12px}.wsteps{padding-left:18px;line-height:1.6}
+.rcmenu{position:absolute;top:10px;right:12px;background:none;border:0;color:var(--muted);font-size:20px;line-height:1;padding:4px 8px;cursor:pointer;border-radius:8px}
+#raceCard{position:relative}
+.rcask{margin-top:10px;padding:10px 12px;border-radius:12px;background:var(--card2);font-size:13px}.rcask .btnrow{margin-top:8px;display:flex;gap:12px;align-items:center}
+.pi.pisick{opacity:.55}.pi.pisick b,.pi.pisick .pin{text-decoration:line-through}.sicktag{display:block;margin-top:2px;font-size:11px;font-weight:700;color:var(--red)}
+.fbmini{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;padding:8px 12px;border-radius:12px;background:var(--card2);font-size:13px}
+.fbmini .fbck{width:15px;height:15px;stroke:var(--green);fill:none;stroke-width:2.6;vertical-align:-3px;margin-right:6px}
+#toastV57 .lnk{color:#fff;text-decoration:underline;margin-left:6px}
 </style>
 </head>
 <body>
@@ -1100,7 +1107,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="56";
+const VERSION="57";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -1162,7 +1169,7 @@ async function loadLive(){
     api("").catch(()=>null)
   ]);
   const zones={};((ath&&ath.sportSettings)||[]).forEach(z=>{const k=sportOf((z.types||[])[0]);if(k==="other"||zones[k])return;zones[k]={hr:z.hr_zones||null,lthr:z.lthr||null,max:z.max_hr||null,ftp:z.ftp||null,pz:z.power_zones||null,tp:z.threshold_pace||null}});
-  window.__ath=ath?{up:!!(ath.icu_garmin_upload_workouts||ath.coros_upload_workouts||ath.wahoo_upload_workouts||ath.suunto_upload_workouts||ath.zepp_upload_workouts||ath.huawei_upload_workouts),garmin:!!ath.icu_garmin_sync_activities,last:ath.icu_garmin_last_upload||null}:null;const lastSI=(well||[]).slice().reverse().find(w=>w.sportInfo&&w.sportInfo.some(x=>x.type==="Ride"&&x.eftp));const eftp=lastSI?lastSI.sportInfo.find(x=>x.type==="Ride").eftp:null;
+  window.__ath=ath?{up:!!(ath.icu_garmin_upload_workouts||ath.coros_upload_workouts||ath.wahoo_upload_workouts||ath.suunto_upload_workouts||ath.zepp_upload_workouts||ath.huawei_upload_workouts),garmin:!!ath.icu_garmin_sync_activities,prov:ath.icu_garmin_upload_workouts?"garmin":ath.coros_upload_workouts?"coros":ath.wahoo_upload_workouts?"wahoo":ath.suunto_upload_workouts?"suunto":ath.zepp_upload_workouts?"zepp":ath.huawei_upload_workouts?"huawei":"",last:ath.icu_garmin_upload_workouts?ath.icu_garmin_last_upload||null:null}:null;const lastSI=(well||[]).slice().reverse().find(w=>w.sportInfo&&w.sportInfo.some(x=>x.type==="Ride"&&x.eftp));const eftp=lastSI?lastSI.sportInfo.find(x=>x.type==="Ride").eftp:null;
   const activities=(acts||[]).filter(a=>a&&a.start_date_local).map(a=>({
     date:a.start_date_local.slice(0,10),tm:a.start_date_local.slice(11,13),sport:sportOf(a.type),name:a.name||a.type||"",
     secs:a.moving_time||a.elapsed_time||0,km:(a.distance||0)/1000,load:a.icu_training_load||0,hr:a.average_heartrate||null,
@@ -2875,7 +2882,7 @@ function coachHTML(n,D,t){
 $("coachCard").addEventListener("click",e=>{const b=e.target.closest("[data-choose]");if(!b)return;const i=+b.dataset.choose,W=window.__cw||[];setChoice(i>=0?W[i]:null);
   const on=$("coachCard").querySelector(".cx-tabs .on"),idx=on?+on.dataset.w:0;$("cxW").innerHTML=wcard(W[idx],idx)});
 function renderCoach17(D){const t=today(),cc=$("coachCard");if(!cc)return;const ai=hasAi()&&isLive(),n=noteBy("Coach "+t);
-  const btn=ai?`<button class="btn wide" id="btnAiRun" style="margin-top:12px">${aiBusy?"Die KI wertet aus …":n?"Neu auswerten":"Auswertung von der KI starten"}</button><div class="err" id="aiErr">${esc(aiErrMsg)}</div>${""}`:"";
+  const btn=ai&&(!n||settings.dev||aiBusy)?`<button class="btn wide" id="btnAiRun" style="margin-top:12px">${aiBusy?"Die KI wertet aus …":n?"Neu auswerten":"Auswertung von der KI starten"}</button><div class="err" id="aiErr">${esc(aiErrMsg)}</div>${""}`:"";
   cc.style.display="";cc.innerHTML=coachHTML(n?n:{o:ruleNote(D),date:t},D,t)+btn;if($("btnAiRun"))$("btnAiRun").onclick=()=>aiDaily(true);
   $("ampel").style.display="none";const ak=$("askCard");if(ak)ak.style.display=ai?"":"none"}
 
@@ -4056,12 +4063,12 @@ function afterDone(D){const t=today(),dn=D.activities.filter(a=>a.date===t),r=re
     c.style.display="";c.classList.add("donerest");c.innerHTML=`<div class="dnh"><div class="dnck">${MOONI}</div><div><b>${P(DM.restDayH)}</b><span>${P(DM.restDayB)}</span></div></div>`}
   else if(c)c.classList.remove("donerest");
   if(!cc)return;const old=cc.querySelector(".cxmore");if(old)old.remove();
-  if(!dn.length||r==="rest"){cc.classList.remove("cxdone");return}
-  const tot=dn.reduce((s,a)=>s+(a.secs||0),0)/60,rm=recMin();
-  if(rm&&tot<rm*.5){cc.classList.remove("cxdone");cc.insertAdjacentHTML("afterbegin",`<div class="cxmore">Du hast heute ${Math.round(tot)} min trainiert. Wenn du noch Zeit und Lust hast, passt diese Einheit noch:</div>`);return}
-  cc.classList.add("cxdone");if(c&&!c.querySelector("[data-showrec]"))c.insertAdjacentHTML("beforeend",'<button class="lnk" data-showrec="1">Heutige Empfehlung trotzdem ansehen</button>')}
+  if(!dn.length){cc.classList.remove("cxdone");return}
+  const tot=dn.reduce((s,a)=>s+(a.secs||0),0)/60,rm=r==="rest"?0:recMin();
+  if(rm&&tot<rm*.5&&!sickNow(D)){cc.classList.remove("cxdone");cc.insertAdjacentHTML("afterbegin",`<div class="cxmore">Du hast heute ${Math.round(tot)} min trainiert. Wenn du noch Zeit und Lust hast, passt diese Einheit noch:</div>`);return}
+  cc.classList.add("cxdone");if(c&&!c.querySelector("[data-showrec]"))c.insertAdjacentHTML("beforeend",'<button class="lnk" data-showrec="1">Noch etwas machen?</button>');if(c){const b=c.querySelector("[data-showrec]");if(b)b.hidden=!!sickNow(D)}}
 renderDone=(f=>function(D){f.apply(this,arguments);try{afterDone(D)}catch(e){console.error(e)}})(renderDone);
-document.addEventListener("click",e=>{const b=e.target.closest("[data-showrec]");if(!b)return;const cc=$("coachCard");if(!cc)return;const on=cc.classList.toggle("cxdone");b.textContent=on?"Heutige Empfehlung trotzdem ansehen":"Empfehlung wieder ausblenden"});
+document.addEventListener("click",e=>{const b=e.target.closest("[data-showrec]");if(!b)return;const cc=$("coachCard");if(!cc)return;const on=cc.classList.toggle("cxdone");b.textContent=on?"Noch etwas machen?":"Wieder ausblenden"});
 
 /* Trainingsbewertung: nur einmal, neu bewerten nur in den Entwickleroptionen */
 function newestAct(){return DATA?[...DATA.activities].filter(a=>a.id&&!/^pv/.test(a.id)).sort((a,b)=>(b.date+String(b.tm||"")).localeCompare(a.date+String(a.tm||"")))[0]:null}
@@ -4820,8 +4827,9 @@ function renderRaceCard(D){let el=$("raceCard");const rc=raceRecent(D);if(!rc){i
   el.innerHTML=`<div class="cx-k" style="color:var(--acc)">Erholung nach dem Wettkampf</div><div class="cx-h">${esc(rc.name)} · Tag ${rc.day} von ${rc.R.end}</div>
    <div class="rcbar"><i style="width:${Math.min(100,Math.round(rc.day/rc.R.end*100))}%"></i></div><p style="margin:8px 0 4px"><b>Jetzt:</b> ${esc(rc.ph[2])}</p>
    <ul class="rclist">${rc.R.ph.map(p=>{const li=`<li class="${rc.day>from&&rc.day<=p[0]||(from===0&&rc.day===0&&p===rc.R.ph[0])?"on":rc.day>p[0]?"done":""}"><b>Tag ${from+1===p[0]||from===p[0]?p[0]:(from+1)+" bis "+p[0]}</b> ${esc(p[2])}</li>`;from=p[0];return li}).join("")}<li class="${rc.day>=rc.R.hard?"done":""}"><b>Ab Tag ${rc.R.hard}</b> harte Einheiten wieder möglich, ab Tag ${rc.R.end} normales Training.</li></ul>
-   <button class="lnk" id="rcNo" style="margin-top:6px">Das war kein Wettkampf</button>`;
-  $("rcNo").onclick=()=>{const l=store.get("imRaceIgnore",[]);l.push(rc.date);store.set("imRaceIgnore",l.slice(-20));el.remove();try{render()}catch(e){}}}
+   <button class="rcmenu" id="rcMenu" aria-label="Mehr">⋯</button><div class="rcask" id="rcAsk" hidden><span>War ${esc(rc.name)} kein Wettkampf? Dann blendet die App die Erholung aus und plant normal weiter.</span><div class="btnrow"><button class="btn sm" id="rcNo">Kein Wettkampf</button><button class="lnk" id="rcCancel">Abbrechen</button></div></div>`;
+  $("rcMenu").onclick=()=>{$("rcAsk").hidden=!$("rcAsk").hidden};$("rcCancel").onclick=()=>{$("rcAsk").hidden=true};
+  $("rcNo").onclick=()=>{const l=store.get("imRaceIgnore",[]);l.push(rc.date);store.set("imRaceIgnore",l.slice(-20));el.remove();try{render()}catch(e){}raceUndoToast(rc.date)}}
 render=(f=>function(){const r=f.apply(this,arguments);try{renderRaceCard(DATA)}catch(e){}return r})(render);
 coachText=(f=>function(){const s=f.apply(this,arguments),rc=raceRecent(DATA);if(!rc)return s;const x=`\nLETZTER WETTKAMPF: ${rc.R.n} am ${rc.date} (Tag ${rc.day} danach). Erholungsphase jetzt: ${rc.ph[2]} Harte Einheiten frühestens ab Tag ${rc.R.hard}, normales Training ab Tag ${rc.R.end}. Halte dich daran.`;const i=s.indexOf("\nANTWORTFORMAT");return i<0?s+x:s.slice(0,i)+x+s.slice(i)})(coachText);
 
@@ -4897,7 +4905,7 @@ coachText=(f=>function(){const s=f.apply(this,arguments),st=fbState(DATA);if(!st
 /* Training auf die Uhr: intervals.icu überträgt geplante Einheiten der nächsten etwa 7 Tage an Garmin Connect und aktualisiert sie bei Änderungen. Die App zeigt, was auf der Uhr ist, und tauscht bei Bedarf. */
 const WTYPE={run:"Run",bike:"Ride",swim:"Swim",kraft:"WeightTraining",other:"WeightTraining"};
 const swapAll=()=>store.get("imSwap",{});
-function watchInfo(){const a=window.__ath||null;return{known:!!a,up:!!(a&&a.up),garmin:!!(a&&a.garmin),last:a&&a.last}}
+function watchInfo(){const a=window.__ath||null;return{known:!!a,up:!!(a&&a.up),garmin:!!(a&&a.garmin),prov:a&&a.prov||"",last:a&&a.last}}
 function todayPlan(D){const t=today();return(D.planned||[]).filter(p=>p.date===t).sort((a,b)=>(b.coach?1:0)-(a.coach?1:0))}
 function sameWo(p,w){return p&&w&&cleanT(p.name)===cleanT(w.title||"")&&spKey(p.name+" "+(SPAPI[p.sport]||p.sport))===spKey(w.sport)}
 function watchBlock(w,i){if(!w||w.old||w.fromAsk&&!w.description)return"";const D=DATA,t=today(),wi=watchInfo(),live=isLive(),tp=todayPlan(D),sw=swapAll()[t],rest=spKey(w.sport)==="rest";
@@ -4912,8 +4920,8 @@ function watchBlock(w,i){if(!w||w.old||w.fromAsk&&!w.description)return"";const 
 const WATCH_I='<svg class="wwi" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="3"/><path d="M9 6l1-3h4l1 3M9 18l1 3h4l1-3M12 9v3l2 1"/></svg>';
 wcard=(f=>function(w,i){const s=f.apply(this,arguments);try{return s+watchBlock(w,i)}catch(e){return s}})(wcard);
 function watchExplain(k){const wi=watchInfo();
-  if(k==="setup")return info(`<h3>Training auf die Uhr</h3><p>Die App schreibt deine Einheiten in den Kalender von intervals.icu. Von dort kommen sie zu Garmin Connect und auf die Uhr. Dafür muss eine Einstellung in intervals.icu an sein.</p><ol class="wsteps"><li>intervals.icu öffnen und oben rechts auf Einstellungen gehen.</li><li>Bei „Connections“ unter Garmin „Upload planned workouts“ anhaken und bei Garmin zustimmen.</li><li>Die Garmin-Connect-App auf dem Handy einmal synchronisieren.</li></ol><p>Danach stehen die Einheiten der nächsten Tage auf der Uhr unter Training oder Kalender.</p><a class="btn wide" href="https://intervals.icu/settings" target="_blank" rel="noopener">intervals.icu öffnen</a>`);
-  return info(`<h3>Was ist auf der Uhr?</h3><p>Auf die Uhr kommt die Einheit, die heute im Plan steht. intervals.icu überträgt die Einheiten der nächsten etwa 7 Tage an Garmin Connect und passt sie an, sobald sich der Plan ändert.</p><p>Wählst du heute etwas anderes, zum Beispiel Rad statt Laufen, oder empfiehlt die App eine leichtere Einheit, tippe auf „Stattdessen auf die Uhr“. Dann kommt die neue Einheit auf die Uhr und die alte wird aus dem Plan genommen. Mit „Plan-Einheit zurück auf die Uhr“ machst du das am selben Tag rückgängig.</p><p>Auf der Uhr erscheint die Änderung, sobald die Garmin-Connect-App auf dem Handy synchronisiert hat. Öffne sie kurz, wenn es eilt.</p>${wi.last?`<p class="hint">Letzte Übertragung an Garmin: ${esc(new Date(wi.last).toLocaleString("de-DE",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}))} Uhr</p>`:""}`)}
+  if(k==="setup")return info(`<h3>Training auf die Uhr</h3><p>Die App schreibt deine Einheiten in den Kalender von intervals.icu. Von dort kommen sie in die App deiner Uhr und auf die Uhr. Dafür muss eine Einstellung in intervals.icu an sein.</p><ol class="wsteps"><li>intervals.icu öffnen und oben rechts auf Einstellungen gehen.</li><li>Bei „Connections“ beim Anbieter deiner Uhr (z. B. Garmin, Coros, Wahoo oder Suunto) das Hochladen geplanter Einheiten einschalten (bei Garmin „Upload planned workouts“) und beim Anbieter zustimmen.</li><li>Die App deiner Uhr auf dem Handy einmal synchronisieren.</li></ol><p>Danach stehen die Einheiten der nächsten Tage auf der Uhr unter Training oder Kalender.</p><a class="btn wide" href="https://intervals.icu/settings" target="_blank" rel="noopener">intervals.icu öffnen</a>`);
+  return info(`<h3>Was ist auf der Uhr?</h3><p>Auf die Uhr kommt die Einheit, die heute im Plan steht. intervals.icu überträgt die geplanten Einheiten der nächsten Tage an ${provApp(wi)} und passt sie an, sobald sich der Plan ändert.</p><p>Wählst du heute etwas anderes, zum Beispiel Rad statt Laufen, oder empfiehlt die App eine leichtere Einheit, tippe auf „Stattdessen auf die Uhr“. Dann kommt die neue Einheit auf die Uhr und die alte wird aus dem Plan genommen. Mit „Plan-Einheit zurück auf die Uhr“ machst du das am selben Tag rückgängig.</p><p>Auf der Uhr erscheint die Änderung, sobald ${provApp(wi)} auf dem Handy synchronisiert hat. Öffne sie kurz, wenn es eilt.</p>${wi.last?`<p class="hint">Letzte Übertragung an Garmin: ${esc(new Date(wi.last).toLocaleString("de-DE",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}))} Uhr</p>`:""}`)}
 async function watchSwap(w){const D=DATA,t=today(),tp=todayPlan(D),o=tp[0]||null,m=swapAll(),rest=spKey(w.sport)==="rest";
   const keep=m[t]&&m[t].orig?m[t].orig:(o?{name:o.name,type:WTYPE[o.sport]||SPAPI[o.sport]||"Workout",desc:o.desc,secs:o.secs,coach:o.coach}:null);
   if(o)await api("/events/"+encodeURIComponent(o.id),{method:"DELETE"});
@@ -4983,6 +4991,44 @@ watchUndo=(f=>async function(){const t=today(),off=store.get("imAutoWOff",{});of
 watchBlock=(f=>function(w,i){let s=f.apply(this,arguments);const a=store.get("imAutoWWhy",null),t=today();if(i===0&&s&&a&&a.d===t&&swapAll()[t])s=s.replace('<div class="wwat">',`<div class="wwat"><div class="wwauto">Automatisch angepasst: ${a.neu?`„${esc(a.neu)}“ ist statt „${esc(a.name)}“ auf der Uhr`:`„${esc(a.name)}“ wurde von der Uhr genommen`}, weil ${esc(a.why.join(" und "))}.</div>`);return s})(watchBlock);
 (function(){const st=document.createElement("style");st.textContent=".wwauto{flex-basis:100%;font-size:13px;color:var(--text,#fff);line-height:1.4}";document.head.appendChild(st)})();
 
+/* ---------- v57 ---------- */
+/* 2.6 Anbieter der Uhr */
+const PROVN={garmin:"die Garmin-Connect-App",coros:"die Coros-App",wahoo:"die Wahoo-App",suunto:"die Suunto-App",zepp:"die Zepp-App",huawei:"die Huawei-Health-App"};
+function provApp(wi){return PROVN[(wi||watchInfo()).prov]||"die App deiner Uhr"}
+/* 2.1 Rückgängig nach „Kein Wettkampf“ */
+function raceUndoToast(d){let t=$("toastV57");if(!t){t=document.createElement("div");t.id="toastV57";t.className="toast37";document.body.appendChild(t)}
+  t.innerHTML='Erholung ausgeblendet. <button class="lnk" id="rcUndo">Rückgängig</button>';t.classList.add("on");clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove("on"),7000);
+  $("rcUndo").onclick=()=>{store.set("imRaceIgnore",store.get("imRaceIgnore",[]).filter(x=>x!==d));t.classList.remove("on");try{render()}catch(e){}}}
+/* 2.4 Zahlen unter „Warum“ immer aus den aktuellen Daten */
+function whyNow(){const D=DATA||{},h=D.hrvStat,r=D.rhrStat,sw=typeof sleepLast==="function"?sleepLast(D):null,tsb=D.pmc?D.pmc.tsb:null;
+  return{form:tsb!=null?(tsb>0?"+":"")+nf(tsb):null,hrv:h&&h.r?nf(h.r)+" ms":null,rhr:r&&r.now?r.now+" /min":null,sleep:sw&&sw.sleepH?nf(sw.sleepH,1)+" h":null,
+    formN:tsb!=null?nf(tsb):null,hrvN:h&&h.r?nf(h.r):null,rhrN:r&&r.now?String(r.now):null,sleepN:sw&&sw.sleepH?nf(sw.sleepH,1):null}}
+function whyFix(w){if(!w||!w.topic)return w;const N=whyNow(),tp=w.topic,x=Object.assign({},w);
+  if(/form|tsb/i.test(tp)&&!/ermüd|fitness/i.test(tp)&&N.form){x.value=N.form;x.note=String(x.note||"").replace(/(Form\s*(?:von|bei|liegt bei|ist)?\s*)[+\-−]?\d+(?:,\d+)?/gi,"$1"+N.formN)}
+  else if(/HRV/i.test(tp)&&N.hrv){x.value=N.hrv;x.note=String(x.note||"").replace(/\b\d+(?:,\d+)?\s*ms\b/,N.hrvN+" ms")}
+  else if(/Ruhepuls/i.test(tp)&&N.rhr){x.value=N.rhr;x.note=String(x.note||"").replace(/\b\d+\s*(\/min|Schläge pro Minute|bpm)/,N.rhrN+" $1")}
+  else if(/Schlaf/i.test(tp)&&N.sleep){x.value=N.sleep;x.note=String(x.note||"").replace(/\b\d+(?:,\d+)?\s*(h|Stunden)\b/,N.sleepN+" $1")}
+  return x}
+whyHTML=(f=>function(o){try{if(o&&o.whyS&&o.whyS.length&&(!o.date||o.date===today()))o=Object.assign({},o,{whyS:o.whyS.map(whyFix)})}catch(e){}return f.call(this,o)})(whyHTML);
+/* 2.9 Bei Krankheit keine Auswahl, nur die eine Empfehlung bzw. Gute Besserung */
+coachHTML=(f=>function(n,D,t){try{const s=sickNow(D);if(s&&n&&n.date===t){const o=Object.assign({},n.o||parseNote(n.text));o.alts=[];o.opts=[];
+    if(s.type!=="oberhalb"){o.wo={sport:"Rest",title:"Gute Besserung",minutes:0,reason:s.type==="verletzung"?"Du bist als verletzt eingetragen. Training erst wieder nach ärztlicher oder physiotherapeutischer Freigabe.":"Du bist krank eingetragen. Heute kein Training, erhol dich gut. Nach dem Gesundmelden startet die App mit einer lockeren Rückkehrphase."};o.status="rot"}
+    else if(o.wo&&spKey(o.wo.sport)!=="rest"){o.wo=Object.assign({},o.wo);o.wo.reason="Nur Beschwerden oberhalb des Halses: wenn du dich danach fühlst, höchstens das hier, kurz und locker. Pause ist genauso gut."}
+    n=Object.assign({},n,{o,__sick:1})}}catch(e){console.error(e)}
+  let h=f.call(this,n,D,t);if(n&&n.__sick)h=h.replace(/<div class="cx-tabs">[\s\S]*?<\/div><div id="cxW">/,'<div id="cxW">');return h})(coachHTML);
+askTab=(f=>function(W,t){try{if(sickNow(DATA))return W}catch(e){}return f.apply(this,arguments)})(askTab);
+/* 2.9 Kalender: geplante Einheiten an Krankheitstagen als „fällt aus“ */
+function sickDay(d){return((DATA&&DATA.sick)||[]).some(s=>d>=s.start&&d<=s.end)}
+function markSickCal(){try{if(!DATA||!(DATA.sick||[]).length)return;document.querySelectorAll(".dday[data-day]").forEach(el=>{const on=sickDay(el.dataset.day);el.querySelectorAll(".pi[data-pl]").forEach(p=>{p.classList.toggle("pisick",on);if(on&&!p.querySelector(".sicktag"))p.insertAdjacentHTML("beforeend",'<span class="sicktag">fällt aus</span>')})})}catch(e){}}
+render=(f=>function(){const r=f.apply(this,arguments);markSickCal();return r})(render);
+document.addEventListener("click",()=>setTimeout(markSickCal,30),true);
+/* 2.5 Rückmeldekarte nach dem Ausfüllen nur noch als eine Zeile */
+let FBOPEN=null;
+renderExtra=(f=>function(D){const r=f.apply(this,arguments);try{const box=$("fbx");if(!box)return r;const t=today(),last=D.activities.filter(a=>a.id).sort((x,y)=>y.date.localeCompare(x.date))[0];if(!last||FBOPEN===last.id)return r;
+  const x=fbOf(last);if(!x.own)return r;const L={"-1":"Zu leicht","0":"Passend","1":"Zu schwer"}[String(x.r)];
+  box.outerHTML=`<div class="fbmini" id="fbx"><span>${CKI_S}Deine Rückmeldung: <b>${L}</b>${x.rpe!=null?`, Anstrengung ${x.rpe} von 10`:""}</span><button class="lnk" id="fbEdit">Ändern</button></div>`;
+  $("fbEdit").onclick=()=>{FBOPEN=last.id;renderExtra(DATA)}}catch(e){console.log("fb57",e)}return r})(renderExtra);
+const CKI_S='<svg viewBox="0 0 24 24" class="fbck"><path d="M5 12l4 4 10-10"/></svg>';
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
 $("btnRace").onclick=()=>openRace(null);
