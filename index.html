@@ -944,6 +944,7 @@ h3>.tag,.cx-h>.tag{display:table;margin:8px 0 2px;font-size:12px}
 #chkRec,#raceHid{margin-bottom:14px}
 .wos .wosm{color:var(--muted)}.qctx{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:10px 0 0;padding:8px 12px;border-radius:12px;background:color-mix(in srgb,var(--acc) 14%,transparent);font-size:14px}.qctx button{font-size:16px;padding:2px 6px}.askwo{margin-top:16px;display:flex;align-items:center;justify-content:center;gap:8px}.askwo svg{width:18px;height:18px}
 .sig .src{display:none}
+.offrow{margin-top:14px;padding:12px;border-radius:14px;background:var(--card2,rgba(255,255,255,.05))}.offrow span{display:block;color:var(--muted);font-size:13px;margin-top:2px}.offin{display:flex;gap:8px;align-items:center;margin-top:8px}.offin input{flex:1;min-width:0}
 [data-theme=dark]{color-scheme:dark}[data-theme=light]{color-scheme:light}
 #qOut{display:flex;flex-direction:column-reverse;margin:4px 0 10px}#qOut:empty{display:none}#qOut:not(:empty)+.qsug{display:none}
 .wvm{display:grid;gap:8px;margin:14px 0;text-align:left}.wvm div{display:grid;grid-template-columns:1fr auto 72px;gap:10px;align-items:baseline;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.15)}.wvm span{opacity:.8}.wvm em{font-style:normal;text-align:right;opacity:.85}.wvm em.up{color:#7dffb0;opacity:1}.wvm em.down{color:#ffb3b3;opacity:1}
@@ -1129,7 +1130,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="69";
+const VERSION="70";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -5271,7 +5272,7 @@ benchInfo=(f=>function(k){const r=f.apply(this,arguments);try{if(!/^e\d/.test(k)
 /* ---------- v69 ---------- */
 /* 3.12 Zeitprognose: Anker (schnellster harter Lauf der letzten 180 Tage, VDOT nach Daniels) mal Formtrend.
    Formtrend = effektive VO2max aus Puls und Tempo (Runalyze-Prinzip: Sauerstoffbedarf nach Daniels, Anteil der VO2max nach Swain 1994)
-   der letzten 30 Tage geteilt durch den Wert vor dem Anker. Ausdauerabzug HM/M nach Runalyze-Prinzip (Wochenkm 2/3, langer Lauf 1/3), Stärke 5 % bzw. 2 % an Noahs Marathon geeicht (Erfahrungswert). Rückrechnung: Marathon 25.10. aus HM 27.09. → 3:10:33 (echt 3:10:37). */
+   der letzten 30 Tage geteilt durch den Wert vor dem Anker. Ausdauerabzug HM/M nach Runalyze-Prinzip (Wochenkm 2/3, langer Lauf 1/3), Stärke 6,5 % bzw. 2 % an Noahs Marathon geeicht (offizielle Zeit 3:11:49, Erfahrungswert). */
 const PRD={vo2:v=>-4.6+0.182258*v+0.000104*v*v,pct:t=>0.8+0.1894393*Math.exp(-0.012778*t)+0.2989558*Math.exp(-0.1932605*t)};
 PRD.vdot=(d,s)=>{const t=s/60;return PRD.vo2(d/t)/PRD.pct(t)};
 PRD.time=(V,d)=>{let lo=d/1000*120,hi=d/1000*720;for(let i=0;i<60;i++){const m=(lo+hi)/2;if(PRD.vdot(d,m)>V)lo=m;else hi=m}return(lo+hi)/2};
@@ -5288,7 +5289,7 @@ function predModel(D){try{if(!D||!D.activities)return null;const t=today(),Z=(D.
   return{a:an.a,v:an.v,tr,V:an.v*tr,wk,lg,f21:end(40,18),f42:end(60,30)}}catch(e){return null}}
 runEst=(f=>function(D){const L=f.apply(this,arguments);try{if(!D||!D.activities)return L;const M=predModel(D);if(!M)return L;
   const X={e5:[5000,"5 km"],e10:[10000,"10 km"],e21:[21097.5,"Halbmarathon"],e42:[42195,"Marathon"]};
-  return Object.entries(X).map(([k,[d,n]])=>{const o=L.find(z=>z.k===k)||{},pen=k==="e42"?1+.05*(1-M.f42):k==="e21"?1+.02*(1-M.f21):1;return Object.assign({},o,{n,k,v:PRD.time(M.V,d)*pen,pen,fromThr:true,model:M,src:`aus ${M.a.name||"deinem Lauf"} (${fD(M.a.date)}), angepasst an deine aktuelle Form`})})}catch(e){return L}})(runEst);
+  return Object.entries(X).map(([k,[d,n]])=>{const o=L.find(z=>z.k===k)||{},pen=k==="e42"?1+.065*(1-M.f42):k==="e21"?1+.02*(1-M.f21):1;return Object.assign({},o,{n,k,v:PRD.time(M.V,d)*pen,pen,fromThr:true,model:M,src:`aus ${M.a.name||"deinem Lauf"} (${fD(M.a.date)}), angepasst an deine aktuelle Form`})})}catch(e){return L}})(runEst);
 prevEst=function(){return[]};
 renderBench=(f=>function(D){f.apply(this,arguments);try{if(!predModel(D))return;const bs=document.querySelector("#bench .nob .bs");if(bs)bs.textContent="So schnell könntest du gerade ungefähr laufen: aus deinem schnellsten harten Lauf, angepasst an deine aktuelle Form."}catch(e){}})(renderBench);
 benchInfo=(f=>function(k){if(!/^e\d/.test(k)||!DATA)return f.apply(this,arguments);try{const e=runEst(DATA).find(z=>z.k===k);if(!e||!e.model)return f.apply(this,arguments);const M=e.model,a=M.a,pc=Math.round((M.tr-1)*1000)/10;
@@ -5296,6 +5297,22 @@ benchInfo=(f=>function(k){if(!/^e\d/.test(k)||!DATA)return f.apply(this,argument
    <div class="kv"><div><span>Grundlage</span><b>${esc(a.name||"Lauf")}, ${fD(a.date)}</b></div><div><span>Strecke und Zeit</span><b>${nf(a.km,1)} km in ${fT(a.secs)}</b></div><div><span>Form seitdem</span><b>${Math.abs(pc)<1?"etwa gleich":(pc>0?"+":"−")+nf(Math.abs(pc),1)+" %"}</b></div>${e.pen>1.003?`<div><span>Ausdauer für die Strecke</span><b>+${nf((e.pen-1)*100,1)} %</b></div>`:""}</div>
    <p><b>So gerechnet:</b> Grundlage ist dein schnellster harter Lauf der letzten 6 Monate. Daraus rechnet die App mit den Tabellen von Jack Daniels auf jede Strecke um. Danach passt sie die Zeit an deine Form an: Aus Puls und Tempo deiner Läufe der letzten 30 Tage schätzt sie, ob du fitter oder weniger fit bist als damals.${e.pen>1.003?" Für Halbmarathon und Marathon zählen auch deine Wochenkilometer und dein längster Lauf: Fehlt dafür noch Umfang, rechnet sie etwas langsamer.":""}</p>
    <p class="hint">Gilt für einen Wettkampf mit voller Anstrengung, ausgeruht und auf flacher Strecke. Für Halbmarathon und Marathon brauchst du dazu genug lange Läufe im Training.</p>`)}catch(x){return f.apply(this,arguments)}})(benchInfo);
+
+/* ---------- v70 ---------- */
+/* Offizielle Wettkampfzeit: in den Details eines Laufs eintragen, zählt für die Zeitprognose statt der Uhrzeit */
+const offAll=()=>store.get("imOff",{});
+function offDist(a){const n=String(a&&a.name||"");return /halb|half/i.test(n)?21097.5:/marathon/i.test(n)?42195:/\b10\s*km|10k\b/i.test(n)?10000:/\b5\s*km|5k\b|parkrun/i.test(n)?5000:Math.round((a.km||0)*1000)}
+function offOf(a){const o=a&&offAll()[a.id];return o&&o.t?{t:o.t,d:o.d||offDist(a)}:null}
+function parseHMS(s){const p=String(s||"").trim().split(/[:.]/).map(Number);if(!p.length||p.some(x=>!isFinite(x)))return null;return p.length===3?p[0]*3600+p[1]*60+p[2]:p.length===2?p[0]*60+p[1]:null}
+predModel=(f=>function(D){try{if(!D||!D.activities)return f.apply(this,arguments);const O=offAll();if(!Object.keys(O).length)return f.apply(this,arguments);
+  const A=D.activities.map(a=>{const o=offOf(a);return o?Object.assign({},a,{secs:o.t,km:o.d/1000,official:true}):a});return f.call(this,Object.assign({},D,{activities:A}))}catch(e){return f.apply(this,arguments)}})(predModel);
+actInfo=(f=>function(a){f.apply(this,arguments);try{if(!a||!a.id||a.sport!=="run"||a.km<3)return;const b=$("iBody");if(!b||b.querySelector(".offrow"))return;
+  const o=offOf(a),isRace=/wettkampf|race|rennen|marathon|parkrun|volkslauf|lauf\s*\d|\d+\s*km/i.test(a.name||"")||((DATA.races||[]).some(r=>r.date===a.date));
+  if(!o&&!isRace)return;
+  b.insertAdjacentHTML("beforeend",`<div class="offrow"><div><b>Offizielle Zeit</b><span>${o?`${fT(o.t)} über ${o.d===42195?"42,195":o.d===21097.5?"21,1":nf(o.d/1000,1).replace(/,0$/,"")} km. Zählt für deine Zeitprognose.`:"Trag die Zeit aus der Ergebnisliste ein. Sie zählt dann statt der Zeit der Uhr."}</span></div><div class="offin"><input id="offT" inputmode="numeric" placeholder="z. B. 3:11:49" value="${o?fT(o.t):""}"><button class="btn sm blue" data-offsave="${esc(String(a.id))}">Speichern</button>${o?`<button class="lnk" data-offdel="${esc(String(a.id))}">Entfernen</button>`:""}</div></div>`)}catch(e){}})(actInfo);
+document.addEventListener("click",e=>{const s=e.target.closest("[data-offsave]"),d=e.target.closest("[data-offdel]");if(!s&&!d)return;const id=(s||d).dataset.offsave||(s||d).dataset.offdel,a=(DATA.activities||[]).find(x=>String(x.id)===id);if(!a)return;const O=offAll();
+  if(d){delete O[id];store.set("imOff",O)}else{const t=parseHMS($("offT").value);if(!t||t<300){$("offT").focus();return}O[id]={t,d:offDist(a)};store.set("imOff",O)}
+  try{renderBench(DATA)}catch(x){}const r=b=>b&&b.remove();r(document.querySelector("#iBody .offrow"));actInfo(a)});
 
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
