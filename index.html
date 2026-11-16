@@ -1123,7 +1123,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="59";
+const VERSION="60";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -4846,8 +4846,8 @@ function renderRaceCard(D){let el=$("raceCard");const rc=raceRecent(D);if(!rc||s
   el.innerHTML=`<div class="cx-k" style="color:var(--acc)">Erholung nach dem Wettkampf</div><div class="cx-h">${esc(rc.name)} · Tag ${rc.day} von ${rc.R.end}</div>
    <div class="rcbar"><i style="width:${Math.min(100,Math.round(rc.day/rc.R.end*100))}%"></i></div><p style="margin:8px 0 4px"><b>Jetzt:</b> ${esc(rc.ph[2])}</p>
    <ul class="rclist">${rc.R.ph.map(p=>{const li=`<li class="${rc.day>from&&rc.day<=p[0]||(from===0&&rc.day===0&&p===rc.R.ph[0])?"on":rc.day>p[0]?"done":""}"><b>Tag ${from+1===p[0]||from===p[0]?p[0]:(from+1)+" bis "+p[0]}</b> ${esc(p[2])}</li>`;from=p[0];return li}).join("")}<li class="${rc.day>=rc.R.hard?"done":""}"><b>Ab Tag ${rc.R.hard}</b> harte Einheiten wieder möglich, ab Tag ${rc.R.end} normales Training.</li></ul>
-   <button class="rcmenu" id="rcMenu" aria-label="Mehr">⋯</button><div class="rcask" id="rcAsk" hidden><div class="rcopt"><button class="btn sm" id="rcHide">Karte ausblenden</button><span>Die Erholungsregeln gelten weiter, nur die Karte verschwindet.</span></div><div class="rcopt"><button class="btn sm" id="rcNo">Kein Wettkampf</button><span>War ${esc(rc.name)} kein Wettkampf, plant die App wieder normal.</span></div><button class="lnk" id="rcCancel">Abbrechen</button></div>`;
-  $("rcHide").onclick=()=>{store.set("imRaceHide",rc.date);el.remove()};
+   <button class="rcmenu" id="rcMenu" aria-label="Mehr">⋯</button><div class="rcask" id="rcAsk" hidden><div class="rcopt"><button class="btn sm" id="rcHide">Karte ausblenden</button><span>Die Erholungsregeln gelten weiter. Du findest die Karte dann unter Erholung.</span></div><div class="rcopt"><button class="btn sm" id="rcNo">Kein Wettkampf</button><span>War ${esc(rc.name)} kein Wettkampf, plant die App wieder normal.</span></div><button class="lnk" id="rcCancel">Abbrechen</button></div>`;
+  $("rcHide").onclick=()=>{store.set("imRaceHide",rc.date);el.remove();try{renderRaceHidden(DATA)}catch(e){}};
   $("rcMenu").onclick=()=>{$("rcAsk").hidden=!$("rcAsk").hidden};$("rcCancel").onclick=()=>{$("rcAsk").hidden=true};
   $("rcNo").onclick=()=>{const l=store.get("imRaceIgnore",[]);l.push(rc.date);store.set("imRaceIgnore",l.slice(-20));el.remove();try{render()}catch(e){}raceUndoToast(rc.date)}}
 render=(f=>function(){const r=f.apply(this,arguments);try{renderRaceCard(DATA)}catch(e){}return r})(render);
@@ -5047,7 +5047,7 @@ let FBOPEN=null;
 renderExtra=(f=>function(D){const r=f.apply(this,arguments);try{const box=$("fbx");if(!box)return r;const t=today(),last=D.activities.filter(a=>a.id).sort((x,y)=>y.date.localeCompare(x.date))[0];if(!last||FBOPEN===last.id)return r;
   const x=fbOf(last);if(!x.own)return r;const L={"-1":"Zu leicht","0":"Passend","1":"Zu schwer"}[String(x.r)];
   box.outerHTML=`<div class="fbmini" id="fbx"><span>${CKI_S}Deine Rückmeldung: <b>${L}</b>${x.rpe!=null?`, Anstrengung ${x.rpe} von 10`:""}</span><button class="lnk" id="fbEdit">Ändern</button></div>`;
-  $("fbEdit").onclick=()=>{FBOPEN=last.id;renderExtra(DATA)}}catch(e){console.log("fb57",e)}return r})(renderExtra);
+  $("fbEdit").onclick=()=>{FBOPEN=last.id;const b=$("fbx");b.outerHTML=fbCard(last);bindFb(last);const nb=$("fbx");nb.insertAdjacentHTML("beforeend",'<button class="btn sm blue" id="fbDone" style="margin-top:10px">Fertig</button>');$("fbDone").onclick=()=>{FBOPEN=null;renderExtra(DATA)}}}catch(e){console.log("fb57",e)}return r})(renderExtra);
 const CKI_S='<svg viewBox="0 0 24 24" class="fbck"><path d="M5 12l4 4 10-10"/></svg>';
 /* ---------- v58 ---------- */
 /* Rückkehr nach V57-Feedback: Bedienung und Krankheit/Pause */
@@ -5063,7 +5063,9 @@ ask=(f=>async function(){ASKING=true;const c=$("askCard");if(c)c.classList.add("
 afterDone=(f=>function(D){const r=f.apply(this,arguments);try{const cc=$("coachCard"),c=$("doneCard");if(!cc)return r;if(!cc.__home)cc.__home={p:cc.parentNode,n:cc.nextSibling};
   const dn=(D.activities||[]).some(a=>a.date===today());if(dn&&c&&c.style.display!=="none"){if(c.nextSibling!==cc)c.after(cc)}else if(cc.__home.p&&cc.parentNode!==cc.__home.p){cc.__home.p.insertBefore(cc,cc.__home.n&&cc.__home.n.parentNode===cc.__home.p?cc.__home.n:null)}}catch(e){}return r})(afterDone);
 /* Rückmeldung: einklappbar, kein Springen beim Tippen */
-document.addEventListener("click",e=>{const b=e.target.closest("[data-fb],#fbEdit,#fbDone,[data-fbm]");if(!b)return;const y=window.scrollY;setTimeout(()=>window.scrollTo(0,y),0);setTimeout(()=>window.scrollTo(0,y),120);
+function holdScroll(ms){const y=window.scrollY,t0=performance.now();const f=()=>{if(Math.abs(window.scrollY-y)>2)window.scrollTo(0,y);if(performance.now()-t0<ms)requestAnimationFrame(f)};requestAnimationFrame(f)}
+document.addEventListener("change",e=>{if(e.target.closest("#fbR,.fbmd [data-fbr]"))holdScroll(600)},true);
+document.addEventListener("click",e=>{const b=e.target.closest("[data-fb],#fbEdit,#fbDone,[data-fbm]");if(!b)return;holdScroll(700);
   if(b.dataset.fb!=null){FBOPEN=null}},true);
 renderExtra=(f=>function(D){const r=f.apply(this,arguments);try{const box=$("fbx");if(box&&box.classList.contains("fbx")&&FBOPEN&&!$("fbDone")){box.insertAdjacentHTML("beforeend",'<button class="btn sm blue" id="fbDone" style="margin-top:10px">Fertig</button>');$("fbDone").onclick=()=>{FBOPEN=null;renderExtra(DATA)}}}catch(e){}return r})(renderExtra);
 /* Rückmeldung auch in den Details einer Einheit */
@@ -5078,9 +5080,17 @@ askCtx=(f=>function(){const s=f.apply(this,arguments);try{const t=today(),P=((DA
 planGate=(f=>function(items){const r=f.apply(this,arguments);try{const P=((DATA&&DATA.sick)||[]).filter(x=>x.type==="pause");(items||[]).forEach(it=>{if(P.some(p=>it.date>=p.start&&it.date<=p.end))r.issues.push({t:`${it.date}: An diesem Tag ist eine Trainingspause eingetragen, keine Einheit planen.`})})}catch(e){}return r})(planGate);
 /* ---------- v59 ---------- */
 /* Empfehlung nach „Noch etwas machen?“ immer direkt unter der Erledigt-Karte */
-function ccUnderDone(){const cc=$("coachCard"),c=$("doneCard");if(!cc||!c||c.style.display==="none")return;if(!(DATA&&(DATA.activities||[]).some(a=>a.date===today())))return;if(c.nextElementSibling!==cc)c.after(cc)}
+function ccUnderDone(){const cc=$("coachCard"),c=$("doneCard");if(!cc||!c||c.style.display==="none"||c.classList.contains("donerest"))return;if(c.nextElementSibling!==cc)c.after(cc)}
 render=(f=>function(){const r=f.apply(this,arguments);try{ccUnderDone();setTimeout(ccUnderDone,0)}catch(e){}return r})(render);
 document.addEventListener("click",e=>{if(e.target.closest("[data-showrec]"))ccUnderDone()},true);
+/* ---------- v60 ---------- */
+/* Ausgeblendete Wettkampf-Erholung unter Erholung wieder einblenden */
+function renderRaceHidden(D){const sec=document.querySelector('section[data-tab="erholung"]');if(!sec)return;let el=$("raceHid");const rc=raceRecent(D),hid=rc&&store.get("imRaceHide","")===rc.date;
+  if(!hid){if(el)el.remove();return}
+  if(!el){el=document.createElement("div");el.className="card";el.id="raceHid";sec.insertBefore(el,sec.firstChild)}
+  el.innerHTML=`<div class="cx-k" style="color:var(--acc)">Erholung nach dem Wettkampf</div><div class="cx-h" style="font-size:17px">${esc(rc.name)} · Tag ${rc.day} von ${rc.R.end}</div><p class="sub" style="margin:6px 0 10px">Jetzt: ${esc(rc.ph[2])} Die Regeln gelten weiter, die Karte ist auf „Heute“ ausgeblendet.</p><button class="btn sm" id="raceShow">Wieder auf Heute anzeigen</button>`;
+  $("raceShow").onclick=()=>{store.set("imRaceHide","");el.remove();try{render()}catch(e){}}}
+render=(f=>function(){const r=f.apply(this,arguments);try{renderRaceHidden(DATA)}catch(e){}return r})(render);
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
 $("btnRace").onclick=()=>openRace(null);
