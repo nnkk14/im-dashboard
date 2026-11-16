@@ -1125,7 +1125,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="65";
+const VERSION="66";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -3044,7 +3044,7 @@ const msP=s=>{const m=String(s||"").trim().match(/^(\d{1,2})[:.,](\d{1,2})$/);re
 (function(){const th=$("cTheme").previousElementSibling,d=document.createElement("div");
   d.innerHTML=`<h4 class="cx-sh">Deine Sportarten</h4><div class="tchips" id="cSports">${SPOPT.map(([k,n])=>`<button data-k="${k}">${n}</button>`).join("")}</div><input id="cExtra" placeholder="Weitere, z. B. Tennis" style="margin-top:8px" autocomplete="off"><div class="hint">Der Coach schlägt nur diese Sportarten vor.</div>
   <h4 class="cx-sh" id="cOwnH">Eigene Werte</h4><div class="hint">Leer lassen: Die Werte kommen aus deiner Datenquelle. Eingetragene Werte haben in der App Vorrang, z. B. nach einem Test.</div>
-  <div class="row"><div><label class="f" for="oWeight">Gewicht (kg)</label><input type="number" id="oWeight" step="0.1" inputmode="decimal"></div><div><label class="f" for="oMax">Max. Puls</label><input type="number" id="oMax" inputmode="numeric"></div></div>
+  <div class="row"><div><label class="f" for="oWeight">Gewicht (kg)</label><input type="number" id="oWeight" step="1" inputmode="decimal"></div><div><label class="f" for="oMax">Max. Puls</label><input type="number" id="oMax" inputmode="numeric"></div></div>
   <div class="row"><div><label class="f" for="oLthr">Schwellenpuls</label><input type="number" id="oLthr" inputmode="numeric"></div><div><label class="f" for="oFtp">FTP Rad (W)</label><input type="number" id="oFtp" inputmode="numeric"></div></div>
   <div class="row"><div><label class="f" for="oRun">Schwelle Laufen (min:s /km)</label><input id="oRun" placeholder="z. B. 4:10" inputmode="decimal"></div><div><label class="f" for="oCss">Schwelle Schwimmen (min:s /100 m)</label><input id="oCss" placeholder="z. B. 1:45" inputmode="decimal"></div></div>
   <h4 class="cx-sh">Darstellung</h4><label class="f" for="cPal">Farbschema</label><select id="cPal">${Object.entries(PAL).map(([k,v])=>`<option value="${k}">${v[0]}</option>`).join("")}</select>`;
@@ -5166,6 +5166,39 @@ document.addEventListener("click",e=>{
 askCtx=(f=>function(){const s=f.apply(this,arguments);if(!WOQ)return s;const w=WOQ;
   return s+`\n\nDIE FRAGE BEZIEHT SICH AUF DIESE EINHEIT\n${w.date||""} ${w.sport||""}: ${cleanT(w.title||"")}${w.minutes?", "+w.minutes+" min":""}${w.zone?", "+w.zone:""}${w.purpose?"\nNutzen: "+w.purpose:""}\nAblauf:\n${String(w.desc||"").slice(0,1500)}\nErkläre Begriffe, Zonen und Übungen dieser Einheit konkret und in einfachen Worten: was genau zu tun ist, wie die Übung geht und worauf man achtet. Steht nur „Technikübung“ ohne Namen, nenne zwei bis drei passende Übungen. Kürzel wie HR (Puls), Z1 oder Z2 erklärst du in Worten.`})(askCtx);
 ask=(f=>function(qs){if(WOQ&&qs&&qs.trim()&&!/^Zu „/.test(qs.trim()))qs=`Zu „${cleanT(WOQ.title||"Einheit")}“: ${qs.trim()}`;return f.call(this,qs)})(ask);
+
+/* ---------- v66 ---------- */
+/* 3.1 Prognose-Vergleich nur bei gleicher Grundlage: gleiche Ausgangsstrecke und ähnlich harte Einheit */
+const PRXD={e5:5000,e10:10000,e21:21097.5,e42:42195};
+function estBasis(c,d,v){if(!c||!c.distance||!v)return null;let b=null;
+  PRX.forEach(([x,lab])=>{const i=c.distance.findIndex(z=>Math.abs(z-x)<=x*.002);if(i<0||!c.values[i])return;const w=c.values[i]*Math.pow(d/x,1.06);if(Math.abs(w-v)<1&&(!b||Math.abs(x-d)<Math.abs(b.x-d)))b={x,lab,aid:c.activity_id?c.activity_id[i]:null}});return b}
+function effortOf(D,aid){const a=aid!=null&&(D.activities||[]).find(z=>String(z.id)===String(aid));if(!a)return null;
+  if(/wettkampf|race|rennen|lauf\s*\d|marathon|\d+\s*km\s*lauf|parkrun|volkslauf/i.test(a.name||"")&&a.hr)return"hart";
+  const lt=D.zones&&D.zones.run&&D.zones.run.lthr;if(!a.hr||!lt)return null;return a.hr>=lt*.88?"hart":"locker"}
+renderBench=(f=>function(D){f.apply(this,arguments);try{const nob=$("bench")&&$("bench").querySelector(".nob");if(!nob)return;
+  const L=runEst(D),P=(D.pbPrev&&D.pb90)?runEst(Object.assign({},D,{pb90:D.pbPrev})):[];
+  nob.querySelectorAll(".bt2").forEach(x=>{const k=x.dataset.b,d=PRXD[k],e=L.find(z=>z.k===k),o=P.find(z=>z.k===k),sr=x.querySelector(".bsrc");if(sr&&/^aus deinen besten/.test(sr.textContent))sr.textContent="hochgerechnet "+sr.textContent;const s=x.querySelector(".bprev");if(!s)return;
+    const be=e&&estBasis(D.pb90,d,e.v),bo=o&&estBasis(D.pbPrev,d,o.v);
+    const ee=be&&effortOf(D,be.aid),eo=bo&&effortOf(D,bo.aid);
+    if(!be||!bo||be.x!==bo.x||!ee||!eo||ee!==eo){s.remove();return}
+    if(be.x!==d&&!/hochgerechnet/.test(s.textContent))s.textContent=s.textContent.replace(/^vor 3 Monaten /,"vor 3 Monaten hochgerechnet ")})}catch(e){}})(renderBench);
+
+/* 3.2 Erklärung je Strecke: woraus, wie gerechnet, wie sicher */
+benchInfo=(f=>function(k){if(!/^e\d/.test(k)||!DATA||!DATA.pb90)return f.apply(this,arguments);try{
+  const D=DATA,d=PRXD[k],e=runEst(D).find(z=>z.k===k);if(!e)return f.apply(this,arguments);
+  const n=e.n,b=estBasis(D.pb90,d,e.v);let how,sure,src="";
+  if(b){const a=(D.activities||[]).find(z=>String(z.id)===String(b.aid)),eff=effortOf(D,b.aid),i=D.pb90.distance.findIndex(z=>Math.abs(z-b.x)<=b.x*.002),t0=D.pb90.values[i];
+    src=`<div class="kv"><div><span>Grundlage</span><b>${b.lab} in ${fT(t0)}</b></div>${a?`<div><span>Aus der Einheit</span><b>${esc(a.name||"Lauf")}, ${fD(a.date)}</b></div>`:""}${eff?`<div><span>Die Einheit war</span><b>${eff==="hart"?"hart":"eher locker"}</b></div>`:""}</div>`;
+    how=b.x===d?`Das ist deine schnellste Zeit über ${n} in den letzten 90 Tagen, auch als Abschnitt aus einem längeren Lauf. Die App rechnet nichts um.`
+      :`Die App nimmt deine schnellste Zeit über ${b.lab} aus den letzten 90 Tagen und rechnet sie auf ${n} um. Dafür nutzt sie die Riegel-Formel: Zeit mal (${n} geteilt durch ${b.lab}) hoch 1,06. Die 1,06 bildet ab, dass man auf längeren Strecken etwas langsamer wird.`;
+    const r=Math.max(d,b.x)/Math.min(d,b.x);
+    sure=b.x===d?(eff==="locker"?"mittel. Die Zeit stammt aus einem lockeren Lauf. Mit voller Anstrengung wärst du schneller.":"hoch. Es ist eine echte Zeit über diese Strecke.")
+      :eff==="locker"?"eher gering. Die Grundlage war ein lockerer Lauf, die Schätzung ist deshalb wahrscheinlich zu langsam."
+      :r<=2.2?"mittel. Die Grundlage ist höchstens halb oder doppelt so lang.":"gering. Die Grundlage ist eine viel kürzere oder längere Strecke.";
+    if(d>b.x&&d>=21000)sure+=" Ob du das Tempo so lange halten kannst, zeigt erst ein längerer Lauf. Lange Läufe im Training machen die Schätzung genauer.";
+  }else{how="Für diese Strecke gibt es keine passende Zeit aus den letzten 90 Tagen. Die App rechnet aus Puls und Tempo deiner Läufe hoch, wie schnell du an deiner Schwelle läufst.";sure="gering. Ein Testlauf oder Wettkampf macht die Schätzung genauer."}
+  info(`<h3>Geschätzte Zeit ${n}</h3><div class="ibig" style="color:var(--run)">${fT(e.v)}</div>${src}<p><b>So gerechnet:</b> ${how}</p><p><b>Wie sicher:</b> ${sure}</p><p class="hint">Gilt für einen Wettkampf mit voller Anstrengung, ausgeruht und auf flacher Strecke.</p>`);
+}catch(x){return f.apply(this,arguments)}})(benchInfo);
 
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
