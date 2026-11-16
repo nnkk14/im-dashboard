@@ -1100,7 +1100,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="55";
+const VERSION="56";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -4947,6 +4947,40 @@ function pbRunText(D){const L=[],fd=d=>d?d.split("-").reverse().join("."):"";
   return L.join("\n")}
 benchText=(f=>function(b){const s=f.apply(this,arguments).split("\n").filter(l=>!/^Laufen geschätzt|^Schnellster 5-km-Lauf/.test(l)),r=DATA?pbRunText(DATA):"";return(r?r+"\n":"")+s.join("\n")})(benchText);
 bench=(f=>function(D){const b=f.apply(this,arguments);try{const r=D.activities.filter(a=>a.sport==="run"&&!a.trainer&&a.type!=="VirtualRun"&&a.km>=4.9&&a.km<=5.4);b.real5=r.length?Math.min(...r.map(a=>a.secs*5/a.km)):null}catch(e){}return b})(bench);
+
+/* ---------- v56 ---------- */
+/* Schwimmen: intervals.icu liest „200m“ als 200 Minuten. Meter müssen als „mtr“ geschrieben werden. */
+function swimFix(desc){return String(desc||"").replace(/(^|\n)(\s*-\s*(?:\d+\s*x\s*)?)(\d{2,4})\s*m(?![a-z])/gi,(m,a,b,n)=>{n=+n;return n>=50&&n%25===0?`${a}${b}${n}mtr`:m}).replace(/\b(\d+)\s*x\s*(\d{2,4})m\b(?![a-z])/gi,(m,r,n)=>(+n>=50&&+n%25===0)?`${r}x${n}mtr`:m)}
+function swimMeters(desc){let rep=1,sum=0;String(desc||"").split("\n").forEach(l=>{const t=l.trim();if(!t){rep=1;return}let m;if(!/^-/.test(t)&&(m=t.match(/(\d+)\s*x\s*$/i))){rep=+m[1];return}if(m=t.match(/^-\s*(?:(\d+)\s*x\s*)?(\d{2,4})\s*mtr/i))sum+=(+(m[1]||1))*(+m[2])*rep});return sum}
+function fixEvBody(o){if(!o||typeof o!=="object")return o;if(Array.isArray(o))return o.map(fixEvBody);if(/swim/i.test(o.type||"")&&o.description){const d=swimFix(o.description);if(d!==o.description)o.description=d;const mtr=swimMeters(o.description);if(mtr&&(!o.moving_time||o.moving_time>9000))o.moving_time=Math.round(mtr/100*135+Math.min(600,mtr/100*20))}return o}
+api=(f=>function(path,opts){try{if(opts&&opts.body&&typeof opts.body==="string"&&/^\/events/.test(path||"")&&/swim/i.test(opts.body)){const b=JSON.parse(opts.body);opts=Object.assign({},opts,{body:JSON.stringify(fixEvBody(b))})}}catch(e){}return f.call(this,path,opts)})(api);
+const SWIMFMT="\nSCHWIMMEN IM ABLAUF: Strecken in Metern immer mit „mtr“ schreiben (z. B. „- 200mtr Z1 HR“), denn „m“ bedeutet bei intervals.icu Minuten. Dauer (minutes) passend zur Strecke angeben, etwa 2 bis 2:30 Minuten je 100 m plus Pausen.";
+planRules=(f=>function(){return f.apply(this,arguments)+SWIMFMT})(planRules);
+coachText=(f=>function(){const s=f.apply(this,arguments),i=s.indexOf("\nANTWORTFORMAT");return i<0?s+SWIMFMT:s.slice(0,i)+SWIMFMT+s.slice(i)})(coachText);
+/* Regelprüfung: Dauer passt nicht zum Ablauf */
+planGate=(f=>function(items){const r=f.apply(this,arguments);try{(items||[]).forEach(it=>{const k=spKey(it.sport),mx=k==="swim"?150:k==="kraft"||k==="other"?120:420;if((it.minutes||0)>mx)r.issues.push({t:`${it.date}: ${it.name||"Einheit"} dauert laut Plan ${Math.round(it.minutes)} Minuten, das passt nicht zum Ablauf.`});
+  if(k==="swim"&&/(^|\n)\s*-\s*\d{2,4}m(?![a-z])/i.test(it.description||"")&&/(^|\n)\s*-\s*([5-9]\d|\d{3,4})m(?![a-z])/i.test(it.description||""))r.issues.push({t:`${it.date}: Schwimmstrecken bitte mit „mtr“ statt „m“ schreiben.`})})}catch(e){}return r})(planGate);
+/* Erklärung, was die KI gerade macht */
+const AIL={daily:"Die KI erstellt deine Tagesempfehlung. Bis dahin siehst du die Empfehlung aus deinen Werten.",plan:"Deine Tagesempfehlung ist schon aktuell. Die KI plant im Hintergrund die nächsten Wochen weiter, das ändert an heute nichts.",act:"Die KI wertet deine letzte Einheit aus. Deine Tagesempfehlung ist schon aktuell.",week:"Die KI schreibt deinen Wochenrückblick. Deine Tagesempfehlung ist schon aktuell.",prog:"Die KI aktualisiert deine Prognosen. Deine Tagesempfehlung ist schon aktuell.",fa:"Die KI passt deinen Plan an deine Rückmeldungen an."};
+const withLab=(fn,lab,cond)=>(f=>async function(){const o=AILAB;if(!cond||cond.apply(this,arguments))AILAB=lab;try{return await f.apply(this,arguments)}finally{AILAB=o}})(fn);
+aiDaily=withLab(aiDaily,AIL.daily);aiActivity=withLab(aiActivity,AIL.act);aiWeekly=withLab(aiWeekly,AIL.week);aiProg=withLab(aiProg,AIL.prog);aiFbAdjust=withLab(aiFbAdjust,AIL.fa);
+aiPlan=(f=>async function(manual){const r=f.apply(this,arguments);if(!manual)AILAB=AIL.plan;return r})(aiPlan);
+(function(){const st=document.createElement("style");st.textContent="#aibar .aibs{white-space:normal;line-height:1.35}";document.head.appendChild(st)})();
+/* Uhr: Bei Anpassung aus Sicherheitsgründen den Vorschlag automatisch auf die Uhr */
+function safetyWhy(D){const t=today(),o=[];try{const L=evaluate(D).L;if(L>=1)o.push(L>=2?"deine Erholungswerte rot sind":"deine Erholungswerte nicht im grünen Bereich sind")}catch(e){}
+  try{if((D.sick||[]).some(s=>s.start<=t&&(!s.end||s.end>=t)))o.push("du krank gemeldet bist")}catch(e){}
+  try{const rc=raceRecent(D);if(rc&&rc.day<rc.R.hard)o.push("du dich vom Wettkampf erholst")}catch(e){}
+  try{if(fbState(D).st==="schwer")o.push("dir deine letzten Einheiten zu schwer waren")}catch(e){}return o}
+let AUTOW=false;
+async function autoWatch(){if(AUTOW)return;const D=DATA,t=today();if(!D||!isLive()||!watchInfo().up)return;const why=safetyWhy(D);if(!why.length)return;
+  if(hasAi()&&!noteBy("Coach "+t))return;const m=swapAll(),off=store.get("imAutoWOff",{});if(m[t]||off[t]||store.get("imAutoW","")===t)return;
+  const tp=todayPlan(D),onW=tp[0];if(!onW||(D.activities||[]).some(a=>a.date===t&&a.sport===onW.sport))return;
+  const W=window.__cw||[],w=W[0];if(!w||w.old||sameWo(onW,w))return;const rest=spKey(w.sport)==="rest";if(!rest&&!w.description)return;
+  AUTOW=true;store.set("imAutoW",t);try{await watchSwap(w);store.set("imAutoWWhy",{d:t,why,name:cleanT(onW.name),neu:rest?"":cleanT(w.title)});render()}catch(e){store.set("imAutoW","")}finally{AUTOW=false}}
+render=(f=>function(){const r=f.apply(this,arguments);setTimeout(()=>{autoWatch().catch(()=>{})},800);return r})(render);
+watchUndo=(f=>async function(){const t=today(),off=store.get("imAutoWOff",{});off[t]=1;Object.keys(off).forEach(d=>{if(d<addDays(t,-10))delete off[d]});store.set("imAutoWOff",off);return f.apply(this,arguments)})(watchUndo);
+watchBlock=(f=>function(w,i){let s=f.apply(this,arguments);const a=store.get("imAutoWWhy",null),t=today();if(i===0&&s&&a&&a.d===t&&swapAll()[t])s=s.replace('<div class="wwat">',`<div class="wwat"><div class="wwauto">Automatisch angepasst: ${a.neu?`„${esc(a.neu)}“ ist statt „${esc(a.name)}“ auf der Uhr`:`„${esc(a.name)}“ wurde von der Uhr genommen`}, weil ${esc(a.why.join(" und "))}.</div>`);return s})(watchBlock);
+(function(){const st=document.createElement("style");st.textContent=".wwauto{flex-basis:100%;font-size:13px;color:var(--text,#fff);line-height:1.4}";document.head.appendChild(st)})();
 
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
