@@ -941,6 +941,7 @@ h3>.tag,.cx-h>.tag{display:table;margin:8px 0 2px;font-size:12px}
 #rcHide{border:1px solid var(--line);cursor:pointer}#rcHide:hover{background:var(--line)}
 #rcCancel{margin-top:8px}
 .fbmd .fbl{display:block;margin-top:4px;font-size:13px}.fbmd .rpe{width:100%}
+#chkRec,#raceHid{margin-bottom:14px}
 </style>
 </head>
 <body>
@@ -1123,7 +1124,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="60";
+const VERSION="61";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -5088,9 +5089,19 @@ document.addEventListener("click",e=>{if(e.target.closest("[data-showrec]"))ccUn
 function renderRaceHidden(D){const sec=document.querySelector('section[data-tab="erholung"]');if(!sec)return;let el=$("raceHid");const rc=raceRecent(D),hid=rc&&store.get("imRaceHide","")===rc.date;
   if(!hid){if(el)el.remove();return}
   if(!el){el=document.createElement("div");el.className="card";el.id="raceHid";sec.insertBefore(el,sec.firstChild)}
-  el.innerHTML=`<div class="cx-k" style="color:var(--acc)">Erholung nach dem Wettkampf</div><div class="cx-h" style="font-size:17px">${esc(rc.name)} · Tag ${rc.day} von ${rc.R.end}</div><p class="sub" style="margin:6px 0 10px">Jetzt: ${esc(rc.ph[2])} Die Regeln gelten weiter, die Karte ist auf „Heute“ ausgeblendet.</p><button class="btn sm" id="raceShow">Wieder auf Heute anzeigen</button>`;
+  el.innerHTML=raceFullHTML(D)+`<p class="hint" style="margin:10px 0 8px">Auf „Heute“ ausgeblendet. Die Regeln gelten weiter.</p><button class="btn sm" id="raceShow">Wieder auf Heute anzeigen</button>`;
   $("raceShow").onclick=()=>{store.set("imRaceHide","");el.remove();try{render()}catch(e){}}}
 render=(f=>function(){const r=f.apply(this,arguments);try{renderRaceHidden(DATA)}catch(e){}return r})(render);
+/* ---------- v61 ---------- */
+/* Wettkampf-Erholung unter Erholung vollständig */
+function raceFullHTML(D){const h=store.get("imRaceHide","");let html="";try{store.set("imRaceHide","");renderRaceCard(D);const el=$("raceCard");if(el){const cl=el.cloneNode(true);cl.querySelectorAll("#rcMenu,#rcAsk").forEach(x=>x.remove());cl.querySelectorAll("[id]").forEach(x=>x.removeAttribute("id"));html=cl.innerHTML;el.remove()}}finally{store.set("imRaceHide",h)}return html}
+/* Check-in: ausgefüllt nicht mehr auf Heute, sondern unter Erholung */
+renderChkCard=(f=>function(D){f.apply(this,arguments);try{const c=$("chkCard"),k=chkToday(),sec=document.querySelector('section[data-tab="erholung"]');let r=$("chkRec");
+  if(c&&k&&!c.querySelector("[data-man]"))c.style.display="none";
+  if(!k||!sec){if(r)r.remove();return}
+  if(!r){r=document.createElement("div");r.className="card";r.id="chkRec";sec.insertBefore(r,sec.firstChild)}
+  const T=[];if(k.sq)T.push(["Schlaf",k.sq,CHQ[0][2][k.sq-1]]);if(k.en)T.push(["Energie",k.en,CHQ[1][2][k.en-1]]);if(k.so)T.push(["Muskelkater",6-k.so,CHQ[2][2][k.so-1]]);
+  r.innerHTML=`<h2>Dein Check-in heute</h2><div class="chkdone"><div class="chkv">${T.map(([n,v,l])=>`<div><i style="--lv:${v}"></i><span>${n}</span><b>${l}</b></div>`).join("")}</div><button class="lnk" data-chk="1">Ändern</button></div>`}catch(e){}})(renderChkCard);
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
 $("btnRace").onclick=()=>openRace(null);
