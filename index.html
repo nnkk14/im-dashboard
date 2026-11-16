@@ -1187,7 +1187,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="80";
+const VERSION="81";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -6053,6 +6053,21 @@ TPP.push({id:"hm_ohne",n:"Halbmarathon ohne Schwellenwerte",d:"Läuft seit 2 Jah
   set:{sports:["run","kraft"],purpose:"race",mode:"sport",birthYear:"1992",sex:"w",equip:["body"],equip2:[]},
   goal:{gSet:"1",gSrc:"claude",gSport:"Laufen",gDist:"Halbmarathon",gRace:"tp_a",gDate:"",gTime:"1:55:00",gHours:"5",gDays:"0,1,1,1,0,1,2",gExp:"mittel",gFocus:"",gInj:""},
   wk:[[],[["run",50,"e"]],[["kraft",25,"e"]],[["run",45,"h"]],[],[],[["run",75,"l"]]],races:[[98,"Halbmarathon (Beispiel)","A"]],hr:{mx:191,lt:172},tp:null,wv:{hrv:55,rhr:54,sl:7.3},pace:5.9});
+/* ---------- v81 ---------- */
+/* Funde Prüfstand 17.11.: Steigerung auch bei Plänen unter 7 Tagen prüfen (Erst testen), ohne Uhr kein Erst testen */
+rampIssues=(f=>function(items){const r=f.apply(this,arguments);try{const I=(items||[]).filter(x=>x&&x.date).slice().sort((a,b)=>a.date.localeCompare(b.date));if(!I.length||!DATA||r.some(x=>/^Erste 7 Tage/.test(x.t)))return r;
+  const fr=I[0].date,to=I[I.length-1].date,t=today();if(diffDays(fr,to)>=6)return r;const base=avgHours(DATA)*60,p0=addDays(fr,-7);let prev7=0;
+  (DATA.activities||[]).forEach(a=>{if(a.date>=p0&&a.date<fr&&a.date<=t)prev7+=(a.secs||0)/60});(DATA.planned||[]).forEach(p=>{if(p.date>=p0&&p.date<fr&&p.date>t)prev7+=(p.secs||0)/60});
+  const r1=Math.max(base,prev7),w1=I.reduce((s,x)=>s+(+x.minutes||0),0);if(r1>45&&w1>Math.max(r1*1.25,r1+20))r.push({k:"steig",w:monday(fr),t:`Erste 7 Tage ab ${fD(fr)}: ${nf(w1/60,1)} h, das sind mehr als 25 Prozent über ${nf(r1/60,1)} h vorher`})}catch(e){}return r})(rampIssues);
+tfNeed=(f=>function(D){if(settings&&settings.noWatch)return[];return f.apply(this,arguments)})(tfNeed);
+/* Erste volle Woche: Vergleich mit dem Größeren aus 6-Wochen-Schnitt und den 7 Tagen vor dem Plan, wenn davor keine volle Planwoche liegt (Start nicht am Montag) */
+rampIssues=(f=>function(items){let r=f.apply(this,arguments);try{const I=(items||[]).filter(x=>x&&x.date).slice().sort((a,b)=>a.date.localeCompare(b.date));if(!I.length||!DATA)return r;
+  const base=avgHours(DATA)*60,fr=I[0].date,to=I[I.length-1].date,t=today(),p0=addDays(fr,-7),lim=(x,f)=>Math.max(x*f,x+20);let prev7=0;
+  (DATA.activities||[]).forEach(a=>{if(a.date>=p0&&a.date<fr&&a.date<=t)prev7+=(a.secs||0)/60});(DATA.planned||[]).forEach(p=>{if(p.date>=p0&&p.date<fr&&p.date>t)prev7+=(p.secs||0)/60});
+  const r1=Math.max(base,prev7),wk={};I.forEach(x=>{const m=monday(x.date);(wk[m]=wk[m]||[]).push(x)});let prev=0;const W=[];
+  Object.keys(wk).sort().forEach((m,wi)=>{const days=[...Array(7)].map((_,i)=>addDays(m,i)),full=days.every(d=>d>=fr&&d<=to),min=wk[m].reduce((s,x)=>s+(+x.minutes||0),0);
+    const ref=wi===0?base:prev?Math.max(prev,base):r1,f=wi===0?1.25:1.2;if(full&&ref>45&&min>lim(ref,f))W.push({k:"steig",w:m,t:`Woche ab ${fD(m)}: ${nf(min/60,1)} h, das sind mehr als ${wi===0?25:20} Prozent über ${nf(ref/60,1)} h`});if(full)prev=min});
+  r=r.filter(x=>!/^Woche ab/.test(x.t)).concat(W)}catch(e){}return r})(rampIssues);
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
 $("btnRace").onclick=()=>openRace(null);
