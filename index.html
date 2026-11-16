@@ -1003,6 +1003,8 @@ h3>.tag,.cx-h>.tag{display:table;margin:8px 0 2px;font-size:12px}
 .tp-res{font-size:12.5px;white-space:pre-wrap;line-height:1.45;margin:4px 0}.tp-err{color:var(--red);font-size:13px;margin:8px 0}.tp-h{font-weight:700;color:var(--red)}
 .tp-rate{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 0;flex-wrap:wrap}.tp-rate>span{font-size:13px}.tp-rate .tchips button{padding:6px 10px;font-size:12.5px}
 #tpMemo{width:100%;min-height:90px;margin-top:4px}
+/* v80 */
+.pgate.tf b{color:var(--blue,#4ea1ff)}
 </style>
 </head>
 <body>
@@ -1185,7 +1187,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="79";
+const VERSION="80";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -5989,6 +5991,68 @@ tpMetrics=(f=>function(run,p){const o=f.apply(this,arguments);try{if(!o)return o
   if(us.includes("kraft")){const mx=us.length===1?4:2;set("kraft",W.every(w=>w.k>=1&&w.k<=mx),`Krafteinheiten je Kalenderwoche: ${W.map(w=>w.k).join(" und ")}`)}
   const T=I.filter(x=>TRX.test(x.name||""));set("test",T.length<=1,`Tests: ${T.length?T.map(x=>fD(x.date)+" "+x.name).join(", "):"keiner"}`)}catch(e){}return o})(tpMetrics);
 
+/* ---------- v80 ---------- */
+/* 5.13 Feste Grenzen und Vorrang statt Pflichtzahlen. Quellen: quellen-trainingsumfang.md (Vorrang bei wenig Zeit), quellen-kraft.md (1 Einheit erhält Kraft) */
+const V80FIX="\n- FESTE GRENZEN (gelten immer): Trainingstage und Höchstzeit pro Woche des Nutzers, Steigerung höchstens etwa 10 Prozent pro Woche, höchstens 2 harte Tage pro Woche und nie zwei hintereinander, mindestens 1 Ruhetag, Erholung nach Wettkämpfen laut Erholungstabelle, Rückkehr nach Krankheit, Einsteiger ohne harten Test in den ersten 4 Wochen.";
+const V80PRIO="\n- VORRANG: Alle anderen Zahlen in diesen Regeln sind Richtwerte. Reicht die Zeit nicht für alle, wäge als Trainer ab und halte diese Reihenfolge ein: 1. Die Sportarten des Ziels, verteilt nach ihrem Gewicht für das Ziel und mit mehr Zeit für die Schwäche des Nutzers (z. B. bei Technikschwäche im Wasser lieber öfter kurz schwimmen). Jede gewählte Ausdauersportart mindestens 1-mal pro Woche. 2. Die lange Einheit der wichtigsten Sportart. 3. Kraft mindestens 1-mal pro Woche, auch kurz (20 bis 30 Minuten), denn 1 Einheit pro Woche erhält die Kraft. 4. Weitere Einheiten, z. B. eine zweite Krafteinheit. Musst du abwägen, nenne die Abwägung in einem Satz in der note.";
+planRules=(f=>function(){let s=f.apply(this,arguments);
+  s=s.replace("PLANREGELN (verbindlich, vor der Ausgabe selbst prüfen)","PLANREGELN (vor der Ausgabe selbst prüfen)"+V80FIX+V80PRIO)
+    .replace(" Triathlon: Schwimmen, Rad und Laufen jeweils 2 bis 3 Einheiten pro Woche,"," Triathlon: Richtwert je 2 bis 3 Einheiten Schwimmen, Rad und Laufen pro Woche (siehe VORRANG),")
+    .replace("- KRAFT (verbindlich, Ausstattung:","- KRAFT (Ausstattung:")
+    .replace("In Grundlage und Aufbau 2 Krafteinheiten pro Woche,","In Grundlage und Aufbau 2 Krafteinheiten pro Woche, bei wenig Zeit 1 (siehe VORRANG),");
+  return s})(planRules);
+
+/* 5.15 Erst testen, dann planen (nicht für Einsteiger in den ersten 4 Wochen, die bekommen weiter keinen harten Test) */
+var TFMODE=null,TFTO=null;
+const TFN={run:"Laufen",bike:"Rad",swim:"Schwimmen"};
+function tfNeed(D){D=D||DATA;if(!D||typeof dataStatus!=="function")return[];const m={Laufen:"run",Rad:"bike",Schwimmen:"swim"};
+  try{return String(dataStatus(D)).split("\n").filter(l=>/Einstufungstest nötig/.test(l)).map(l=>m[l.split(":")[0].trim()]).filter(Boolean)}catch(e){return[]}}
+function tfThr(D,k){const z=((D&&D.zones)||{})[k]||{};return k==="bike"?!!(z.ftp||z.lthr):k==="run"?!!(z.tp||z.lthr||(D&&D.pb90)):!!z.tp}
+function tfNow(){const s=store.get("imTestFirst",null);return s&&!s.closed&&(s.tests||[]).length?s:null}
+function tfState(s,D){D=D||DATA;if(!s||s.closed||!(s.tests||[]).length)return"off";const t=today();
+  const open=s.tests.filter(x=>{if(tfThr(D,x.k))return false;const done=((D&&D.activities)||[]).filter(a=>a.sport===x.k&&a.date>=s.set&&a.date<=t&&TRX.test(a.name||"")).map(a=>a.date).sort().pop();return!(done&&done<t)});
+  if(!open.length)return"done";const last=open.map(x=>x.date).sort().pop();return t>addDays(last,3)?"late":"wait"}
+function tfNames(L){const n=[...new Set(L.map(x=>TFN[x.k||x]))].filter(Boolean);return n.length>1?n.slice(0,-1).join(", ")+" und "+n[n.length-1]:n[0]||""}
+aiPlan=(f=>async function(manual){
+  if(manual&&!TFMODE){const need=TFTO?((tfNow()||{}).sports||[]):tfNeed(DATA);
+    if(need.length){const from=addDays(today(),1);let days=7;if(TFTO){days=Math.min(14,Math.max(2,diffDays(from,TFTO)+1))}
+      TFMODE={sports:need,from,end:addDays(from,days-1),days,to:TFTO};
+      try{return await f.apply(this,arguments)}finally{TFMODE=null}}}
+  return f.apply(this,arguments)})(aiPlan);
+claude=(f=>async function(pr){if(TFMODE&&typeof pr==="string"&&/erstelle konkrete Einheiten für 14 Tage ab \d{4}-\d{2}-\d{2}/.test(pr)){const T=TFMODE,n=T.sports.length;
+    pr=pr.replace(/erstelle konkrete Einheiten für 14 Tage ab (\d{4}-\d{2}-\d{2})/,`erstelle konkrete Einheiten für ${T.days} Tage ab $1 (bis ${T.end})`)+`\n- ERST TESTEN: Für ${tfNames(T.sports)} fehlt ein Schwellenwert. Der Nutzer macht zuerst ${n>1?"die Tests":"den Test"}, erst danach entsteht der ganze Plan. Plane deshalb nur die ${T.days} Tage bis ${T.end}: lockere Einheiten nach Gefühl und Sprechtest, dazu für ${tfNames(T.sports)} genau ${n>1?"je einen Test an verschiedenen Tagen":"einen Test"} (Titel beginnt mit "Test", Ablauf siehe EINSTUFUNG)${T.to?`, der Test am ${T.to}`:", nicht am ersten Tag und nicht nach einem harten Tag"}. Die Phasen bis zum Ziel trotzdem vollständig angeben. In der note nach der Zielprüfung genau dieser Satz: "Für einen genauen Plan fehlt noch ein Test. Bis dahin beruht der Plan auf Schätzungen."`;
+    const a=[...arguments];a[0]=pr;return f.apply(this,a)}
+  return f.apply(this,arguments)})(claude);
+importPlan=(f=>async function(items){const T=TFMODE;if(!T)return f.apply(this,arguments);
+  items=(items||[]).filter(x=>x.date<=T.end);
+  const tests=items.filter(x=>TRX.test(x.name||"")&&T.sports.includes(gSk(x))).map(x=>({k:gSk(x),date:x.date}));
+  const r=await f.call(this,items);
+  store.set("imTestFirst",tests.length?{set:today(),sports:T.sports,tests,end:T.end}:{set:today(),sports:T.sports,tests:[],closed:today(),how:"kein Test im Plan"});
+  return r})(importPlan);
+planImportRaw=(f=>function(items){if(TFMODE&&Array.isArray(items)){const a=[...arguments];a[0]=items.filter(x=>x.date<=TFMODE.end);return f.apply(this,a)}return f.apply(this,arguments)})(planImportRaw);
+planAuto=(f=>async function(){const s=tfNow();if(s){const st=tfState(s);if(st==="wait")return;if(st==="done"||st==="late")store.set("imTestFirst",Object.assign({},s,{closed:today(),how:st}))}
+  return f.apply(this,arguments)})(planAuto);
+renderPlanCheck=(f=>function(){const r=f.apply(this,arguments);try{const s=tfNow(),pn=$("planNote");if(s&&pn&&!$("tfHint")&&tfState(s)==="wait"){
+  const T=s.tests.map(x=>`${TFN[x.k]} am ${fD(x.date)}`).join(", ");
+  pn.insertAdjacentHTML("afterend",`<div class="pgate tf" id="tfHint"><b>Erst testen</b><span>Dein Plan startet mit ${s.tests.length>1?"Tests":"einem Test"}: ${esc(T)}. Bis dahin beruht er auf Schätzungen. Nach dem Test erstellt die KI den ganzen Plan. Passt der Tag nicht, sag es dem Coach.</span></div>`)}}catch(e){}return r})(renderPlanCheck);
+/* Coach: Test verschieben */
+askCtx=(f=>function(){const s=f.apply(this,arguments),T=tfNow();if(!T||tfState(T)!=="wait")return s;
+  return s+`\n\nERST TESTEN\nDer Plan wartet auf ${T.tests.length>1?"die Tests":"den Test"}: ${T.tests.map(x=>TFN[x.k]+" am "+x.date).join(", ")}. Sagt der Nutzer, dass er den Test an einem anderen Tag machen will (Datum oder in wie vielen Tagen), antworte kurz und schreib als letzte Zeile genau: [[TESTTAG|JJJJ-MM-TT]]. Der Tag liegt zwischen ${addDays(today(),1)} und ${addDays(today(),14)}. Heute ist ${today()}. Die App passt den Plan bis dahin an, wenn der Nutzer zustimmt.`})(askCtx);
+claude=(f=>async function(){const r=await f.apply(this,arguments);if(!ASKF||typeof r!=="string")return r;const m=r.match(/\[\[TESTTAG\|\s*(\d{4}-\d{2}-\d{2})\s*\]\]/);if(!m)return r;
+  const t=today();let d=m[1];if(d<=t)d=addDays(t,1);if(d>addDays(t,14))d=addDays(t,14);ASKACT={k:"testtag",date:d};return r.replace(m[0],"").trim()})(claude);
+askActCard=(f=>function(a){if(a&&a.k==="testtag")return a.done?"":`<div class="qact"><span>Test auf ${fD(a.date)} legen und den Plan bis dahin anpassen?</span><button class="btn blue sm" data-qact="testtag">Ja, anpassen</button><button class="lnk" data-qact="no">Nein</button></div>`;return f.apply(this,arguments)})(askActCard);
+async function tfBridge(d){const k0=typeof KRT!=="undefined"?KRT:0,b=$("btnAiPlan"),l0=AILAB;TFTO=d;if(typeof KRT!=="undefined")KRT=Date.now();if(b)b.dataset.sure="1";
+  try{AILAB="Die KI passt deinen Plan bis zum Test an …";await aiPlan(true)}finally{TFTO=null;if(typeof KRT!=="undefined")KRT=k0;AILAB=l0}}
+document.addEventListener("click",async e=>{const b=e.target.closest('[data-qact="testtag"]');if(!b)return;e.preventDefault();e.stopImmediatePropagation();
+  const H=store.get("imAskH",[]),a=H[0]&&H[0].act;if(!a||a.k!=="testtag")return;b.disabled=true;
+  try{await tfBridge(a.date);a.done=true;store.set("imAskH",H);const c=b.closest(".qact");if(c)c.outerHTML=`<div class="qact ok">Der Test liegt jetzt am ${fD(a.date)}, der Plan bis dahin ist angepasst.</div>`}
+  catch(er){b.disabled=false;if($("qErr"))$("qErr").textContent=er.message}},true);
+/* Plan-Prüfstand: Profil ohne Schwellenwerte für „Erst testen“ */
+tpRaw=(f=>function(p){const r=f.apply(this,arguments);if(p&&p.noThr&&r){Object.values(r.zones||{}).forEach(z=>{z.lthr=null;z.tp=null;z.ftp=null});r.eftp=null}return r})(tpRaw);
+TPP.push({id:"hm_ohne",n:"Halbmarathon ohne Schwellenwerte",d:"Läuft seit 2 Jahren 3-mal pro Woche (etwa 3,5 h), Uhr ohne hinterlegte Schwellen, Kraft mit Körpergewicht, Halbmarathon in 14 Wochen, höchstens 5 h",seed:76,noThr:true,
+  set:{sports:["run","kraft"],purpose:"race",mode:"sport",birthYear:"1992",sex:"w",equip:["body"],equip2:[]},
+  goal:{gSet:"1",gSrc:"claude",gSport:"Laufen",gDist:"Halbmarathon",gRace:"tp_a",gDate:"",gTime:"1:55:00",gHours:"5",gDays:"0,1,1,1,0,1,2",gExp:"mittel",gFocus:"",gInj:""},
+  wk:[[],[["run",50,"e"]],[["kraft",25,"e"]],[["run",45,"h"]],[],[],[["run",75,"l"]]],races:[[98,"Halbmarathon (Beispiel)","A"]],hr:{mx:191,lt:172},tp:null,wv:{hrv:55,rhr:54,sl:7.3},pace:5.9});
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
 $("btnRace").onclick=()=>openRace(null);
