@@ -1165,7 +1165,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="73";
+const VERSION="74";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -5537,7 +5537,7 @@ document.addEventListener("click",e=>{const g=n=>e.target.closest("["+n+"]");if(
 /* ---------- v73 ---------- */
 /* 4.1 Weitere Sportarten in Einrichtung und Profil: Gehen, Wandern, Yoga, Tennis, Ballsport.
    Gehen und Wandern plant der Coach ein, Yoga, Tennis und Ballsport berücksichtigt er nur.
-   Quellen: quellen-trainingsumfang.md (WHO 2020, CDC Sprechtest) */
+   Quellen: quellen-trainingsumfang.md (WHO 2020, ACSM 2011, CDC Sprechtest). V74: Verteilung nach ACSM */
 const MSPK=["walk","hike","yoga","tennis","ball"],MSPN={walk:"Gehen",hike:"Wandern",yoga:"Yoga",tennis:"Tennis",ball:"Ballsport"},MSPOWN=["yoga","tennis","ball"];
 const SPNM={Walk:"Gehen",Hike:"Wandern",Yoga:"Yoga",Tennis:"Tennis",Soccer:"Ballsport"};
 MSPK.forEach(k=>{if(!SPOPT.some(x=>x[0]===k))SPOPT.push([k,MSPN[k]])});
@@ -5569,7 +5569,7 @@ planFmt=(f=>function(){let s=f.apply(this,arguments);const ws=walkSports();if(!w
 planRules=(f=>function(){let s=f.apply(this,arguments);const ms=moreSports();if(!ms.length)return s;
   const ws=walkSports(),own=ms.filter(k=>MSPOWN.includes(k)),wn=ws.map(k=>MSPN[k]).join(" und ");
   s=s.replace("die der Nutzer gewählt hat (), von der ersten Woche an.","die der Nutzer gewählt hat, von der ersten Woche an.");
-  if(ws.length){if(!endSports().length)s=s.replace(/\n- AUSDAUER: Der Nutzer hat keine Ausdauersportart gewählt\.[^\n]*/,"")+`\n- AUSDAUER ÜBER ${wn.toUpperCase()}: Der Nutzer hat kein Laufen, Rad oder Schwimmen gewählt. Die Ausdauer kommt aus ${wn}: mindestens 150 Minuten pro Woche zügig (WHO), verteilt auf mindestens 3 Tage, vom bisherigen Umfang aus schrittweise steigern.${ws.includes("hike")?" Wandern als lange Einheit an einem Tag mit viel Zeit.":""}`;
+  if(ws.length){if(!endSports().length)s=s.replace(/\n- AUSDAUER: Der Nutzer hat keine Ausdauersportart gewählt\.[^\n]*/,"")+`\n- AUSDAUER ÜBER ${wn.toUpperCase()}: Der Nutzer hat kein Laufen, Rad oder Schwimmen gewählt. Die Ausdauer kommt aus ${wn}: mindestens 150 Minuten pro Woche zügig (WHO), möglichst auf 5 Tage verteilt (ACSM), nur an den Trainingstagen des Nutzers, vom bisherigen Umfang aus schrittweise steigern.${ws.includes("hike")?" Wandern als lange Einheit an einem Tag mit viel Zeit.":""}`;
     else s+=`\n- ${wn.toUpperCase()}: Darf als lockere Einheit vorkommen, z. B. an leichten Tagen oder in Entlastungswochen. Zählt zum Wochenumfang, ersetzt aber keine Einheit der gewählten Sportarten.`}
   if(own.length)s+=`\n- SELBST ORGANISIERT (${own.map(k=>MSPN[k]).join(", ")}): Der Nutzer macht das selbst. Nicht einplanen. Kamen diese Einheiten in den letzten Wochen regelmäßig an bestimmten Wochentagen vor, an diesen Tagen nichts Hartes planen und ihre Zeit zum Wochenumfang zählen. Zeigen die Daten der Uhr dabei mindestens 5 Minuten in Z4 oder höher, zählen sie als harter Tag.`;
   return s})(planRules);
