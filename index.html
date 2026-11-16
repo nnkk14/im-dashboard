@@ -1124,7 +1124,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="63";
+const VERSION="64";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -1257,19 +1257,57 @@ function prep(D){
   return D;
 }
 
+/* ---------- Rückkehrphase (V64) ----------
+   Dauer nach Art und Länge der Krankheit, Ende aus den Daten. Grundlage: IOC-Konsens akute Atemwegsinfekte Teil 1
+   (Schwellnus et al. 2022, BJSM 56:1066): Schweregrad nach Beschwerden, Wiedereinstieg mit 60 bis 70 % der gewohnten
+   Intensität, Steigerung nur ohne auffällige Reaktion in den 24 Stunden danach, über 7 Tage Beschwerden gilt als schwer.
+   Mindesttage selbst gewählt (Erfahrungswerte), Prüfung durch Nico offen (M.2). */
+function retPhase(D){
+  try{
+    const t=today(),r=(D.sick||[]).filter(s=>s.end<t).sort((a,b)=>b.end.localeCompare(a.end))[0];if(!r)return null;
+    const dur=diffDays(r.start,r.end)+1,day=diffDays(r.end,t),key=r.start+"|"+r.type,done=store.get("imRetDone",{});
+    if(done[key]&&done[key]<t)return null;
+    let sev,min;
+    if(r.type==="pause"){if(dur<=3)return null;sev="pause";min=Math.min(14,Math.max(2,Math.ceil(dur/2)))}
+    else if(r.type==="verletzung"){sev="verletzung";min=Math.min(14,Math.max(3,Math.ceil(dur/2)))}
+    else if(dur>7){sev="schwer";min=7}
+    else if(r.type==="unterhalb"){sev="mittel";min=Math.min(7,Math.max(3,dur))}
+    else{sev="leicht";min=Math.min(3,Math.max(1,Math.ceil(dur/2)))}
+    if(day>Math.max(28,min*3))return null;
+    const h=D.hrvStat||{},rr=D.rhrStat||{},hasV=!!(h.r||(rr.now&&rr.base));
+    const hrvOk=!h.r||h.rln>=h.m-0.5*h.s,rhrOk=!(rr.now&&rr.base)||rr.now<rr.base+5;
+    let hard=false;try{hard=(D.activities||[]).some(a=>a.date>r.end&&a.id&&typeof fbOf==="function"&&fbOf(a).r===1)}catch(e){}
+    const ok=hrvOk&&rhrOk&&!hard;
+    if(day>min&&ok){if(!done[key]){done[key]=t;store.set("imRetDone",done)}return null}
+    const half=Math.max(1,Math.ceil(min/2)),stage=(day<=half||!ok)?1:2;
+    const wo=r.type==="pause"?"Trainingspause":r.type==="verletzung"?"Verletzung":"Krankheit";
+    let x=`Rückkehr nach ${wo}, Tag ${day}: `;
+    x+=stage===1?"nur locker und kürzer als gewohnt, etwa zwei Drittel von Dauer und Tempo. ":"locker in gewohnter Dauer, noch keine Intervalle. ";
+    const why=[];if(!hrvOk)why.push("deine HRV liegt noch unter dem Normalbereich");if(!rhrOk)why.push("dein Ruhepuls ist noch erhöht");if(hard)why.push("eine Einheit seit der Rückkehr war zu schwer");
+    if(day>min&&!ok)x+=`Die Mindestzeit ist vorbei, aber ${why.join(" und ")}. Intensität erst, wenn das wieder passt.`;
+    else{const left=min-day+1;x+=`Intensität frühestens in ${left} ${left===1?"Tag":"Tagen"}`+(hasV?", wenn Ruhepuls und HRV dann im Normalbereich sind.":".");if(why.length)x+=` Stand heute: ${why.join(" und ")}.`}
+    if(sev==="schwer")x+=" Nach mehr als 7 Tagen Beschwerden vor harten Einheiten ärztlich abklären lassen.";
+    if(sev==="verletzung")x+=" Steigerung mit Arzt oder Physiotherapie absprechen.";
+    if(day>14&&!ok&&sev!=="pause")x+=" Bleiben die Werte so, lass es ärztlich abklären.";
+    x+=" Bei Brustschmerz, Atemnot, Schwindel oder Herzstolpern sofort aufhören.";
+    const src=sev==="pause"?"Erfahrungswert (Dauer nach Länge der Pause)":"IOC-Konsens akute Atemwegsinfekte (Schwellnus et al. 2022): Einstieg mit 60 bis 70 % der gewohnten Intensität, Steigerung nur ohne auffällige Reaktion. Mindestdauer nach Schweregrad als Erfahrungswert";
+    return{type:r.type,sev,day,min,stage,ok,text:x,src};
+  }catch(e){return null}
+}
+
 /* ---------- Ampel ---------- */
 const LV=["var(--green)","var(--yellow)","var(--red)"];
 function evaluate(D){
   const t=today(),S=[];
   const act=D.sick.find(s=>t>=s.start&&t<=s.end);
-  const recent=D.sick.filter(s=>s.end<t&&diffDays(s.end,t)<=7).sort((a,b)=>b.end.localeCompare(a.end))[0];
+  const ret=retPhase(D);
   if(act){
     if(act.type==="unterhalb")S.push({l:2,t:"Krank mit Beschwerden unterhalb des Halses: kein Training, bis die Beschwerden abgeklungen sind.",src:"Erfahrungsregel (Neck Check). Laut IOC-Konsens zu akuten Atemwegsinfekten (Snyders et al., Br J Sports Med) gibt es dafür keine evidenzbasierte Leitlinie."});
     else if(act.type==="pause")S.push({l:2,t:"Trainingspause eingetragen"+(act.note?" ("+act.note+")":"")+`: kein Training bis ${fD(act.end)}`,src:"Eigene Angabe"});
     else if(act.type==="verletzung")S.push({l:2,t:"Verletzung eingetragen: Training nur nach ärztlicher oder physiotherapeutischer Freigabe.",src:"Erfahrungsregel"});
     else S.push({l:1,t:"Nur Beschwerden oberhalb des Halses: wenn überhaupt, kurz und locker trainieren. Keine Intervalle.",src:"Erfahrungsregel (Neck Check), keine evidenzbasierte Leitlinie (IOC-Konsens, Snyders et al.)"});
-  }else if(recent){
-    S.push({l:1,t:`Rückkehrphase (Tag ${diffDays(recent.end,t)} nach Krankheitsende): erst lockere Einheiten. Intensität erst steigern, wenn diese problemlos laufen und Ruhepuls und HRV wieder im Normalbereich sind.`,src:"Erfahrungsregel, keine evidenzbasierte Leitlinie"});
+  }else if(ret){
+    S.push({l:1,t:ret.text,src:ret.src});
   }
   const h=D.hrvStat;
   if(h.r){
@@ -1458,7 +1496,7 @@ function render(){
 <p><b>Ruhepuls</b><span class="tag g">Erfahrungswert</span><br>Liegt der Ruhepuls 5 oder mehr Schläge über dem Mittel der Tage 8 bis 60, wird gewarnt. Die Schwelle ist nicht durch Studien festgelegt.</p>
 <p><b>Form</b><span class="tag g">Konvention</span><br>Fitness ist der 42-Tage-, Ermüdung der 7-Tage-Durchschnitt der Trainingslast. Form ist die Differenz. Die Warnschwelle −30 ist eine übliche Einteilung.</p>
 <p><b>Schlaf</b><span class="tag g">Erfahrungswert</span><br>Unter 6 Stunden in der letzten Nacht wird von neuen Höchstbelastungen abgeraten.</p>
-<p><b>Krankheit</b><span class="tag g">Erfahrungswert</span><br>Beschwerden nur oberhalb des Halses: kurz und locker. Beschwerden unterhalb des Halses oder Fieber: Pause. Danach 7 Tage Rückkehrphase mit Warnhinweis. Der IOC-Konsens zu akuten Atemwegsinfekten bei Sportlern (Snyders et al., Br J Sports Med) hält fest, dass es für diese Regel keine evidenzbasierte Grundlage gibt. Bei Fieber, Brustschmerz oder anhaltenden Beschwerden ärztlich abklären lassen.</p>
+<p><b>Krankheit</b><span class="tag g">Erfahrungswert</span><br>Beschwerden nur oberhalb des Halses: kurz und locker. Beschwerden unterhalb des Halses oder Fieber: Pause. Danach eine Rückkehrphase: Ihre Mindestdauer richtet sich nach Art und Länge der Krankheit (nur oberhalb des Halses 1 bis 3 Tage, unterhalb 3 bis 7 Tage, über 7 Tage krank 7 Tage). Sie endet erst, wenn auch Ruhepuls und HRV wieder im Normalbereich sind. Der Einstieg erfolgt mit etwa zwei Dritteln der gewohnten Intensität, wie es der IOC-Konsens zu Atemwegsinfekten (Schwellnus et al. 2022) vorschlägt. Der IOC-Konsens zu akuten Atemwegsinfekten bei Sportlern (Snyders et al., Br J Sports Med) hält fest, dass es für diese Regel keine evidenzbasierte Grundlage gibt. Bei Fieber, Brustschmerz oder anhaltenden Beschwerden ärztlich abklären lassen.</p>
 <p class="hint">Die Ampel ersetzt keinen Trainer und keine ärztliche Beurteilung.</p>`;
   $("footer").textContent=`Version ${VERSION} · Datenquelle: ${D.source} · Stand ${new Date().toLocaleString("de-DE",{dateStyle:"short",timeStyle:"short"})}`;
   renderExtra(D);fuel();
@@ -2070,7 +2108,7 @@ async function aiDaily(manual){
   if(!manual&&(noteBy("Coach "+t)||store.get("imAiDay","")===t))return;
   aiBusy=true;aiErrMsg="";store.set("imAiDay",t);render();
   try{
-    const up=DATA.planned.filter(p=>p.date>=t&&p.date<=addDays(t,6)),sick=DATA.sick.some(s=>s.end>=addDays(t,-7));
+    const up=DATA.planned.filter(p=>p.date>=t&&p.date<=addDays(t,6)),sick=(DATA.sick.some(s=>s.end>=addDays(t,-7))||!!retPhase(DATA));
     const W='{"sport":"Run|Ride|Swim|Strength|Rest","title":"kurzer Titel, max. 45 Zeichen","minutes":45,"zone":"Z2","purpose":"Trainingsnutzen in einem Satz, max. 90 Zeichen","description":"Ablauf"}';
     const pr=coachText().replace(/\nANTWORTFORMAT[\s\S]*$/,"")+"\n\nGEPLANT NÄCHSTE 7 TAGE\n"+(up.length?up.map(p=>`${p.date} ${SPORTS[p.sport].n}: ${p.name}${p.secs?", "+fH(p.secs)+" h":""}${p.desc?" ("+p.desc.replace(/\n/g," / ").slice(0,200)+")":""}`).join("\n"):"nichts")+
       `\n\nAUFGABE\nTagesauswertung für heute (${t}). Antworte nur mit JSON in einem json-Codeblock: {"status":"gruen|gelb|rot","headline":"Kernaussage, max. 60 Zeichen","goal":"Ziel des heutigen Tages in einem Satz, max. 80 Zeichen","workout":${W},"alternatives":[wie workout, zusätzlich "label"],"why":["3 bis 4 Gründe, je max. 110 Zeichen, mit konkreten Zahlen"],"week":"ein Satz zur Woche und zum Trend","fuel":"Verpflegung in einem Satz, nur wenn die Einheit länger als 75 Minuten ist, sonst leer","tip":"siehe Regeln"}
@@ -2417,7 +2455,7 @@ async function aiDaily(manual){
   if(!manual&&(noteBy("Coach "+t)||store.get("imAiDay","")===t))return;
   aiBusy=true;aiErrMsg="";store.set("imAiDay",t);render();
   try{
-    const up=DATA.planned.filter(p=>p.date>=t&&p.date<=addDays(t,6)),sick=DATA.sick.some(s=>s.end>=addDays(t,-7));
+    const up=DATA.planned.filter(p=>p.date>=t&&p.date<=addDays(t,6)),sick=(DATA.sick.some(s=>s.end>=addDays(t,-7))||!!retPhase(DATA));
     const W='{"sport":"Run|Ride|Swim|Strength|Rest|Kombi","title":"max. 45 Zeichen","minutes":45,"zone":"Z2","reason":"warum diese Einheit heute passt, ein Satz, max. 100 Zeichen","purpose":"Trainingsnutzen, max. 90 Zeichen","description":"Ablauf"}';
     const pr=coachText().replace(/\nANTWORTFORMAT[\s\S]*$/,"")+"\n\nGEPLANT NÄCHSTE 7 TAGE\n"+(up.length?up.map(p=>`${p.date} ${SPORTS[p.sport].n}: ${p.name}${p.secs?", "+fH(p.secs)+" h":""}${p.desc?" ("+p.desc.replace(/\n/g," / ").slice(0,200)+")":""}`).join("\n"):"nichts")+
       `\n\nAUFGABE\nTagesauswertung für heute (${t}). Antworte nur mit JSON in einem json-Codeblock: {"status":"gruen|gelb|rot","goal":"Ziel des heutigen Tages, max. 80 Zeichen","workout":${W},"alternatives":[wie workout, zusätzlich "label"],"why":[{"topic":"HRV|Ruhepuls|Schlaf|Form|Belastung|Plan|Gesundheit","value":"Kennzahl mit Einheit, max. 20 Zeichen","note":"Einordnung, max. 70 Zeichen"}],"week":"ein Satz zur Woche","fuel":"Verpflegung in einem Satz, nur wenn die Einheit länger als 75 Minuten ist, sonst leer","tip":"siehe Regeln"}
@@ -2910,7 +2948,7 @@ async function aiDaily(manual){
   if(!manual&&(noteBy("Coach "+t)||store.get("imAiDay","")===t))return;
   aiBusy=true;aiErrMsg="";store.set("imAiDay",t);render();
   try{
-    const up=DATA.planned.filter(p=>p.date>=t&&p.date<=addDays(t,6)),sick=DATA.sick.some(s=>s.end>=addDays(t,-7)),gi=goalInfo(DATA),pt=DATA.planned.filter(p=>p.date===t);
+    const up=DATA.planned.filter(p=>p.date>=t&&p.date<=addDays(t,6)),sick=(DATA.sick.some(s=>s.end>=addDays(t,-7))||!!retPhase(DATA)),gi=goalInfo(DATA),pt=DATA.planned.filter(p=>p.date===t);
     const ok=allowedKeys(),AN={run:"Laufen",bike:"Rad",swim:"Schwimmen",kombi:"Kombi",kraft:"Kraft"},alts=ok.map(k=>AN[k]).filter(Boolean);
     const cy=choiceOf(addDays(t,-1)),ct=choiceOf(t),done1=DATA.activities.filter(a=>a.date===addDays(t,-1));
     const W='{"sport":"Run|Ride|Swim|Strength|Rest|Kombi","title":"nur der Name der Einheit, max. 40 Zeichen","minutes":45,"zone":"Z2","reason":"warum diese Einheit heute passt, ein Satz, max. 100 Zeichen","purpose":"Trainingsnutzen, max. 90 Zeichen","description":"Ablauf"}';
@@ -5076,7 +5114,7 @@ document.addEventListener("change",e=>{const r=e.target.closest(".fbmd [data-fbr
 actInfo=(f=>function(a){f.apply(this,arguments);try{if(!a||!a.id)return;const b=$("iBody");if(!b)return;const old=b.querySelector(".fbmd");if(old)old.remove();const k=b.querySelector(".kv")||b.querySelector(".act");if(k)k.insertAdjacentHTML("afterend",fbmdHTML(a));else b.insertAdjacentHTML("beforeend",fbmdHTML(a))}catch(e){console.log("fbmd",e)}})(actInfo);
 document.addEventListener("click",e=>{const k=e.target.closest(".fbmd [data-fbm]");if(!k)return;const box=k.closest(".fbmd"),a=(DATA.activities||[]).find(x=>String(x.id)===box.dataset.aid);if(!a)return;fbSet(a.id,{r:+k.dataset.fbm});box.outerHTML=fbmdHTML(a);try{renderExtra(DATA);renderFbAdj(DATA)}catch(er){}});
 /* Pause in Plänen der KI beachten */
-coachText=(f=>function(){const s=f.apply(this,arguments);try{const t=today(),P=((DATA&&DATA.sick)||[]).filter(x=>x.type==="pause"&&x.end>=t);if(!P.length)return s;const x="\nTRAININGSPAUSE EINGETRAGEN: "+P.map(p=>`${p.start} bis ${p.end}${p.note?" ("+p.note+")":""}`).join(", ")+". An diesen Tagen keine Einheiten planen, danach mit einer lockeren Rückkehrwoche beginnen.";const i=s.indexOf("\nANTWORTFORMAT");return i<0?s+x:s.slice(0,i)+x+s.slice(i)}catch(e){return s}})(coachText);
+coachText=(f=>function(){const s=f.apply(this,arguments);try{const t=today(),P=((DATA&&DATA.sick)||[]).filter(x=>x.type==="pause"&&x.end>=t);if(!P.length)return s;const x="\nTRAININGSPAUSE EINGETRAGEN: "+P.map(p=>`${p.start} bis ${p.end}${p.note?" ("+p.note+")":""}`).join(", ")+". An diesen Tagen keine Einheiten planen, danach mit einer lockeren Rückkehrphase beginnen (Dauer nach Länge der Pause).";const i=s.indexOf("\nANTWORTFORMAT");return i<0?s+x:s.slice(0,i)+x+s.slice(i)}catch(e){return s}})(coachText);
 askCtx=(f=>function(){const s=f.apply(this,arguments);try{const t=today(),P=((DATA&&DATA.sick)||[]).filter(x=>x.type==="pause"&&x.end>=t);return P.length?s+"\nEINGETRAGENE TRAININGSPAUSE: "+P.map(p=>`${p.start} bis ${p.end}${p.note?" ("+p.note+")":""}`).join(", "):s}catch(e){return s}})(askCtx);
 planGate=(f=>function(items){const r=f.apply(this,arguments);try{const P=((DATA&&DATA.sick)||[]).filter(x=>x.type==="pause");(items||[]).forEach(it=>{if(P.some(p=>it.date>=p.start&&it.date<=p.end))r.issues.push({t:`${it.date}: An diesem Tag ist eine Trainingspause eingetragen, keine Einheit planen.`})})}catch(e){}return r})(planGate);
 /* ---------- v59 ---------- */
