@@ -1171,7 +1171,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="76";
+const VERSION="77";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -5725,6 +5725,56 @@ function wkReps(desc){const L=String(desc||"").split("\n"),RX=/^-\s*(\d{1,2})\s*
 wkFix=(f=>function(desc,type){try{if(desc&&!/weight|strength/i.test(String(type||"")))desc=wkReps(desc)}catch(e){}return f.call(this,desc,type)})(wkFix);
 parseWo=(f=>function(txt,sport){try{if(txt&&!/kraft|weight|strength/i.test(String(sport||"")))txt=wkReps(txt)}catch(e){}return f.call(this,txt,sport)})(parseWo);
 planFmt=(f=>function(){return f.apply(this,arguments)+" Wiederholungen immer als eigenen Block: Zeile mit Name und Anzahl (z. B. „Technik 4x“), darunter jeder Schritt in einer eigenen Zeile, eine Pause als eigener Schritt (z. B. „- 20s Pause“). Nie „- 4x50mtr …“ in eine Zeile schreiben."})(planFmt);
+
+/* ---------- v77 ---------- */
+/* 5.11 Regeln vereinheitlichen, 3.18 HRV nicht „Erholungswert“ nennen.
+   (1) Plan: Erholung nach Wettkämpfen aus der Tabelle RECOV statt „etwa 4 Wochen“. (2) Coach: Rückkehr nach Krankheit wie die Rückkehrphase (V64) statt „7 Tage locker“, aktive Rückkehrphase steht im Kontext.
+   (3) Tagesempfehlung und Coach: sport legt nur noch das Antwortformat fest. (4) Steigerung höchstens etwa 10 Prozent, Entlastungswoche 60 bis 70 Prozent, an einer Stelle.
+   (5) Doppelte Anweisungen entfernt (Technikübungen, Plattformen, Schwimmformat). (6) Höchstens ein Wiederholungstest auf einmal, geänderte FTP in intervals.icu zählt als aktueller Wert.
+   (7) Gesundheitsmodus: jede Anfrage nutzt die Anweisung für den Gesundheitscoach. 3.18: Im Sportmodus darf die KI HRV und FTP schreiben, „Erholungswert“ ist nur die Zahl der App.
+   Quellen: claude/quellen-erholung.md, claude/quellen-trainingsumfang.md, claude/quellen-einstufung.md */
+const V77K=["5 km","10 km","Halbmarathon","Marathon","Ultra","Sprint","Olympisch","70.3","Langdistanz","Rad lang"];
+function recovList(){return V77K.filter(k=>RECOV[k]).map(k=>`${RECOV[k].n} Tag ${RECOV[k].hard} und ${RECOV[k].end}`).join(", ")}
+function raceRule(){return`- Nach einem Wettkampf gilt die Erholungstabelle der App. Je Wettkampf der Tag danach, ab dem harte Einheiten wieder gehen, und der Tag, ab dem wieder normal trainiert wird: ${recovList()}. Bis zum normalen Training vor allem locker, nach Lauf- und Triathlonwettkämpfen gern Rad und Schwimmen statt Laufen, weil das die Beine schont. Danach den Laufumfang schrittweise steigern. Steht oben LETZTER WETTKAMPF, gelten die Tage dort. Das gilt auch für Wettkämpfe im Planzeitraum.`}
+const VOLRULE="- Umfang steigt schrittweise, höchstens etwa 10 Prozent pro Woche. Nach 2 bis 3 Aufbauwochen folgt eine Entlastungswoche mit etwa 60 bis 70 Prozent des Umfangs der letzten Aufbauwoche.";
+planRules=(f=>function(){let s=f.apply(this,arguments);try{
+  s=s.replace(/\n- Nach einem Wettkampf ab Halbmarathon[^\n]*/,"\n"+raceRule()).replace(/\n- Umfang steigt schrittweise\.[^\n]*/,"\n"+VOLRULE)
+   .replace("höchstens einen pro Sportart in diesen 14 Tagen","höchstens einen pro Sportart und höchstens einen Wiederholungstest insgesamt in diesen 14 Tagen")
+   .replace("nicht im Tapering und nicht in den ersten 4 Wochen nach einem Wettkampf.","nicht im Tapering und nicht vor dem normalen Training nach einem Wettkampf (Erholungstabelle oben).")}catch(e){}return s})(planRules);
+/* (6) Einstufungstests: FTP gilt als aktuell, wenn sie sich in intervals.icu in den letzten 8 Wochen geändert hat. Fällige Wiederholungstests nacheinander, zuerst der älteste. */
+function ftpSince(D){const f=+((((D&&D.zones)||{}).bike||{}).ftp);if(!f)return null;
+  const A=((D&&D.activities)||[]).filter(a=>a.sport==="bike"&&a.ftp).sort((a,b)=>a.date.localeCompare(b.date));if(!A.length||+A[A.length-1].ftp!==f)return null;
+  let i=A.length-1;while(i>0&&+A[i-1].ftp===f)i--;return i>0?A[i].date:null}
+dataStatus=(f=>function(D){let s=f.apply(this,arguments);try{const t=today(),L=s.split("\n"),due=[],O=["run","bike","swim"];
+  L.forEach((l,i)=>{if(!/-> Wiederholungstest nötig/.test(l))return;const k={Laufen:"run",Rad:"bike",Schwimmen:"swim"}[l.split(":")[0]];
+    const ch=k==="bike"?ftpSince(D):null;
+    if(ch&&ch>=addDays(t,-56)){L[i]=l.replace(/aber (?:letzter Test am \S+|kein Test in der App bekannt) -> Wiederholungstest nötig \([^)]*\)/,`Wert am ${ch} in intervals.icu geändert, gilt als aktuell, kein Test nötig`);return}
+    const m=l.match(/letzter Test am (\d{4}-\d\d-\d\d)/);due.push({i,k,last:m?m[1]:""})});
+  due.sort((a,b)=>a.last.localeCompare(b.last)||O.indexOf(a.k)-O.indexOf(b.k));
+  due.slice(1).forEach(x=>{L[x.i]=L[x.i].replace(/-> Wiederholungstest nötig \([^)]*\)/,"-> Wiederholungstest bald fällig, in diesen 14 Tagen aber keinen Test planen (höchstens ein Wiederholungstest auf einmal)")});
+  s=L.join("\n").split("nicht in den 4 Wochen nach einem Wettkampf)").join("nicht vor dem normalen Training nach einem Wettkampf)")}catch(e){}return s})(dataStatus);
+/* (2) Coach: Rückkehr nach Krankheit wie in der App */
+function retRule(){return`Danach schrittweise zurück wie in der App: zuerst locker und kürzer, etwa zwei Drittel der gewohnten Dauer und Intensität. Intervalle erst nach einer Mindestzeit, die von Art und Dauer abhängt (nur oberhalb des Halses 1 bis 3 Tage, unterhalb des Halses 3 bis 7 Tage, nach mehr als 7 Tagen Beschwerden 7 Tage), und nur wenn Ruhepuls und ${isHealth()?"Herzratenvariabilität":"HRV"} wieder im Normalbereich sind. Nach mehr als 7 Tagen Beschwerden vor harten Einheiten ärztlich abklären lassen. Bei Brustschmerz, Atemnot, Schwindel oder Herzstolpern sofort aufhören.`}
+askCtx=(f=>function(){const s=f.apply(this,arguments);try{return s.replace("Danach 7 Tage locker zurückkehren.",retRule())}catch(e){return s}})(askCtx);
+coachText=(f=>function(){const s=f.apply(this,arguments);let rp=null;try{rp=retPhase(DATA)}catch(e){}if(!rp||!rp.text)return s;
+  const x=`\nRÜCKKEHR (wie in der App, gilt auch für Plan und Empfehlung): ${isHealth()?rp.text.replace(/\bHRV\b/g,"Herzratenvariabilität"):rp.text}`,i=s.indexOf("\nANTWORTFORMAT");return i<0?s+x:s.slice(0,i)+x+s.slice(i)})(coachText);
+/* (3), (4), (5), (7) und 3.18: Anweisungen beim Senden vereinheitlichen. Nur eigene Anfragen (Systemanweisung der App). */
+const V77S=" HRV und FTP darfst du so nennen. „Erholungswert“ heißt in der App nur die eigene Zahl von 0 bis 100. Nenne die HRV oder einen anderen einzelnen Wert nie so.";
+const V77H=" Nenne keine Gerätehersteller oder Plattformen. Schreib keine Kürzel wie HRV oder FTP, sondern zum Beispiel „Herzratenvariabilität“. „Erholungswert“ heißt in der App nur die eigene Zahl von 0 bis 100. Nenne die Herzratenvariabilität oder einen anderen einzelnen Wert nie so.";
+function sysV77(){return isHealth()?HEALTH_SYS+V77H:COACH_SYS.replace("(z. B. aus TrainingPeaks)","(z. B. aus einem übernommenen Plan)")+V77S}
+function promptV77(p){
+  if(!isHealth())p=p.replace("CTL, ATL, TSB, TSS, NP, IF, FTP, HRV, Entkopplung","CTL, ATL, TSB, TSS, NP, IF, Entkopplung").replace("kurze vollständige Sätze, keine Fachkürzel.","kurze vollständige Sätze, keine Fachkürzel außer HRV und FTP.");
+  if(/"sport":"Run\|Ride\|Swim\|Strength/.test(p))p=p.replace(/ ?sport ist Run, Ride, Swim(?:, WeightTraining)? oder [^.]*\./g,"").replace(/\(WeightTraining\)/g,'(sport "Strength")');
+  if(p.includes("Technikschritte nennen immer die konkrete Übung"))p=p.replace(/ (?:Nenne Technikübungen beim Namen|Technikübungen beim Namen nennen)(?: \(z\. B\. [^)]*\))?\./g,"");
+  p=p.replace(/\n- Nenne keine Gerätehersteller oder Plattformen\./g,"").replace(/ Nenne keine Gerätehersteller oder Plattformen\./g,"");
+  const plan=p.includes("\nPLANREGELN");
+  if(plan&&!userSports().includes("swim"))p=p.split(SWIMFMT).join("");
+  else{const i=p.indexOf(SWIMFMT);if(i>=0)p=p.slice(0,i+SWIMFMT.length)+p.slice(i+SWIMFMT.length).split(SWIMFMT).join("")}
+  if(plan)p=p.replace("steigere ihn höchstens um etwa 10 Prozent pro Woche in Richtung des Zielumfangs (siehe UMFANG), nach 2 bis 3 Aufbauwochen eine Entlastungswoche mit etwa 60 bis 70 Prozent Umfang.","steigere ihn schrittweise in Richtung des Zielumfangs, mit Entlastungswochen (siehe PLANREGELN).");
+  return p}
+aiPost=(f=>async function(body){try{const m=body&&body.messages&&body.messages[0];
+  if(m&&typeof m.content==="string"&&(body.system===COACH_SYS||body.system===HEALTH_SYS)){body.system=sysV77();m.content=promptV77(m.content)}}catch(e){}
+  return f.apply(this,arguments)})(aiPost);
 
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
