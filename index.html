@@ -1015,6 +1015,15 @@ h3>.tag,.cx-h>.tag{display:table;margin:8px 0 2px;font-size:12px}
 /* v86 */
 .fbadr86{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:10px 0 0;padding:8px 12px;border-radius:12px;background:var(--card2);font-size:13px;overflow-wrap:anywhere}
 .fbadr86 button{flex:none;padding:6px 10px;border-radius:10px;background:var(--card);font-size:13px;font-weight:600}
+/* v87 */
+.s87st{margin-top:10px;font-size:13px;color:var(--muted)}
+.s87st.bad{color:var(--red)}
+#sgAcc .setlinks{margin-top:6px}
+.s87del{color:var(--red)}
+.s87lnk{display:block;margin:14px auto 0;font-size:14px}
+.s87bar{position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top) + 10px);z-index:60;display:flex;align-items:center;gap:10px;padding:8px 8px 8px 14px;border-radius:14px;background:var(--card);box-shadow:0 6px 24px rgba(0,0,0,.35);font-size:14px;width:min(440px,calc(100% - 24px));box-sizing:border-box}
+.s87bar span{flex:1;min-width:0}
+.s87bar .s87x{background:none;border:0;color:var(--muted);font-size:20px;padding:0 6px;cursor:pointer}
 </style>
 </head>
 <body>
@@ -1197,7 +1206,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="86";
+const VERSION="87";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -6459,6 +6468,161 @@ window.addEventListener("click",async e=>{
       try{await navigator.share({title:n.betreff,text:n.text,files});close("mFb");toast("Danke für deine Rückmeldung.");return}
       catch(err){if(err&&err.name==="AbortError"){$("fbMsg").textContent="Nicht gesendet. Du kannst es nochmal versuchen.";return}}}}
   fbKopie(n.text);fbOeffnen(fbMailto(n));fbFertig(files.length>0)},true);
+
+/* ---------- v87 ---------- */
+/* 6.29 Konto über den Zugangscode und 6.4 Sicherung über den Server.
+   Gesichert werden alle Einträge im Gerätespeicher (Schlüssel im…) außer Zwischenspeichern, Gerätezählern und Testdaten.
+   imSettings ohne apiKey, aiKey und srvUrl. Die App verschlüsselt vorher (AES-GCM, Schlüssel per PBKDF2 aus dem Zugangscode),
+   der Server speichert nur Bytes. Zusammenführen je Schlüssel nach Zeitpunkt der letzten Änderung (imSyncT).
+   Neuere Daten von einem anderen Gerät kommen erst nach Neuladen in die App (imSyncNeu), damit nichts im Arbeitsspeicher sie überschreibt. */
+const SYNC_AUS=new Set(["imDev","imSrv","imLim","imAiSpend","imCache","imPB","imPB2","imPBPrev","imCalV","imTab","imTsub","imDemoNotes","imDemoPlan","imDemoRaces","imDemoSick","imTestPlans","imTPRes","imAiT","imAiFail","imAiDayErr","imExFail"]);
+const SYNC_GEHEIM=["apiKey","aiKey","srvUrl"],SYNC_ITER=600000;
+const SYNC={laeuft:false,timer:null,start:Date.now(),tipp:0,fehler:"",k:new Map()};
+function syncTeil(k){return typeof k==="string"&&/^im[A-Z]/.test(k)&&!/^imSync/.test(k)&&!SYNC_AUS.has(k)}
+function syncLies(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}}
+function syncSchreib(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+function syncT(){let T=syncLies("imSyncT",null);if(T&&typeof T==="object")return T;T={};
+  try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(syncTeil(k))T[k]=1}}catch(e){}syncSchreib("imSyncT",T);return T}
+function syncInfo(){return syncLies("imSyncInfo",{})||{}}
+function syncAn(){return!!store.get("imSyncOk",0)&&srvOn()&&!!srvUrl()&&!(typeof TPRUN!=="undefined"&&TPRUN)}
+function syncOhneGeheim(v){try{const o=JSON.parse(v);SYNC_GEHEIM.forEach(f=>delete o[f]);return JSON.stringify(o)}catch(e){return v}}
+function syncMitGeheim(v,code){try{const o=JSON.parse(v),l=syncLies("imSettings",{})||{};SYNC_GEHEIM.forEach(f=>{if(f in l)o[f]=l[f];else delete o[f]});if(code)o.aiKey=code;return JSON.stringify(o)}catch(e){return v}}
+/* Änderungen mitschreiben */
+store.set=(f=>function(k,v){const m=syncTeil(k);let alt=null;if(m)try{alt=localStorage.getItem(k)}catch(e){}
+  const r=f.apply(this,arguments);
+  if(m&&!(typeof TPRUN!=="undefined"&&TPRUN))try{if(localStorage.getItem(k)!==alt){const T=syncT();T[k]=Date.now();syncSchreib("imSyncT",T);syncSpaeter()}}catch(e){}
+  return r})(store.set);
+function syncStand(){const T=syncT(),o={};try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(!syncTeil(k))continue;let v=localStorage.getItem(k);if(v==null)continue;if(k==="imSettings")v=syncOhneGeheim(v);o[k]={t:T[k]||1,v}}}catch(e){}return o}
+/* Verschlüsseln: "MTS1", 1 Byte gzip ja/nein, 16 Byte Salz, 12 Byte IV, dann AES-GCM (Kopf als zusätzliche Daten) */
+const syncHex=b=>[...b].map(x=>x.toString(16).padStart(2,"0")).join(""),syncUnhex=s=>new Uint8Array((String(s||"").match(/../g)||[]).map(x=>parseInt(x,16)));
+async function syncSchluessel(code,salt){const id=srvKh(code)+":"+syncHex(salt);if(SYNC.k.has(id))return SYNC.k.get(id);
+  const basis=await crypto.subtle.importKey("raw",new TextEncoder().encode("mein-training-sicherung|"+code),"PBKDF2",false,["deriveKey"]);
+  const k=await crypto.subtle.deriveKey({name:"PBKDF2",salt,iterations:SYNC_ITER,hash:"SHA-256"},basis,{name:"AES-GCM",length:256},false,["encrypt","decrypt"]);SYNC.k.set(id,k);return k}
+async function syncZip(b,packen){if(typeof CompressionStream==="undefined")return null;
+  const s=new Blob([b]).stream().pipeThrough(packen?new CompressionStream("gzip"):new DecompressionStream("gzip"));return new Uint8Array(await new Response(s).arrayBuffer())}
+async function syncPacken(obj,code,salt){const roh=new TextEncoder().encode(JSON.stringify(obj));let z=null;try{z=await syncZip(roh,true)}catch(e){}
+  const kopf=new Uint8Array(33);kopf.set([77,84,83,49]);kopf[4]=z?1:0;kopf.set(salt,5);const iv=crypto.getRandomValues(new Uint8Array(12));kopf.set(iv,21);
+  const ct=new Uint8Array(await crypto.subtle.encrypt({name:"AES-GCM",iv,additionalData:kopf},await syncSchluessel(code,salt),z||roh));
+  const out=new Uint8Array(33+ct.length);out.set(kopf);out.set(ct,33);return out}
+async function syncAuspacken(buf,code){const b=new Uint8Array(buf);if(b.length<50||b[0]!==77||b[1]!==84||b[2]!==83||b[3]!==49)throw new Error("format");
+  const kopf=b.slice(0,33),salt=kopf.slice(5,21),iv=kopf.slice(21,33);
+  const pt=new Uint8Array(await crypto.subtle.decrypt({name:"AES-GCM",iv,additionalData:kopf},await syncSchluessel(code,salt),b.slice(33)));
+  const roh=kopf[4]===1?await syncZip(pt,false):pt;if(!roh)throw new Error("gzip");return{obj:JSON.parse(new TextDecoder().decode(roh)),salt}}
+/* Mit dem Server abgleichen */
+function syncKopf(code,x){return Object.assign({"x-zugang":code,"x-geraet":devId()},x||{})}
+function syncSpaeter(){if(!syncAn())return;clearTimeout(SYNC.timer);SYNC.timer=setTimeout(()=>syncJetzt("aenderung"),20000)}
+async function syncJetzt(grund,o){if(!syncAn()||SYNC.laeuft)return"aus";SYNC.laeuft=true;clearTimeout(SYNC.timer);SYNC.timer=null;let r="fehler";
+  try{for(let v=0;v<3;v++){r=await syncRunde(o||{});if(r!=="konflikt")break}}catch(e){SYNC.fehler="netz";r="fehler"}
+  finally{SYNC.laeuft=false;try{s87Zeigen()}catch(e){}}
+  if(r==="neu")syncNeuDa();return r}
+async function syncRunde(o){const code=settings.aiKey,kh=srvKh(code),I=syncInfo(),gleich=I.k===kh&&!o.neu;
+  const g=await fetch(srvUrl()+"/sicherung",{headers:syncKopf(code,gleich&&I.stand!=null?{"x-stand-bekannt":String(I.stand)}:{}),cache:"no-store"});
+  if(g.status===401||g.status===429){SYNC.fehler=g.status===401?"zugang":"gesperrt";return"fehler"}
+  if(g.status!==200&&g.status!==204){SYNC.fehler="netz";return"fehler"}
+  const stand=+(g.headers.get("x-stand")||0);let R=null,rt=gleich?(I.rt||{}):{},salt=gleich&&I.salt?syncUnhex(I.salt):null;
+  if(g.status===200){const buf=await g.arrayBuffer();if(o.neu){R={};rt={}}else{try{const x=await syncAuspacken(buf,code);R=x.obj.keys||{};salt=x.salt;rt={};Object.keys(R).forEach(k=>rt[k]=R[k].t)}catch(e){SYNC.fehler="schluessel";return"fehler"}}}
+  else if(stand===0){R={};rt={}}
+  if(!salt||salt.length!==16)salt=crypto.getRandomValues(new Uint8Array(16));
+  const T=syncT(),P=syncLies("imSyncNeu",{})||{};let neu=false;
+  if(R)Object.keys(R).forEach(k=>{const r=R[k];if(syncTeil(k)&&r&&r.t>(T[k]||0)&&(!P[k]||r.t>P[k].t)){P[k]=r;neu=true}});
+  Object.keys(P).forEach(k=>{if(!(P[k].t>(T[k]||0)))delete P[k]});
+  if(Object.keys(P).length)syncSchreib("imSyncNeu",P);else localStorage.removeItem("imSyncNeu");
+  const L=syncStand(),M=Object.assign({},L);Object.keys(P).forEach(k=>{if(P[k].t>((L[k]||{}).t||0))M[k]=P[k]});
+  const hoch=Object.keys(M).some(k=>M[k].t>(rt[k]||0));
+  let info={k:kh,stand,rt,zeit:g.headers.get("x-zeit")||(gleich?I.zeit:null),salt:syncHex(salt)};
+  if(hoch){const bytes=await syncPacken({v:1,zeit:Date.now(),keys:M},code,salt);
+    const p=await fetch(srvUrl()+"/sicherung",{method:"PUT",headers:syncKopf(code,{"content-type":"application/octet-stream","x-stand":String(stand)}),body:bytes});
+    if(p.status===409){syncSchreib("imSyncInfo",Object.assign(info,{stand:-1}));return"konflikt"}
+    const j=await p.json().catch(()=>({}));
+    if(!p.ok){SYNC.fehler=(j.error&&j.error.code)||"netz";return"fehler"}
+    const nrt={};Object.keys(M).forEach(k=>nrt[k]=M[k].t);info=Object.assign(info,{stand:j.stand,rt:nrt,zeit:j.zeit})}
+  syncSchreib("imSyncInfo",info);SYNC.fehler="";
+  return Object.keys(P).length?"neu":"ok"}
+/* Neuere Daten von einem anderen Gerät übernehmen (immer mit Neuladen) */
+function syncAnwenden(code){const P=syncLies("imSyncNeu",{})||{},T=syncT();let n=0;
+  Object.keys(P).forEach(k=>{const r=P[k];if(!syncTeil(k)||!r||!(r.t>(T[k]||0)))return;try{localStorage.setItem(k,k==="imSettings"?syncMitGeheim(r.v,code):r.v);T[k]=r.t;n++}catch(e){}});
+  syncSchreib("imSyncT",T);localStorage.removeItem("imSyncNeu");return n}
+function syncNeuDa(){const frei=!SYNC.tipp&&Date.now()-SYNC.start<15000&&!document.querySelector(".modal.open")&&!(typeof SRVQ!=="undefined"&&SRVQ.n>0);
+  let letzt=0;try{letzt=+sessionStorage.getItem("imSyncReload")||0}catch(e){}
+  if(frei&&Date.now()-letzt>120000){try{sessionStorage.setItem("imSyncReload",String(Date.now()))}catch(e){}syncAnwenden();location.reload();return}
+  let b=$("s87Bar");if(!b){b=document.createElement("div");b.id="s87Bar";b.className="s87bar";b.setAttribute("role","status");
+    b.innerHTML='<span>Neuer Stand von deinem anderen Gerät</span><button class="btn sm blue" type="button" id="s87Uebern">Übernehmen</button><button class="s87x" type="button" aria-label="Später">×</button>';document.body.appendChild(b);
+    b.querySelector("#s87Uebern").onclick=()=>{syncAnwenden();location.reload()};b.querySelector(".s87x").onclick=()=>b.remove()}}
+["pointerdown","keydown"].forEach(e=>window.addEventListener(e,()=>{if(!SYNC.tipp)SYNC.tipp=Date.now()},{capture:true,passive:true}));
+document.addEventListener("visibilitychange",()=>{if(document.hidden&&SYNC.timer)syncJetzt("weg")});
+setTimeout(()=>{if(syncAn())syncJetzt("start")},4000);
+setInterval(()=>{if(!document.hidden&&syncAn())syncJetzt("zeit")},15*60000);
+/* Mit dem Zugangscode zurückholen (neues Gerät) */
+async function syncHolen(code){code=String(code||"").trim();if(!code)return{f:"Bitte gib deinen Zugangscode ein."};if(/^sk-/.test(code))return{f:"Das ist ein KI-Schlüssel, kein Zugangscode."};
+  if(!srvUrl())return{f:"Server nicht eingerichtet."};let g;
+  try{g=await fetch(srvUrl()+"/sicherung",{headers:syncKopf(code),cache:"no-store"})}catch(e){return{f:"Server nicht erreichbar. Bitte prüfe deine Verbindung."}}
+  if(g.status===401)return{f:"Der Zugangscode stimmt nicht."};if(g.status===429)return{f:SRVT.gesperrt||"Zu viele Versuche, bitte später nochmal."};
+  const setzeCode=()=>{settings.aiKey=code;store.set("imSettings",settings)};
+  if(g.status===204){setzeCode();return{leer:true}}
+  if(g.status!==200)return{f:"Server nicht erreichbar. Bitte versuch es später nochmal."};
+  let x;try{x=await syncAuspacken(await g.arrayBuffer(),code)}catch(e){return{f:"Die Sicherung lässt sich mit diesem Code nicht öffnen."}}
+  const R=x.obj.keys||{},T=syncT(),rt={};let n=0;
+  Object.keys(R).forEach(k=>{const r=R[k];if(!syncTeil(k)||!r)return;rt[k]=r.t;try{localStorage.setItem(k,k==="imSettings"?syncMitGeheim(r.v,code):r.v);T[k]=r.t;n++}catch(e){}});
+  if(!R.imSettings){setzeCode()}
+  syncSchreib("imSyncT",T);localStorage.removeItem("imSyncNeu");
+  syncSchreib("imSyncInfo",{k:srvKh(code),stand:+(g.headers.get("x-stand")||0),rt,zeit:g.headers.get("x-zeit"),salt:syncHex(x.salt)});
+  syncSchreib("imSyncOk",Date.now());syncSchreib("imOnb",true);
+  try{sessionStorage.setItem("imSyncHinweis","1")}catch(e){}return{ok:true,n}}
+function s87Modal(){if(!$("mSync87")){document.body.insertAdjacentHTML("beforeend",`<div class="modal" id="mSync87"><div class="sheet">
+  <h3>Daten zurückholen</h3><p class="hint">Gib den Zugangscode ein, den du vom Team bekommen hast. Die App holt deine gesicherten Einträge und Einstellungen zurück.</p>
+  <label class="f" for="s87Code">Zugangscode</label><input type="password" id="s87Code" autocomplete="off" placeholder="Code vom Team">
+  <div class="err" id="s87Err"></div><div class="actions"><button class="btn" type="button" id="s87Ab">Abbrechen</button><button class="btn blue" type="button" id="s87Los">Zurückholen</button></div></div></div>`);
+    const m=$("mSync87");m.addEventListener("click",e=>{if(e.target===m)close("mSync87")});$("s87Ab").onclick=()=>close("mSync87");
+    $("s87Los").onclick=async()=>{const b=$("s87Los");b.disabled=true;$("s87Err").textContent="";b.textContent="Wird geholt …";
+      const r=await syncHolen($("s87Code").value);b.disabled=false;b.textContent="Zurückholen";
+      if(r.f){$("s87Err").textContent=r.f;return}
+      if(r.leer){$("s87Err").textContent="";close("mSync87");toast("Für diesen Code gibt es noch keine Sicherung. Dein Code ist gespeichert.");return}
+      location.reload()}}
+  $("s87Code").value="";$("s87Err").textContent="";open("mSync87");setTimeout(()=>{try{$("s87Code").focus()}catch(e){}},80)}
+obDraw=(f=>function(){const r=f.apply(this,arguments);try{if(OB&&OB.i===0&&!OB.prof){const b=$("obBody");if(b&&!$("obRest")){const l=document.createElement("button");l.type="button";l.id="obRest";l.className="lnk s87lnk";l.textContent="Schon eingerichtet? Mit deinem Zugangscode zurückholen";l.onclick=s87Modal;b.appendChild(l)}}}catch(e){}return r})(obDraw);
+/* Einstellungen: Gruppe „Konto und Sicherung“ mit dem Zugangscode */
+(function(){try{const keys=$("sgKeys"),ai=$("cAi");if(!keys||!ai||$("sgAcc"))return;
+  const g=document.createElement("div");g.className="sgrp";g.id="sgAcc";
+  g.innerHTML='<div class="sgh"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg><b>Konto und Sicherung</b></div>';
+  keys.after(g);const lab=document.querySelector('label[for="cAi"]'),box=ai.closest(".eyew")||ai,nx=box.nextElementSibling;
+  if(lab){lab.textContent="Zugangscode";g.appendChild(lab)}g.appendChild(box);ai.placeholder="Code vom Team";
+  const h=nx&&nx.classList.contains("hint")?nx:document.createElement("div");h.className="hint";h.textContent="Bekommst du vom Team. Damit nutzt du die KI und sicherst deine Daten.";g.appendChild(h);
+  g.insertAdjacentHTML("beforeend",`<div class="nwrow"><label class="switch nwsw s87sw"><span><b>Automatisch sichern</b><em id="s87Text">Deine Einträge in der App (Check-ins, Rückmeldungen, eigene Einheiten, Ziele und Einstellungen) liegen dann verschlüsselt auf unserem Server. So holst du sie auf einem neuen Gerät mit deinem Zugangscode zurück. Den Schlüssel bildet die App aus deinem Code. Lesen kann die Sicherung nur, wer den Code kennt. Dein intervals.icu-Schlüssel wird nicht gesichert.</em></span><input type="checkbox" id="s87Auto"></label></div>
+    <div class="s87st" id="s87Stand"></div>
+    <div class="setlinks"><button class="lnk" type="button" id="s87Jetzt">Jetzt sichern</button><button class="lnk" type="button" id="s87Holen">Mit Zugangscode zurückholen</button><button class="lnk s87del" type="button" id="s87Del">Sicherung löschen</button></div>`);
+  const codeFeld=()=>$("cAi").value.trim();
+  const codeUebernehmen=()=>{const c=codeFeld();if(c&&c!==settings.aiKey){settings.aiKey=c;store.set("imSettings",settings)}};
+  $("s87Auto").onchange=async e=>{if(e.target.checked){codeUebernehmen();if(!srvOn()){e.target.checked=false;SYNC.fehler="code";s87Zeigen();return}store.set("imSyncOk",Date.now());s87Zeigen();await syncJetzt("an")}
+    else{store.set("imSyncOk",0);s87Zeigen()}};
+  $("s87Jetzt").onclick=async()=>{codeUebernehmen();if(!syncAn()){SYNC.fehler=srvOn()?"aus":"code";s87Zeigen();return}const b=$("s87Jetzt");b.textContent="Wird gesichert …";
+    await syncJetzt("knopf",SYNC.fehler==="schluessel"?{neu:true}:null);b.textContent="Jetzt sichern"};
+  $("s87Holen").onclick=()=>{close("mSet");s87Modal();const c=codeFeld()||settings.aiKey||"";if(c&&!/^sk-/.test(c))$("s87Code").value=c};
+  let scharf=0;$("s87Del").onclick=async()=>{const b=$("s87Del");if(!srvOn()){SYNC.fehler="code";s87Zeigen();return}
+    if(Date.now()-scharf>4000){scharf=Date.now();b.textContent="Wirklich löschen? Nochmal tippen";setTimeout(()=>{if(Date.now()-scharf>=4000)b.textContent="Sicherung löschen"},4100);return}
+    scharf=0;b.textContent="Wird gelöscht …";
+    try{const r=await fetch(srvUrl()+"/sicherung",{method:"DELETE",headers:syncKopf(settings.aiKey)});if(!r.ok)throw 0;
+      store.set("imSyncOk",0);localStorage.removeItem("imSyncInfo");localStorage.removeItem("imSyncNeu");SYNC.fehler="geloescht"}catch(e){SYNC.fehler="netz"}
+    b.textContent="Sicherung löschen";s87Zeigen()};
+}catch(e){}})();
+function s87Zeit(iso){try{const d=new Date(iso),h=new Date(),t=d.toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"});
+  return d.toDateString()===h.toDateString()?"heute "+t:d.toLocaleDateString("de-DE",{day:"2-digit",month:"2-digit"})+". "+t}catch(e){return""}}
+function s87Zeigen(){const st=$("s87Stand");if(!st)return;const an=!!store.get("imSyncOk",0),I=syncInfo(),au=$("s87Auto");if(au)au.checked=an&&srvOn();
+  const F={zugang:"Der Zugangscode stimmt nicht.",gesperrt:"Zu viele falsche Versuche. Bitte später nochmal.",schluessel:"Die Sicherung lässt sich mit diesem Code nicht öffnen. Mit „Jetzt sichern“ legst du eine neue an.",
+    groesse:"Deine Daten sind zu groß für die Sicherung.",tag:"Heute wurde schon sehr oft gesichert. Morgen geht es weiter.",netz:"Server gerade nicht erreichbar. Die App versucht es später nochmal.",
+    code:"Trag zuerst deinen Zugangscode ein.",aus:"Schalte zuerst „Automatisch sichern“ ein.",geloescht:"Sicherung gelöscht. Automatisch sichern ist aus."};
+  let t,cls="";
+  if(SYNC.fehler&&F[SYNC.fehler]){t=F[SYNC.fehler];cls=SYNC.fehler==="geloescht"?"":"bad"}
+  else if(!srvOn())t=F.code;
+  else if(!an)t="Aus. Deine Daten liegen nur auf diesem Gerät.";
+  else if(SYNC.laeuft)t="Wird gesichert …";
+  else if(I.k===srvKh(settings.aiKey)&&I.zeit)t="Gesichert, zuletzt "+s87Zeit(I.zeit)+".";
+  else t="Noch nicht gesichert.";
+  st.textContent=t;st.className="s87st"+(cls?" "+cls:"")}
+openSettings=(f=>function(){const r=f.apply(this,arguments);try{s87Zeigen()}catch(e){}return r})(openSettings);
+if($("btnSettings"))$("btnSettings").onclick=openSettings;
+/* Nach dem Zurückholen einmal Bescheid geben */
+(function(){let h=null;try{h=sessionStorage.getItem("imSyncHinweis");sessionStorage.removeItem("imSyncHinweis")}catch(e){}
+  if(h)setTimeout(()=>toast(!settings.apiKey&&!settings.noWatch?"Daten zurückgeholt. Trag in den Einstellungen noch deinen intervals.icu-Schlüssel ein.":"Daten zurückgeholt."),1200)})();
 
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
