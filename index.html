@@ -1192,7 +1192,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="82";
+const VERSION="83";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -6224,6 +6224,91 @@ document.addEventListener("click",async e=>{const b=e.target.closest("[data-tt]"
   try{await testToday(b.dataset.tt);if($("mInfo")&&$("mInfo").classList.contains("open"))close("mInfo")}catch(er){b.disabled=false;b.textContent="Test heute machen";alert37("Hat nicht geklappt: "+er.message)}});
 /* Tagesempfehlung: gesperrte Sportart nicht als Alternative anbieten */
 coachHTML=(f=>function(){let h=f.apply(this,arguments);try{const t=today();Object.keys(LKN).forEach(k=>{if(lockedOn(k,t))h=String(h).replace(new RegExp(`<button data-w="[1-9]\\d*"[^>]*><i></i>${LKN[k]}</button>`,"g"),"")})}catch(e){}return h})(coachHTML);
+/* ---------- v83 ---------- */
+/* 6.1 KI über den Server: Steht im Feld KI-Zugang ein Code (nicht sk-...), läuft jede KI-Anfrage über den Server von Mein Training.
+   Der Server prüft den Code, hält die Grenzen ein (1.3) und ruft die KI mit dem Schlüssel auf, der nur dort liegt.
+   Ein eigener Schlüssel (sk-...) geht weiter direkt an den KI-Dienst (nur fürs Team, fällt mit 6.6 weg).
+   aiPost ist hier neu gefasst (spätere Deklaration ersetzt die aus v76, die Umhüllung aus v77 greift weiter). */
+var SRV_URL="https://mein-training-server.noahkernhn.workers.dev";
+var AIFN=null,SRVQ={n:0,w:[]};
+const SRVT={zugang:"Der Zugangscode für die KI stimmt nicht. Bitte unter Einstellungen prüfen.",
+  gesperrt:"Zu viele falsche Zugangscodes. Bitte in einer Stunde nochmal versuchen.",
+  stufe:"Die KI ist in deinem Abo nicht enthalten.",
+  geraete:"Dein Zugang ist schon auf zu vielen Geräten aktiv. Bitte melde dich beim Team.",
+  monat:"Dein KI-Kontingent für diesen Monat ist aufgebraucht. Ab dem 1. geht es weiter.",
+  tag:"Diese KI-Funktion hast du heute schon oft genutzt. Morgen geht es weiter.",
+  gleichzeitig:"Die KI arbeitet gerade schon für dich. Bitte warte kurz und versuch es dann nochmal.",
+  global:"Die KI macht gerade eine Pause. Bitte versuch es später nochmal.",
+  einrichtung:"Die KI ist gerade nicht verfügbar. Bitte versuch es später nochmal.",
+  guthaben:"Die KI ist gerade nicht verfügbar. Bitte versuch es später nochmal.",
+  ueberlastet:"Die KI ist gerade überlastet. Bitte versuch es gleich nochmal.",
+  zeit:"Die KI hat zu lange gebraucht. Bitte versuch es nochmal.",
+  netz:"Die Verbindung zur KI ist abgebrochen. Bitte versuch es nochmal.",
+  offline:"Die KI ist gerade nicht erreichbar. Prüfe deine Internetverbindung.",
+  groesse:"Die Anfrage an die KI war zu groß.",
+  anfrage:"Die Anfrage an die KI war ungültig.",
+  server:"Bei der KI ist ein Fehler aufgetreten. Bitte versuch es nochmal."};
+function srvOn(){const k=settings&&settings.aiKey;return!!k&&!/^sk-/.test(k)}
+function srvUrl(){return String(settings.srvUrl||SRV_URL||"").replace(/\/+$/,"")}
+function devId(){let d=store.get("imDev","");if(!/^g-[a-z0-9]{12,32}$/.test(d||"")){const a=new Uint8Array(12);crypto.getRandomValues(a);d="g-"+[...a].map(x=>x.toString(36).padStart(2,"0")).join("").slice(0,20);store.set("imDev",d)}return d}
+function srvKh(k){let h=5381;for(const c of String(k||""))h=((h*33)^c.charCodeAt(0))>>>0;return h.toString(36)}
+/* Welche Funktion fragt? Nur für die Tagesgrenzen auf dem Server. Zuerst der Aufrufer, dann die Merker der App. */
+const AIFNMAP={aiDaily:"tag",aiWeekly:"tag",aiProg:"tag",aiActivity:"bewertung",aiPlanCheck:"anpassen",aiFbAdjust:"anpassen",aiRaceInfo:"wettkampf",aiPlan:"plan",importPlan:"plan",planResearch:"plan",ask:"frage",ensureExArt:"sonst"};
+function aiFnNow(tools){try{
+  const st=String(new Error().stack||"").split("\n");
+  for(const l of st){const m=l.match(/at (?:async )?([\w$.]+) \(/)||l.match(/^\s*(?:async[* ])?([\w$.]+)@/);const n=m&&m[1].split(".").pop();if(n&&AIFNMAP[n])return AIFNMAP[n]}
+  if(ASKF)return"frage";
+  if(PLANCAP||(typeof TFTO!=="undefined"&&TFTO))return"plan";
+  if(tools&&tools.length)return"wettkampf";
+  const L=AILAB||"";
+  if(L===AIL.daily||L===AIL.week||L===AIL.prog)return"tag";
+  if(L===AIL.act)return"bewertung";
+  if(L===AIL.fa)return"anpassen";
+  if(/Plan/.test(L))return"plan";
+}catch(e){}return"sonst"}
+claude=(f=>function(){const o=AIFN;AIFN=aiFnNow();try{return f.apply(this,arguments)}finally{AIFN=o}})(claude);
+claudeX=(f=>function(){const o=AIFN;AIFN=aiFnNow(arguments[2]);try{return f.apply(this,arguments)}finally{AIFN=o}})(claudeX);
+/* höchstens 3 Anfragen gleichzeitig von diesem Gerät, der Rest wartet */
+function srvSlot(){return new Promise(r=>{if(SRVQ.n<3){SRVQ.n++;r()}else SRVQ.w.push(r)})}
+function srvFree(){const r=SRVQ.w.shift();if(r)r();else SRVQ.n=Math.max(0,SRVQ.n-1)}
+async function aiPost(body){
+  if(!srvOn()){let res;
+    try{res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"content-type":"application/json","x-api-key":settings.aiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify(body)})}
+    catch(e){throw new Error("KI-Dienst nicht erreichbar.")}
+    const j=await res.json().catch(()=>({}));aiCost(j.usage);return{res,j}}
+  const fn=AIFN||"sonst",u=srvUrl();
+  if(!u)throw new Error(SRVT.einrichtung);
+  await srvSlot();let res,txt;
+  try{
+    try{res=await fetch(u+"/ki",{method:"POST",headers:{"content-type":"application/json","x-zugang":settings.aiKey,"x-geraet":devId(),"x-funktion":fn},body:JSON.stringify(body)})}
+    catch(e){throw new Error(SRVT.offline)}
+    try{txt=await res.text()}catch(e){throw new Error(SRVT.netz)}
+  }finally{srvFree()}
+  let j=null;try{j=JSON.parse(txt)}catch(e){}
+  if(res.ok&&j&&j.type==="message")return{res:{ok:true,status:200},j};
+  const er=(j&&j.error)||{},code=er.code||(res.status===401?"zugang":"");
+  /* Fehler der KI zur Anfrage selbst: wie bisher weitergeben, damit claudeX ohne Websuche neu versuchen kann */
+  if(j&&j._status&&code==="anfrage")return{res:{ok:false,status:j._status},j:{error:{message:er.message||SRVT.anfrage}}};
+  if(code==="zugang"||code==="stufe"||code==="gesperrt"){try{const s=store.get("imSrv",{})||{};store.set("imSrv",Object.assign(s,{ok:false,code}))}catch(e){}}
+  throw new Error(SRVT[code]||SRVT.server)}
+/* Gerätezähler gilt nur für den eigenen Schlüssel */
+spend=(f=>function(){const r=f.apply(this,arguments);return srvOn()?{m:r.m,usd:0}:r})(spend);
+/* Zugang prüfen: einmal am Tag und nach dem Ändern des Codes. Stufe kommt vom Server. */
+async function srvCheck(){if(!srvOn()||!srvUrl())return;const kh=srvKh(settings.aiKey),alt=store.get("imSrv",{})||{};
+  try{const r=await fetch(srvUrl()+"/verbrauch",{headers:{"x-zugang":settings.aiKey,"x-geraet":devId()}});const j=await r.json().catch(()=>({}));
+    if(r.ok&&j.stufe){store.set("imSrv",{d:today(),k:kh,ok:true,stufe:j.stufe,anteil:j.anteil});if(alt.stufe!==j.stufe&&DATA)render()}
+    else{const code=(j.error&&j.error.code)||(r.status===401?"zugang":"");store.set("imSrv",{d:today(),k:kh,ok:false,code});if(SRVT[code]&&(code==="zugang"||code==="gesperrt"))toast(SRVT[code])}
+  }catch(e){}}
+tierNow=(f=>function(){const r=f.apply(this,arguments);try{if(srvOn()&&!TIERS.includes(settings.tier)){const s=store.get("imSrv",{})||{};if(s.ok&&s.k===srvKh(settings.aiKey)&&s.stufe)return s.stufe==="team"?"max":TIERS.includes(s.stufe)?s.stufe:r}}catch(e){}return r})(tierNow);
+load=(f=>async function(){const r=await f.apply(this,arguments);try{const s=store.get("imSrv",{})||{};if(srvOn()&&(s.d!==today()||s.k!==srvKh(settings.aiKey)))srvCheck()}catch(e){}return r})(load);
+/* Einstellungen: Feld heißt jetzt KI-Zugangscode */
+(function(){try{const l=document.querySelector('label[for="cAi"]'),i=$("cAi");if(l)l.textContent="KI-Zugangscode";if(i){i.placeholder="Code vom Team";const h=i.nextElementSibling;if(h&&h.classList.contains("hint"))h.textContent="Wird nur an den Server von Mein Training gesendet. Damit wertet die KI deine Daten aus und erstellt Pläne."}}catch(e){}})();
+/* Entwickleroptionen: wie die KI angebunden ist (ohne Beträge) */
+drawDev=(f=>function(){f.apply(this,arguments);try{if(!settings.dev)return;const d=$("sgDevDyn");if(!d||d.querySelector("#srvDev"))return;const s=store.get("imSrv",{})||{};
+  const t=!settings.aiKey?"keine KI eingetragen":!srvOn()?"eigener Schlüssel, direkt zum KI-Dienst":!srvUrl()?"über den Server, Adresse fehlt":s.ok?`über den Server, Stufe ${esc(s.stufe)}, Monatskontingent zu ${Math.round((s.anteil||0)*100)} % genutzt`:`über den Server, Zugang ${s.code?"abgelehnt ("+esc(s.code)+")":"noch nicht geprüft"}`;
+  const h=[...d.querySelectorAll("h4.cx-sh")].find(x=>x.textContent==="Verbrauch");const div=document.createElement("div");div.className="hint";div.id="srvDev";div.textContent="KI-Zugang: "+t;
+  if(h&&h.nextElementSibling)h.nextElementSibling.after(div);else d.appendChild(div)}catch(e){}})(drawDev);
+
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
 $("btnRace").onclick=()=>openRace(null);
