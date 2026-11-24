@@ -1024,6 +1024,15 @@ h3>.tag,.cx-h>.tag{display:table;margin:8px 0 2px;font-size:12px}
 .s87bar{position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top) + 10px);z-index:60;display:flex;align-items:center;gap:10px;padding:8px 8px 8px 14px;border-radius:14px;background:var(--card);box-shadow:0 6px 24px rgba(0,0,0,.35);font-size:14px;width:min(440px,calc(100% - 24px));box-sizing:border-box}
 .s87bar span{flex:1;min-width:0}
 .s87bar .s87x{background:none;border:0;color:var(--muted);font-size:20px;padding:0 6px;cursor:pointer}
+/* v88 */
+.ds88{max-height:88vh;overflow:auto}
+.ds88 h4{margin:16px 0 4px;font-size:15px}
+.ds88 p{margin:0 0 6px;font-size:14px;line-height:1.45}
+.kon88{display:flex;gap:10px;align-items:flex-start;margin-top:14px;font-size:14px;line-height:1.4;cursor:pointer}
+.kon88 input{margin-top:3px;flex:none;width:20px;height:20px}
+#k88Ds{margin-top:10px}
+#s87Ds{color:var(--blue,#4ea1ff)}
+#sgAcc #k88Stand{margin-top:12px}
 </style>
 </head>
 <body>
@@ -1206,7 +1215,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="87";
+const VERSION="88";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -6623,6 +6632,66 @@ if($("btnSettings"))$("btnSettings").onclick=openSettings;
 /* Nach dem Zurückholen einmal Bescheid geben */
 (function(){let h=null;try{h=sessionStorage.getItem("imSyncHinweis");sessionStorage.removeItem("imSyncHinweis")}catch(e){}
   if(h)setTimeout(()=>toast(!settings.apiKey&&!settings.noWatch?"Daten zurückgeholt. Trag in den Einstellungen noch deinen intervals.icu-Schlüssel ein.":"Daten zurückgeholt."),1200)})();
+
+/* ---------- v88 ---------- */
+/* 6.8 Datenschutz, Impressum und Einwilligung. Einwilligung in imKonsens {v, t, ki, ab18} (wird mitgesichert).
+   Ohne Einwilligung keine KI über den Server (Hülle um aiPost), die App läuft dann nur auf dem Gerät.
+   Texte: Stand 24.11.2026, vor der Veröffentlichung von einem Fachanwalt prüfen lassen. */
+const DS_STAND="24.11.2026",DS_NAME="Noah Kern",DS_ADR="Trappensee 2, 74074 Heilbronn",DS_MAIL="trainingsapp.feedback@gmail.com",KONSENS_V=1;
+const KONSENS_FEHLER="Für die KI brauchen wir zuerst deine Einwilligung. Du findest sie unter Einstellungen, Konto und Sicherung.";
+function konsensOk(){const k=store.get("imKonsens",null);return!!(k&&k.ki&&k.ab18&&k.v>=KONSENS_V&&!k.widerruf)}
+let KONSENS_GEZEIGT=false;
+aiPost=(f=>async function(body){if(srvOn()&&!konsensOk()){if(!KONSENS_GEZEIGT)setTimeout(()=>konsensZeigen(),50);KONSENS_GEZEIGT=true;throw new Error(KONSENS_FEHLER)}return f.apply(this,arguments)})(aiPost);
+const DS_TEXT=`<h3>Datenschutz</h3><p class="hint">Stand ${DS_STAND}. Die App ist in einer Testphase.</p>
+<h4>Verantwortlich</h4><p>${DS_NAME}<br>${DS_ADR}<br>E-Mail: ${DS_MAIL}</p>
+<h4>Kurz gesagt</h4><p>Deine Daten bleiben auf deinem Gerät. Nur wenn du einwilligst, gehen sie für die KI-Auswertung an unseren Server und von dort an den KI-Dienst. Die Sicherung ist freiwillig und verschlüsselt. Es gibt keine Werbung, kein Tracking und keine Cookies.</p>
+<h4>Auf deinem Gerät</h4><p>Einstellungen, Check-ins, Rückmeldungen, eigene Einheiten, Ziele, Gespräche mit dem Coach und zwischengespeicherte Trainingsdaten liegen im Speicher deines Browsers. Du löschst sie, indem du die Daten der Website im Browser löschst.</p>
+<h4>Daten von intervals.icu</h4><p>Hast du einen intervals.icu-Schlüssel eingetragen, holt die App deine Einheiten, Erholungswerte und Kalendereinträge direkt von intervals.icu auf dein Gerät, nicht über unseren Server. Pläne, Notizen und Anpassungen schreibt die App auf deinen Wunsch in deinen Kalender bei intervals.icu. Dafür gilt die Datenschutzerklärung von intervals.icu.</p>
+<h4>Aufruf der App</h4><p>Die App liegt bei GitHub Pages (GitHub, Inc., USA). Beim Aufruf speichert GitHub nach eigenen Angaben deine IP-Adresse aus Sicherheitsgründen. Rechtsgrundlage ist unser berechtigtes Interesse an einem sicheren Betrieb (Art. 6 Abs. 1 lit. f DSGVO).</p>
+<h4>KI-Auswertung (nur mit Einwilligung)</h4><p>Für Tagesempfehlung, Pläne, Bewertungen und Antworten des Coachs schickt die App die dafür nötigen Daten an unseren Server: Trainingseinheiten mit Dauer, Puls, Leistung und Tempo, Erholungswerte wie Ruhepuls, Herzfrequenzvariabilität und Schlaf, Check-ins, Krankheit und Pausen, Ziel, Alter und Geschlecht, soweit angegeben, und deine Fragen an den Coach. Das sind Gesundheitsdaten. Rechtsgrundlage ist deine ausdrückliche Einwilligung (Art. 6 Abs. 1 lit. a und Art. 9 Abs. 2 lit. a DSGVO). Unser Server leitet die Anfrage ohne deinen Namen an den KI-Dienst Anthropic weiter (Vertragspartner Anthropic Ireland, Limited, Verarbeitung auch in den USA möglich). Anthropic verarbeitet die Daten nach seinem Vertrag zur Auftragsverarbeitung, nutzt sie nicht zum Training und löscht Anfragen und Antworten nach eigenen Angaben innerhalb von 30 Tagen, außer bei Verstößen gegen seine Nutzungsrichtlinie oder wenn ein Gesetz es verlangt.</p>
+<h4>Unser Server</h4><p>Der Server läuft bei Cloudflare (Cloudflare, Inc., USA, Rechenzentren in der EU und den USA). Er speichert keine Inhalte deiner Anfragen. Er speichert je Aufruf den Namen deines Zugangs, eine gekürzte Geräte-ID, Zeitpunkt, Funktion, Dauer, Umfang und Kosten der KI-Anfrage, damit wir Grenzen einhalten können. Diese Einträge löschen wir nach 35 Tagen, Warnungen nach 90 Tagen. Bei falschen Zugangscodes speichert er eine Prüfsumme der IP-Adresse für höchstens zwei Stunden, um Angriffe abzuwehren. Rechtsgrundlage ist unser berechtigtes Interesse an einem sicheren und bezahlbaren Betrieb (Art. 6 Abs. 1 lit. f DSGVO).</p>
+<h4>Sicherung (freiwillig)</h4><p>Schaltest du „Automatisch sichern“ ein, speichert die App deine Einträge verschlüsselt auf unserem Server. Den Schlüssel bildet die App auf deinem Gerät aus deinem Zugangscode. Lesen kann die Sicherung nur, wer diesen Code kennt. Der intervals.icu-Schlüssel wird nicht gesichert. Die Sicherung bleibt, bis du sie unter Einstellungen löschst. Rechtsgrundlage ist deine Einwilligung (Art. 6 Abs. 1 lit. a und Art. 9 Abs. 2 lit. a DSGVO).</p>
+<h4>Feedback</h4><p>Schickst du Feedback, öffnet sich dein Mailprogramm. Die Mail geht an unser Postfach bei Google (Gmail). Darin stehen dein Text, deine Absenderadresse und auf Wunsch Version, Bereich und Gerät der App. Wir nutzen das nur, um die App zu verbessern, und löschen es, wenn es erledigt ist. Rechtsgrundlage ist unser berechtigtes Interesse (Art. 6 Abs. 1 lit. f DSGVO).</p>
+<h4>Empfänger und Übermittlung in die USA</h4><p>Cloudflare, Anthropic, GitHub und Google verarbeiten Daten auch in den USA. Cloudflare ist nach dem EU-US Data Privacy Framework zertifiziert. Für die übrigen gelten deren Verträge mit Standardvertragsklauseln der EU-Kommission oder deren Zertifizierung nach dem Data Privacy Framework.</p>
+<h4>Mindestalter</h4><p>Die App ist in der Testphase für Personen ab 18 Jahren.</p>
+<h4>Deine Rechte</h4><p>Du hast das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung, Datenübertragbarkeit und Widerspruch (Art. 15 bis 21 DSGVO). Deine Einwilligung kannst du jederzeit unter Einstellungen, Konto und Sicherung widerrufen. Was bis dahin verarbeitet wurde, bleibt rechtmäßig (Art. 7 Abs. 3 DSGVO). Schreib uns dafür an ${DS_MAIL}. Du kannst dich auch bei einer Datenschutzaufsicht beschweren, z. B. beim Landesbeauftragten für den Datenschutz und die Informationsfreiheit Baden-Württemberg.</p>`;
+const IMP_TEXT=`<h3>Impressum</h3><h4>Angaben nach § 5 DDG</h4><p>${DS_NAME}<br>${DS_ADR}</p><h4>Kontakt</h4><p>E-Mail: ${DS_MAIL}</p><p class="hint">Die App ist in einer Testphase. Sie ersetzt keine ärztliche Beratung.</p>`;
+function dsModal(id,html){if(!$(id)){document.body.insertAdjacentHTML("beforeend",`<div class="modal" id="${id}"><div class="sheet ds88"><div class="ds88t"></div><div class="actions"><button class="btn blue wide" type="button" data-x88>Schließen</button></div></div></div>`);
+  const m=$(id);m.addEventListener("click",e=>{if(e.target===m||e.target.closest("[data-x88]"))close(id)})}
+  $(id).querySelector(".ds88t").innerHTML=html;open(id)}
+function dsZeigen(){dsModal("mDs88",DS_TEXT)}
+function impZeigen(){dsModal("mImp88",IMP_TEXT)}
+function konsensZeigen(){if(!$("mKon88")){document.body.insertAdjacentHTML("beforeend",`<div class="modal" id="mKon88"><div class="sheet">
+  <h3>Einwilligung für die KI</h3>
+  <p class="hint">Für Tagesempfehlung, Pläne und Coach schickt die App deine Trainings- und Gesundheitsdaten an unseren Server und von dort an den KI-Dienst Anthropic. Ohne Einwilligung läuft die App nur auf deinem Gerät, ohne KI.</p>
+  <label class="kon88"><input type="checkbox" id="k88Alter"><span>Ich bin mindestens 18 Jahre alt.</span></label>
+  <label class="kon88"><input type="checkbox" id="k88Ki"><span>Ich willige ein, dass meine Trainingseinheiten, Erholungswerte (z. B. Ruhepuls, Herzfrequenzvariabilität, Schlaf), Check-ins, Angaben zu Krankheit und Pausen, mein Ziel und meine Fragen an den Coach für die KI-Auswertung an den Server von ${DS_NAME} und an den KI-Dienst Anthropic (auch in den USA) übermittelt und dort verarbeitet werden. Ich kann die Einwilligung jederzeit in den Einstellungen widerrufen.</span></label>
+  <button class="lnk" type="button" id="k88Ds">Datenschutz lesen</button>
+  <div class="err" id="k88Err"></div>
+  <div class="actions"><button class="btn" type="button" id="k88Nein">Ohne KI weiter</button><button class="btn blue" type="button" id="k88Ja" disabled>Zustimmen</button></div></div></div>`);
+    const m=$("mKon88"),ja=$("k88Ja"),upd=()=>{ja.disabled=!($("k88Alter").checked&&$("k88Ki").checked)};
+    $("k88Alter").onchange=upd;$("k88Ki").onchange=upd;$("k88Ds").onclick=dsZeigen;
+    $("k88Nein").onclick=()=>close("mKon88");
+    ja.onclick=()=>{if(ja.disabled)return;store.set("imKonsens",{v:KONSENS_V,t:Date.now(),ki:true,ab18:true});try{localStorage.removeItem("imAiDayErr");localStorage.removeItem("imAiFail")}catch(e){}close("mKon88");try{k88Stand()}catch(e){}toast("Danke. Die KI ist jetzt eingeschaltet.");try{if(typeof load==="function")load()}catch(e){}}}
+  $("k88Alter").checked=false;$("k88Ki").checked=false;$("k88Ja").disabled=true;$("k88Err").textContent="";open("mKon88")}
+/* Beim Start einmal fragen, wenn ein Zugangscode da ist und noch keine Einwilligung */
+setTimeout(()=>{try{if(srvOn()&&!konsensOk()&&!KONSENS_GEZEIGT&&!document.querySelector(".modal.open")){KONSENS_GEZEIGT=true;konsensZeigen()}}catch(e){}},2500);
+/* Einstellungen: Links und Widerruf */
+(function(){try{const l=$("cOnb")&&$("cOnb").parentElement;if(l&&!$("cDs88")){l.insertAdjacentHTML("beforeend",'<button class="lnk" type="button" id="cDs88">Datenschutz</button><button class="lnk" type="button" id="cImp88">Impressum</button>');
+    $("cDs88").onclick=dsZeigen;$("cImp88").onclick=impZeigen}
+  const g=$("sgAcc"),st=$("s87Stand"),sw=$("s87Auto")&&$("s87Auto").closest(".nwrow");if(g&&st&&!$("k88Stand")){(sw||st).insertAdjacentHTML("beforebegin",'<div class="s87st" id="k88Stand"></div><div class="setlinks"><button class="lnk" type="button" id="k88An">Einwilligung für die KI geben</button><button class="lnk s87del" type="button" id="k88Weg">Einwilligung widerrufen</button></div>');
+    $("k88An").onclick=()=>{close("mSet");konsensZeigen()};
+    $("k88Weg").onclick=()=>{const k=store.get("imKonsens",{})||{};store.set("imKonsens",Object.assign(k,{widerruf:Date.now(),ki:false}));store.set("imSyncOk",0);
+      try{s87Zeigen()}catch(e){}k88Stand();toast("Einwilligung widerrufen. KI und Sicherung sind aus. Die Sicherung auf dem Server löschst du mit „Sicherung löschen“.")}}
+  const t=$("s87Text");if(t&&!$("s87Ds")){t.insertAdjacentHTML("beforeend",' <a href="#" id="s87Ds">Datenschutz</a>');$("s87Ds").onclick=e=>{e.preventDefault();e.stopPropagation();dsZeigen()}}
+}catch(e){}})();
+function k88Stand(){const s=$("k88Stand");if(!s)return;const k=store.get("imKonsens",null),ok=konsensOk();
+  s.textContent=ok?"KI-Auswertung: eingewilligt am "+new Date(k.t).toLocaleDateString("de-DE",{day:"2-digit",month:"2-digit",year:"numeric"})+".":"KI-Auswertung: keine Einwilligung. Ohne Einwilligung läuft die App ohne KI.";
+  if($("k88An"))$("k88An").style.display=ok?"none":"";if($("k88Weg"))$("k88Weg").style.display=ok?"":"none"}
+openSettings=(f=>function(){const r=f.apply(this,arguments);try{k88Stand()}catch(e){}return r})(openSettings);
+if($("btnSettings"))$("btnSettings").onclick=openSettings;
+/* Sicherung nur mit Einwilligung einschaltbar */
+(function(){const a=$("s87Auto");if(!a)return;const alt=a.onchange;a.onchange=e=>{if(e.target.checked&&!konsensOk()){e.target.checked=false;close("mSet");konsensZeigen();return}return alt&&alt(e)}})();
 
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
