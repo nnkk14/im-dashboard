@@ -1048,6 +1048,12 @@ h3>.tag,.cx-h>.tag{display:table;margin:8px 0 2px;font-size:12px}
 .t89p.ok .t89c::after{content:"";position:absolute;left:5px;top:1px;width:5px;height:10px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
 .t89f{display:flex;flex-wrap:wrap;gap:4px 18px;margin-top:6px}
 .t89f .lnk{display:inline-block;margin-top:6px}
+/* v90 */
+@media (min-width:980px){
+ [data-tab="heute"].on{row-gap:0}
+ [data-tab="heute"].on>.hero{grid-column:1;grid-row:1 / span 30}
+ [data-tab="heute"].on>:not(.hero){grid-column:2;margin:0 0 16px}
+}
 </style>
 </head>
 <body>
@@ -1230,7 +1236,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="89";
+const VERSION="90";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -6828,6 +6834,57 @@ setTimeout(()=>{try{t89Karte()}catch(e){}},0);
 (function(){try{const g=$("sgAcc"),l=g&&g.querySelector(".setlinks");if(!l||$("t89Set"))return;
   l.insertAdjacentHTML("beforeend",'<button class="lnk" type="button" id="t89Set">Anleitung für die Testphase</button>');
   $("t89Set").onclick=()=>{const L=t89Liste();if(L.aus){delete L.aus;store.set("imTestListe",L)}close("mSet");t89Anleitung();t89Karte()}}catch(e){}})();
+
+/* ---------- v90 ---------- */
+/* Funde aus T.1 Durchgang 6: 2.18 Heute am großen Bildschirm (CSS), 2.19 kein Uhr-Hinweis ohne Uhr, 2.20 Erledigt-Text ohne Plan,
+   4.10 Abo-Schritt mit Zugangscode, 4.11 Geburtsjahr ab 18, 5.18 Reparatur ohne KI (freie Tage, zu lange Läufe), 6.30 Kleinigkeiten. */
+/* 2.19 Ohne Uhr kein Hinweis zur Übertragung auf die Uhr */
+watchBlock=(f=>function(w,i){if(settings.noWatch)return"";return f.apply(this,arguments)})(watchBlock);
+/* 2.20 Ohne geplante Einheit heute nicht vom Plan sprechen */
+const DM90={H:["Genau richtig!","Das sitzt!","Training geschafft!","Wieder ein Baustein mehr!","Haken dran!"],
+  B:["Genau die Einheit, die heute zu dir gepasst hat.","Passend zu deinen Werten trainiert. Gönn dir jetzt Erholung.","So passt das Training zu deinem Tag.","Gut gewählt. Jetzt in Ruhe essen und trinken."]};
+doneMsg=(f=>function(D,dn){const r=f.apply(this,arguments);try{const t=today();if((D.planned||[]).some(p=>p.date===t))return r;
+  const n=Math.floor(Date.parse(t)/864e5),P=a=>a[n%a.length];let[h,b]=r;
+  if(/Plan/.test(h)||DM.planH.includes(h)&&/Plan/.test(h))h=P(DM90.H);
+  const alt=DM.planB.find(x=>b.startsWith(x));if(alt)b=P(DM90.B)+b.slice(alt.length);
+  return[h,b]}catch(e){return r}})(doneMsg);
+/* 4.11 Geburtsjahr: Testphase ab 18, ein schon gespeichertes Jahr bleibt wählbar */
+byOpts=function(sel){const cy=new Date().getFullYear();let h=`<option value="">bitte wählen</option>`;
+  if(+sel>cy-18)h+=`<option value="${+sel}" selected>${+sel}</option>`;
+  for(let y=cy-18;y>=cy-95;y--)h+=`<option value="${y}" ${+sel===y?"selected":""}>${y}</option>`;return h};
+/* 4.10 Mit Zugangscode kommt die Stufe vom Server: keine Abo-Auswahl und keine Testphase der App */
+obDraw=(f=>function(){const r=f.apply(this,arguments);try{if(typeof OB!=="undefined"&&OB&&!OB.prof&&OB.i===4&&srvOn()){
+    OB.v.tier="free";const b=$("obBody");if(!b||$("ob90"))return r;
+    const s=store.get("imSrv",{})||{},st=s.ok&&s.k===srvKh(settings.aiKey)?(s.stufe==="team"?"max":s.stufe):"",n={plus:"Plus",max:"Max",free:"Free"}[st];
+    [...b.children].forEach(e=>{if(!e.classList.contains("obback")&&!e.classList.contains("obdots"))e.remove()});
+    b.insertAdjacentHTML("beforeend",`<div id="ob90"><h3>Dein Zugang</h3><p class="hint">${n?`Mit deinem Zugangscode vom Team hast du <b>${n}</b>${st!=="free"?" mit KI-Coach":""}.`:"Mit deinem Zugangscode vom Team ist dein Zugang schon freigeschaltet."} Du musst hier nichts auswählen. In der Testphase der App wird nichts berechnet.</p>
+      <button class="btn blue wide" data-ob="next" style="margin-top:12px">Weiter</button></div>`)}}catch(e){}return r})(obDraw);
+/* 5.18 Reparatur ohne KI: Einheiten an freien Tagen verlegen oder herausnehmen, zu lange Läufe kürzen */
+function v90Kuerzen(desc,f){return String(desc||"").replace(/(^|[\s-])(\d+)m(?=\s|$)/gm,(a,p,m)=>p+Math.max(1,Math.round(+m*f))+"m")}
+gateRepair=(f=>function(items){const r=f.apply(this,arguments);try{
+  const wa=weekArr(store.get("imGoal",{})),I=r.items.slice().sort((a,b)=>a.date.localeCompare(b.date));if(!I.length)return r;
+  const start=I[0].date,frei=I.filter(x=>wa[gDow(x.date)]===0);let mv=0,rm=0,kz=0;
+  if(frei.length){const keep=I.filter(x=>wa[gDow(x.date)]!==0),belegt=d=>keep.some(y=>y.date===d);
+    frei.forEach(x=>{const m=monday(x.date),c=[...Array(7)].map((_,i)=>addDays(m,i)).filter(d=>d>=start&&d>today()&&wa[gDow(d)]>0&&!belegt(d))
+        .sort((a,b)=>Math.abs(Date.parse(a)-Date.parse(x.date))-Math.abs(Date.parse(b)-Date.parse(x.date)));
+      if(c.length){x.date=c[0];keep.push(x);mv++}else rm++});
+    r.items=keep.sort((a,b)=>a.date.localeCompare(b.date))}
+  r.items.forEach(x=>{if(gSk(x)!=="run")return;const ref=lrRef(x.date,r.items),m=+x.minutes||0;
+    if(ref>0&&m>ref*LRMAX&&m-ref>10){const neu=Math.max(Math.floor(ref*LRMAX/5)*5,Math.floor((ref+10)/5)*5);if(neu<m){x.description=v90Kuerzen(x.description,neu/m);x.minutes=neu;kz++}}});
+  if(mv)r.fixed.push(mv>1?mv+" Einheiten von freien Tagen verlegt":"Einheit von einem freien Tag verlegt");
+  if(rm)r.fixed.push(rm>1?rm+" Einheiten an freien Tagen herausgenommen":"Einheit an einem freien Tag herausgenommen");
+  if(kz)r.fixed.push(kz>1?kz+" zu lange Läufe gekürzt":"zu langen Lauf gekürzt")}catch(e){}return r})(gateRepair);
+/* 6.30 (1) Wer „Ohne KI weiter“ gewählt hat, wird nicht bei jedem Start erneut gefragt. Beim Coach öffnet sich die Einwilligung direkt. */
+if(store.get("imKonsNein",0)&&!konsensOk())KONSENS_GEZEIGT=true;
+konsensZeigen=(f=>function(){const r=f.apply(this,arguments);try{const n=$("k88Nein");if(n&&!n.dataset.v90){n.dataset.v90="1";const alt=n.onclick;n.onclick=e=>{store.set("imKonsNein",Date.now());return alt&&alt(e)}}}catch(e){}return r})(konsensZeigen);
+ask=(f=>function(q){if(srvOn()&&!konsensOk()&&String(q||"").trim()){konsensZeigen();return}return f.apply(this,arguments)})(ask);
+/* 6.30 (2) Kein Hinweis über dem Text der Einwilligung */
+toast=(f=>function(m){if(m==="Dein Zugangscode ist gespeichert."&&srvOn()&&!konsensOk())return;return f.apply(this,arguments)})(toast);
+/* 6.30 (3) Die Version geht immer mit, der Schalter betrifft Bereich, Abo und Gerät */
+openFb=(f=>function(){const r=f.apply(this,arguments);try{const i=$("fbInfo"),l=i&&i.closest("label");if(l)[...l.childNodes].forEach(n=>{if(n.nodeType===3&&/Infos zur App/.test(n.textContent))n.textContent="Infos zur App anhängen (Bereich, Abo, Gerät)"})}catch(e){}return r})(openFb);
+if($("btnFb"))$("btnFb").onclick=openFb;
+/* 6.30 (4) Anleitung für die Testphase ans Ende der Gruppe Konto und Sicherung */
+(function(){try{const a=$("t89Set"),g=$("sgAcc"),L=g&&g.querySelectorAll(".setlinks");if(a&&L&&L.length)L[L.length-1].appendChild(a)}catch(e){}})();
 
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
