@@ -1054,6 +1054,13 @@ h3>.tag,.cx-h>.tag{display:table;margin:8px 0 2px;font-size:12px}
  [data-tab="heute"].on>.hero{grid-column:1;grid-row:1 / span 30}
  [data-tab="heute"].on>:not(.hero){grid-column:2;margin:0 0 16px}
 }
+/* v91 */
+.ki91{display:inline-flex;align-items:center;font:600 10.5px/1 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:.04em;padding:3px 7px;border-radius:999px;background:color-mix(in srgb,var(--blue,#4ea1ff) 20%,transparent);color:var(--blue,#4ea1ff);vertical-align:middle;white-space:nowrap}
+.ki91.in{margin-left:8px}
+.ki91.vor{margin-right:6px}
+.ki91.sm{padding:2px 5px;font-size:9.5px}
+[data-exname]{position:relative}
+.ki91.abs{position:absolute;right:4px;bottom:4px}
 </style>
 </head>
 <body>
@@ -1236,7 +1243,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="90";
+const VERSION="91";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -6885,6 +6892,57 @@ openFb=(f=>function(){const r=f.apply(this,arguments);try{const i=$("fbInfo"),l=
 if($("btnFb"))$("btnFb").onclick=openFb;
 /* 6.30 (4) Anleitung für die Testphase ans Ende der Gruppe Konto und Sicherung */
 (function(){try{const a=$("t89Set"),g=$("sgAcc"),L=g&&g.querySelectorAll(".setlinks");if(a&&L&&L.length)L[L.length-1].appendChild(a)}catch(e){}})();
+
+/* ---------- v91 ---------- */
+/* 6.10 KI kennzeichnen (KI-Verordnung der EU, Art. 50 Abs. 1 seit 02.08.2026 anwendbar): Inhalte der KI tragen das Zeichen „KI“
+   (sichtbar und maschinenlesbar über data-ki), der Coach sagt beim ersten Kontakt, dass die Antworten von der KI kommen, Hilfe „KI in der App“.
+   6.11 Sichtbarkeit: keine technischen Fehlertexte beim Wetter, Hinweis zur Speicherung mit Sicherung, Abo-Bereich mit Zugangscode, „Wiki“ entfernt. */
+const KI91_TITEL="Von der KI erstellt. Kann Fehler enthalten.";
+function ki91Chip(x){return`<span class="ki91${x?" "+x:""}" data-ki="1" title="${KI91_TITEL}" aria-label="${KI91_TITEL}">KI</span>`}
+function ki91Marken(){try{
+  /* Tagesempfehlung und „Noch etwas machen?“ von der KI (Regel-Empfehlungen tragen „ohne KI“) */
+  document.querySelectorAll("#coachCard .cx-st").forEach(e=>{if(!e.querySelector(".rulechip,.ki91"))e.insertAdjacentHTML("beforeend",ki91Chip("in"))});
+  /* Antworten des Coachs */
+  document.querySelectorAll(".qa2 .qa").forEach(e=>{if(e.querySelector(".ki91")||/denkt nach/.test(e.textContent))return;e.insertAdjacentHTML("afterbegin",ki91Chip("vor"))});
+  /* Bewertung einer Einheit (Letzte Einheit und Details), Wochenrückblick in den Details */
+  document.querySelectorAll("#actCard .cx-h, #mInfo .cx-h, #mInfo h3").forEach(e=>{const n=e.nextElementSibling;if(n&&n.matches("ul.cx-why")&&!e.querySelector(".ki91"))e.insertAdjacentHTML("afterbegin",ki91Chip("vor"))});
+  document.querySelectorAll("#weekNew .cx-k").forEach(e=>{if(!e.querySelector(".ki91"))e.insertAdjacentHTML("beforeend",ki91Chip("in"))});
+  /* Prognosen der KI */
+  const pl=$("progList"),hasP=typeof DATA!=="undefined"&&DATA&&(DATA.notes||[]).some(n=>/^Coach Prognose/.test(n.name));
+  if(pl&&hasP){const h=pl.closest(".card")&&pl.closest(".card").querySelector("h2");if(h&&!h.querySelector(".ki91"))h.insertAdjacentHTML("beforeend",ki91Chip("in"))}
+  /* Wettkampf-Infos */
+  document.querySelectorAll("details.rinfo>summary").forEach(e=>{if(!e.querySelector(".ki91"))e.insertAdjacentHTML("beforeend",ki91Chip("in"))});
+  /* Einheiten von der KI im Kalender */
+  if(typeof DATA!=="undefined"&&DATA)document.querySelectorAll(".pi[data-pl]").forEach(e=>{if(e.dataset.ki||!e.dataset.pl||e.dataset.pl==="undefined")return;const p=(DATA.planned||[]).find(x=>String(x.id)===e.dataset.pl);
+    if(p&&p.coach){e.dataset.ki="1";const s=e.querySelector(".m span");if(s)s.insertAdjacentHTML("beforeend"," "+ki91Chip("sm"))}});
+  /* Übungsbilder, die die KI gezeichnet hat */
+  document.querySelectorAll("[data-exname]").forEach(e=>{if(e.querySelector(".ki91"))return;const f=exFind(e.dataset.exname);if(f&&f.ai)e.insertAdjacentHTML("beforeend",ki91Chip("abs"))});
+  /* 6.11 Wetter: kein technischer Fehlertext */
+  const w=$("fWx");if(w&&/^Wetter nicht verfügbar \(/.test(w.textContent))w.textContent="Wetter gerade nicht abrufbar. Wähl es unten selbst."
+}catch(e){}}
+let KI91_PLAN=0;
+new MutationObserver(()=>{if(KI91_PLAN)return;KI91_PLAN=requestAnimationFrame(()=>{KI91_PLAN=0;ki91Marken()})}).observe(document.body,{childList:true,subtree:true});
+setTimeout(ki91Marken,0);
+/* Erster Kontakt mit dem Coach: Antworten kommen von der KI */
+(function(){try{const s=document.querySelector("#askCard .askh .sub");if(s)s.textContent="Antworten kommen von der KI. Sie kennt deine Daten, deinen Plan und dein Ziel."}catch(e){}})();
+renderAsk=(f=>function(){const r=f.apply(this,arguments);try{const s=document.querySelector("#askCard .askh .sub");if(s&&!/von der KI/.test(s.textContent))s.textContent="Antworten kommen von der KI. Sie kennt deine Daten, deinen Plan und dein Ziel."}catch(e){}return r})(renderAsk);
+/* Hilfe: KI in der App */
+try{if(!WIKI.some(w=>w[0]==="KI in der App"))WIKI.unshift(["KI in der App","Inhalte mit dem Zeichen „KI“ erstellt eine künstliche Intelligenz: Tagesempfehlung, Trainingsplan, Antworten des Coachs, Bewertungen deiner Einheiten, Wochenrückblick, Prognosen, Wettkampf-Infos und manche Übungsbilder. Die KI arbeitet mit deinen Daten und mit festen Regeln der App, die jeden Plan prüfen. Sie kann sich trotzdem irren. Hör auf deinen Körper und frag bei Beschwerden eine Ärztin oder einen Arzt. Steht „ohne KI“ dabei, kommt die Empfehlung aus festen Regeln der App."])}catch(e){}
+/* 6.11 Keine Quellenangaben in der App (die Quellen stehen in quellen-verpflegung.md und quellen-trainingsumfang.md) */
+const Q91=/Richtwerte nach Jeukendrup \(2014, Sports Medicine\)( für Kohlenhydrate und nach| und) der ACSM-Stellungnahme zu Flüssigkeit \(Sawka et al\., 2007\)\./;
+function q91(){try{document.querySelectorAll(".hint").forEach(h=>{if(Q91.test(h.innerHTML))h.innerHTML=h.innerHTML.replace(Q91,"Richtwerte aus der Sporternährung.")})}catch(e){}}
+try{WIKI.forEach(w=>{if(typeof w[1]==="string")w[1]=w[1].replace(" (z. B. Impellizzeri et al., 2020)","")})}catch(e){}
+ki91Marken=(f=>function(){f.apply(this,arguments);q91()})(ki91Marken);q91();
+/* 6.11 Abo-Bereich: „Wiki“ gibt es nicht mehr, mit Zugangscode kommt die Stufe vom Code */
+try{TIERF.forEach(f=>{f[0]=f[0].replace(/, Wiki$/,"")})}catch(e){}
+drawTier=(f=>function(){const r=f.apply(this,arguments);try{if(!srvOn()||settings.tier)return r;const c=$("cTier");if(!c)return r;
+  c.querySelectorAll("[data-trial]").forEach(b=>b.remove());const em=c.querySelector(".tiercur em"),cur=c.querySelector(".tiercur");
+  if(em)em.textContent="über deinen Zugangscode";else if(cur)cur.insertAdjacentHTML("beforeend","<em>über deinen Zugangscode</em>");
+  const h=[...c.children].find(x=>x.classList.contains("hint"));if(h)h.textContent="Deine Stufe kommt von deinem Zugangscode. Abos sind in der Testphase der App noch nicht buchbar."}catch(e){}return r})(drawTier);
+/* 6.11 Einstellungen: mit Sicherung nicht „nur auf diesem Gerät“ */
+openSettings=(f=>function(){const r=f.apply(this,arguments);try{const s=[...document.querySelectorAll("#mSet .sub")].find(x=>/Gespeichert nur auf diesem Gerät|verschlüsselt gesichert/.test(x.textContent));
+  if(s)s.textContent=syncAn()?"Auf diesem Gerät gespeichert und verschlüsselt gesichert.":"Gespeichert nur auf diesem Gerät.";if($("cTier"))drawTier()}catch(e){}return r})(openSettings);
+if($("btnSettings"))$("btnSettings").onclick=openSettings;
 
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
