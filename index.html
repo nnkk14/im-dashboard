@@ -1012,6 +1012,9 @@ h3>.tag,.cx-h>.tag{display:table;margin:8px 0 2px;font-size:12px}
 #sKx{margin-top:10px}.tth{margin:6px 0 0}
 /* v84 */
 .btn.lim84d{opacity:.45;cursor:not-allowed}
+/* v86 */
+.fbadr86{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:10px 0 0;padding:8px 12px;border-radius:12px;background:var(--card2);font-size:13px;overflow-wrap:anywhere}
+.fbadr86 button{flex:none;padding:6px 10px;border-radius:10px;background:var(--card);font-size:13px;font-weight:600}
 </style>
 </head>
 <body>
@@ -1194,7 +1197,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="85";
+const VERSION="86";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -6423,6 +6426,39 @@ async function aiPost(body){
   if(j&&j._status&&code==="anfrage")return{res:{ok:false,status:j._status},j:{error:{message:er.message||SRVT.anfrage}}};
   if(code==="zugang"||code==="stufe"||code==="gesperrt"){try{const s=store.get("imSrv",{})||{};store.set("imSrv",Object.assign(s,{ok:false,code}))}catch(e){}}
   throw new Error(SRVT[code]||SRVT.server)}
+
+/* ---------- v86 ---------- */
+/* 6.13 Feedback an die eigene Adresse: Mails gehen an FB_MAIL statt an eine leere Empfängerzeile.
+   Ohne Bild: Mail-App mit fertigem Empfänger, Betreff und Text (Text zusätzlich kopiert).
+   Mit Bild: Teilen-Menü mit Bild, die Adresse liegt dabei in der Zwischenablage, sonst Mail ohne Bild.
+   Der Handler hängt am window in der Capture-Phase und läuft damit vor den Handlern aus V23 und V30. */
+const FB_MAIL="trainingsapp.feedback@gmail.com";
+function fbNachricht(){const lab={fehler:"Fehler",idee:"Idee",lob:"Lob",frage:"Frage"}[FB.k]||"Idee",tx=$("fbTxt").value.trim(),
+  info=$("fbInfo")&&$("fbInfo").checked?`\n\nVersion ${VERSION} · Bereich ${TAB} · Abo ${TIERN[tierNow()]} · Daten ${settings.apiKey?"Sportuhr":settings.noWatch?"ohne Uhr":"Beispiel"} · ${navigator.userAgent.replace(/\s+/g," ").slice(0,140)}`:"";
+  return{lab,tx,text:`Mein Training, ${lab}:\n${tx}${info}`,betreff:`Feedback Mein Training: ${lab} (V${VERSION})`}}
+function fbMailto(n){return"mailto:"+FB_MAIL+"?subject="+encodeURIComponent(n.betreff)+"&body="+encodeURIComponent(n.text)}
+function fbOeffnen(u){location.href=u}
+function fbKopie(t){try{const p=navigator.clipboard&&navigator.clipboard.writeText(t);if(p&&p.catch)p.catch(()=>{})}catch(e){}}
+function fbFertig(mitBild){$("fbBody").innerHTML=`<p class="hint">Danke für deine Rückmeldung. Deine Mail-App öffnet sich mit Empfänger, Betreff und Text. Du musst nur noch senden.${mitBild?" Häng dein Bildschirmfoto dort selbst an.":""}</p>
+  <p class="hint">Keine Mail offen? Dein Text ist kopiert. Schick ihn an <b>${FB_MAIL}</b>.</p>
+  <button class="btn wide" id="fbAdrKopie" style="margin-top:12px">Adresse kopieren</button><button class="btn blue wide" data-fbx="1" style="margin-top:10px">Schließen</button>`}
+openFb=(f=>function(){f.apply(this,arguments);const h=$("fbBody")&&$("fbBody").querySelector(".hint");
+  if(h&&!$("fbAdr"))h.insertAdjacentHTML("afterend",`<div class="fbadr86" id="fbAdr"><span>Geht an <b>${FB_MAIL}</b></span><button id="fbAdrKopie" type="button">Kopieren</button></div>`);
+  const i=$("fbImg");if(i)i.addEventListener("change",()=>{const n=i.files.length;$("fbImgHint").textContent=n?(n>1?n+" Bilder":"1 Bild")+" ausgewählt. Beim Senden öffnet sich das Teilen-Menü. Wähl dort Mail und füg die Adresse als Empfänger ein, sie ist dann kopiert.":""})})(openFb);
+if($("btnFb"))$("btnFb").onclick=openFb;
+window.addEventListener("click",async e=>{
+  const k=e.target.closest&&e.target.closest("#fbAdrKopie");
+  if(k){e.stopPropagation();e.preventDefault();fbKopie(FB_MAIL);k.textContent="Kopiert";return}
+  if(!(e.target.closest&&e.target.closest("#fbSend"))||!$("fbTxt"))return;
+  const n=fbNachricht();if(!n.tx)return;
+  e.stopPropagation();e.preventDefault();
+  const inp=$("fbImg"),files=inp&&inp.files?[...inp.files].slice(0,3):[];
+  const L=store.get("imFeedback",[]);L.push({t:Date.now(),k:FB.k,tx:n.tx,img:files.length,an:FB_MAIL});store.set("imFeedback",L.slice(-30));
+  if(files.length){let geht=false;try{geht=!!(navigator.canShare&&navigator.share&&navigator.canShare({files}))}catch(err){}
+    if(geht){fbKopie(FB_MAIL);
+      try{await navigator.share({title:n.betreff,text:n.text,files});close("mFb");toast("Danke für deine Rückmeldung.");return}
+      catch(err){if(err&&err.name==="AbortError"){$("fbMsg").textContent="Nicht gesendet. Du kannst es nochmal versuchen.";return}}}}
+  fbKopie(n.text);fbOeffnen(fbMailto(n));fbFertig(files.length>0)},true);
 
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
