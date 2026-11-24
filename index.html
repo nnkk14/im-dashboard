@@ -1033,6 +1033,21 @@ h3>.tag,.cx-h>.tag{display:table;margin:8px 0 2px;font-size:12px}
 #k88Ds{margin-top:10px}
 #s87Ds{color:var(--blue,#4ea1ff)}
 #sgAcc #k88Stand{margin-top:12px}
+/* v89 */
+.fb89h{margin:8px 0 0;font-size:13px}
+.fb89h a{color:var(--blue,#4ea1ff)}
+.fb89ok{font-size:15px;color:var(--ink)}
+.t89 .t89bar{height:6px;border-radius:3px;background:var(--card2);overflow:hidden;margin:10px 0 6px}
+.t89 .t89bar i{display:block;height:100%;background:var(--green,#3fb67a);border-radius:3px}
+.t89l{display:flex;flex-direction:column}
+.t89p{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--line,rgba(255,255,255,.08));padding:10px 2px;color:var(--ink);font:inherit;font-size:15px;cursor:pointer}
+.t89p:last-child{border-bottom:0}
+.t89c{flex:0 0 20px;height:20px;border-radius:50%;border:2px solid var(--mute,#8a94a0);position:relative}
+.t89p.ok{color:var(--mute,#8a94a0)}
+.t89p.ok .t89c{background:var(--green,#3fb67a);border-color:var(--green,#3fb67a)}
+.t89p.ok .t89c::after{content:"";position:absolute;left:5px;top:1px;width:5px;height:10px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
+.t89f{display:flex;flex-wrap:wrap;gap:4px 18px;margin-top:6px}
+.t89f .lnk{display:inline-block;margin-top:6px}
 </style>
 </head>
 <body>
@@ -1215,7 +1230,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="88";
+const VERSION="89";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -6651,7 +6666,7 @@ const DS_TEXT=`<h3>Datenschutz</h3><p class="hint">Stand ${DS_STAND}. Die App is
 <h4>KI-Auswertung (nur mit Einwilligung)</h4><p>Für Tagesempfehlung, Pläne, Bewertungen und Antworten des Coachs schickt die App die dafür nötigen Daten an unseren Server: Trainingseinheiten mit Dauer, Puls, Leistung und Tempo, Erholungswerte wie Ruhepuls, Herzfrequenzvariabilität und Schlaf, Check-ins, Krankheit und Pausen, Ziel, Alter und Geschlecht, soweit angegeben, und deine Fragen an den Coach. Das sind Gesundheitsdaten. Rechtsgrundlage ist deine ausdrückliche Einwilligung (Art. 6 Abs. 1 lit. a und Art. 9 Abs. 2 lit. a DSGVO). Unser Server leitet die Anfrage ohne deinen Namen an den KI-Dienst Anthropic weiter (Vertragspartner Anthropic Ireland, Limited, Verarbeitung auch in den USA möglich). Anthropic verarbeitet die Daten nach seinem Vertrag zur Auftragsverarbeitung, nutzt sie nicht zum Training und löscht Anfragen und Antworten nach eigenen Angaben innerhalb von 30 Tagen, außer bei Verstößen gegen seine Nutzungsrichtlinie oder wenn ein Gesetz es verlangt.</p>
 <h4>Unser Server</h4><p>Der Server läuft bei Cloudflare (Cloudflare, Inc., USA, Rechenzentren in der EU und den USA). Er speichert keine Inhalte deiner Anfragen. Er speichert je Aufruf den Namen deines Zugangs, eine gekürzte Geräte-ID, Zeitpunkt, Funktion, Dauer, Umfang und Kosten der KI-Anfrage, damit wir Grenzen einhalten können. Diese Einträge löschen wir nach 35 Tagen, Warnungen nach 90 Tagen. Bei falschen Zugangscodes speichert er eine Prüfsumme der IP-Adresse für höchstens zwei Stunden, um Angriffe abzuwehren. Rechtsgrundlage ist unser berechtigtes Interesse an einem sicheren und bezahlbaren Betrieb (Art. 6 Abs. 1 lit. f DSGVO).</p>
 <h4>Sicherung (freiwillig)</h4><p>Schaltest du „Automatisch sichern“ ein, speichert die App deine Einträge verschlüsselt auf unserem Server. Den Schlüssel bildet die App auf deinem Gerät aus deinem Zugangscode. Lesen kann die Sicherung nur, wer diesen Code kennt. Der intervals.icu-Schlüssel wird nicht gesichert. Die Sicherung bleibt, bis du sie unter Einstellungen löschst. Rechtsgrundlage ist deine Einwilligung (Art. 6 Abs. 1 lit. a und Art. 9 Abs. 2 lit. a DSGVO).</p>
-<h4>Feedback</h4><p>Schickst du Feedback, öffnet sich dein Mailprogramm. Die Mail geht an unser Postfach bei Google (Gmail). Darin stehen dein Text, deine Absenderadresse und auf Wunsch Version, Bereich und Gerät der App. Wir nutzen das nur, um die App zu verbessern, und löschen es, wenn es erledigt ist. Rechtsgrundlage ist unser berechtigtes Interesse (Art. 6 Abs. 1 lit. f DSGVO).</p>
+<h4>Feedback</h4><p>Hast du einen Zugangscode, schickt die App dein Feedback an unseren Server bei Cloudflare. Gespeichert werden Art und Text, die Version der App, der Name deines Zugangs, der Zeitpunkt, auf Wunsch Bereich und Gerät der App und bis zu drei Bildschirmfotos. Die App verkleinert die Bilder vorher, Ortsangaben fallen dabei weg. Nur das Team kann es lesen. Ohne Zugangscode öffnet sich dein Mailprogramm. Die Mail geht an unser Postfach bei Google (Gmail), mit deinem Text und deiner Absenderadresse. Den Text, aber keine Bilder und keine Mailadressen, übernehmen wir in unser nicht öffentliches Arbeitsverzeichnis bei GitHub, um die Arbeit an der App zu planen. Dort bleibt er im Verlauf gespeichert. Wir nutzen Feedback nur, um die App zu verbessern. Auf dem Server und im Postfach löschen wir es spätestens 90 Tage, nachdem es erledigt ist. Rechtsgrundlage ist unser berechtigtes Interesse (Art. 6 Abs. 1 lit. f DSGVO).</p>
 <h4>Empfänger und Übermittlung in die USA</h4><p>Cloudflare, Anthropic, GitHub und Google verarbeiten Daten auch in den USA. Cloudflare ist nach dem EU-US Data Privacy Framework zertifiziert. Für die übrigen gelten deren Verträge mit Standardvertragsklauseln der EU-Kommission oder deren Zertifizierung nach dem Data Privacy Framework.</p>
 <h4>Mindestalter</h4><p>Die App ist in der Testphase für Personen ab 18 Jahren.</p>
 <h4>Deine Rechte</h4><p>Du hast das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung, Datenübertragbarkeit und Widerspruch (Art. 15 bis 21 DSGVO). Deine Einwilligung kannst du jederzeit unter Einstellungen, Konto und Sicherung widerrufen. Was bis dahin verarbeitet wurde, bleibt rechtmäßig (Art. 7 Abs. 3 DSGVO). Schreib uns dafür an ${DS_MAIL}. Du kannst dich auch bei einer Datenschutzaufsicht beschweren, z. B. beim Landesbeauftragten für den Datenschutz und die Informationsfreiheit Baden-Württemberg.</p>`;
@@ -6692,6 +6707,127 @@ openSettings=(f=>function(){const r=f.apply(this,arguments);try{k88Stand()}catch
 if($("btnSettings"))$("btnSettings").onclick=openSettings;
 /* Sicherung nur mit Einwilligung einschaltbar */
 (function(){const a=$("s87Auto");if(!a)return;const alt=a.onchange;a.onchange=e=>{if(e.target.checked&&!konsensOk()){e.target.checked=false;close("mSet");konsensZeigen();return}return alt&&alt(e)}})();
+
+/* ---------- v89 ---------- */
+/* 6.28 Feedback direkt in der App und 6.12 Ablauf für Tester.
+   Mit Zugangscode geht Feedback an den Server (POST /feedback, Bilder einzeln per PUT /feedback/bild), ohne Mailadresse.
+   Bilder verkleinert die App vorher (höchstens 1600 Pixel, JPEG, Ortsangaben fallen dabei weg). Ohne Netz wartet das Feedback in imFbQueue.
+   Ohne Zugangscode bleibt der Weg per Mail aus V86. Für Tester: Code im Einstieg eintragen, Anleitung und Liste „Ausprobieren“ auf Heute (imTestListe). */
+SYNC_AUS.add("imFbQueue");
+function fb89An(){return srvOn()&&!!srvUrl()}
+function fb89Bild(file){return new Promise(ok=>{let url="";try{url=URL.createObjectURL(file)}catch(e){ok(null);return}
+  const img=new Image();img.onerror=()=>{URL.revokeObjectURL(url);ok(null)};
+  img.onload=async()=>{let max=1600,q=.8,b=null;
+    for(let t=0;t<5;t++){const s=Math.min(1,max/Math.max(img.naturalWidth||1,img.naturalHeight||1)),c=document.createElement("canvas");
+      c.width=Math.max(1,Math.round(img.naturalWidth*s));c.height=Math.max(1,Math.round(img.naturalHeight*s));
+      const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,c.width,c.height);x.drawImage(img,0,0,c.width,c.height);
+      b=await new Promise(r=>{try{c.toBlob(r,"image/jpeg",q)}catch(e){r(null)}});if(b&&b.size<=1400*1024)break;b=null;max=Math.round(max*.75);q=Math.max(.5,q-.1)}
+    URL.revokeObjectURL(url);ok(b)};
+  img.src=url})}
+function fb89B64(b){return new Promise(ok=>{const r=new FileReader();r.onload=()=>ok(String(r.result).split(",")[1]||"");r.onerror=()=>ok("");r.readAsDataURL(b)})}
+function fb89Bytes(s){const t=atob(s),u=new Uint8Array(t.length);for(let i=0;i<t.length;i++)u[i]=t.charCodeAt(i);return u}
+function fb89Kopf(x){return Object.assign({"x-zugang":settings.aiKey,"x-geraet":devId()},x||{})}
+/* Schickt ein Feedback. Ergebnis: {ok}, {netz} (später nochmal) oder {f: Text} */
+async function fb89Schicken(p,bilder,id){
+  if(!id){let r;try{r=await fetch(srvUrl()+"/feedback",{method:"POST",headers:fb89Kopf({"content-type":"application/json"}),body:JSON.stringify(Object.assign({},p,{bilder:bilder.length}))})}catch(e){return{netz:true,rest:bilder}}
+    const j=await r.json().catch(()=>({}));
+    if(r.status===401)return{f:"Dein Zugangscode stimmt nicht. Prüf ihn in den Einstellungen."};
+    if(r.status===429)return{f:(j.error&&j.error.message)||"Heute schon viel Feedback geschickt. Morgen geht es weiter."};
+    if(!r.ok||!j.id)return r.status>=500?{netz:true,rest:bilder}:{f:"Das hat nicht geklappt. Bitte versuch es später nochmal."};
+    id=j.id}
+  for(let i=0;i<bilder.length;i++){const b=bilder[i];if(!b||!(b.blob||b.b64))continue;
+    try{const r=await fetch(srvUrl()+"/feedback/bild?id="+encodeURIComponent(id)+"&i="+(b.i!=null?b.i:i),{method:"PUT",headers:fb89Kopf({"content-type":"image/jpeg"}),body:b.blob||fb89Bytes(b.b64)});
+      if(r.status>=500)throw 0}
+    catch(e){return{netz:true,id,rest:bilder.slice(i).map((x,k)=>x&&Object.assign({i:x.i!=null?x.i:i+k},x)).filter(Boolean)}}}
+  return{ok:true,id}}
+async function fb89Merken(p,rest,id){const Q=store.get("imFbQueue",[])||[];let bs=[],summe=0;
+  for(const x of rest||[]){const b64=x.b64||await fb89B64(x.blob);summe+=b64.length;if(summe>1600000)break;bs.push({i:x.i,b64})}
+  Q.push({t:Date.now(),p,id:id||null,bilder:id?bs:(rest||[]).length,b:bs});store.set("imFbQueue",Q.slice(-5))}
+let FB89_LAEUFT=false;
+async function fb89Nachholen(){if(FB89_LAEUFT||!fb89An()||!navigator.onLine)return;const Q=store.get("imFbQueue",[])||[];if(!Q.length)return;FB89_LAEUFT=true;
+  try{const bleibt=[];for(const q of Q){const bil=(q.b||[]).map(x=>({i:x.i,b64:x.b64}));
+      const r=await fb89Schicken(q.p,q.id?bil:bil.concat(Array(Math.max(0,(q.bilder||0)-bil.length)).fill(null)),q.id);
+      if(r.netz){bleibt.push(Object.assign({},q,{id:r.id||q.id,b:(r.rest||[]).filter(x=>x&&x.b64).map(x=>({i:x.i,b64:x.b64}))}))}}
+    store.set("imFbQueue",bleibt);if(bleibt.length<Q.length)toast("Dein Feedback von vorhin ist jetzt angekommen.")}
+  finally{FB89_LAEUFT=false}}
+window.addEventListener("online",()=>setTimeout(fb89Nachholen,1500));
+setTimeout(fb89Nachholen,6000);
+function fb89Danke(text){$("fbBody").innerHTML=`<p class="hint fb89ok">${esc(text)}</p><button class="btn blue wide" data-fbx="1" style="margin-top:12px">Schließen</button>`}
+openFb=(f=>function(){const r=f.apply(this,arguments);try{if(!fb89An())return r;
+  const a=$("fbAdr");if(a)a.remove();const s=$("fbSend");if(s)s.id="fbSend89";
+  const tx=$("fbTxt");if(tx&&!$("fb89Hint")){tx.setAttribute("maxlength","2000");
+    tx.insertAdjacentHTML("afterend",'<p class="hint fb89h" id="fb89Hint">Geht direkt an das Team. Auf Bildschirmfotos können persönliche Werte zu sehen sein. Schick nur, was du teilen möchtest. <a href="#" id="fb89Ds">Datenschutz</a></p>');
+    $("fb89Ds").onclick=e=>{e.preventDefault();dsZeigen()}}
+  const i=$("fbImg");if(i)i.addEventListener("change",()=>{const n=Math.min(3,i.files.length);$("fbImgHint").textContent=n?(n>1?n+" Bilder":"1 Bild")+" ausgewählt"+(i.files.length>3?", höchstens 3 gehen mit":"")+". Die App verkleinert sie beim Senden.":""})}catch(e){}return r})(openFb);
+if($("btnFb"))$("btnFb").onclick=openFb;
+document.addEventListener("click",async e=>{const btn=e.target.closest&&e.target.closest("#fbSend89");if(!btn)return;e.preventDefault();
+  const n=fbNachricht();if(!n.tx){$("fbMsg").textContent="Bitte schreib kurz etwas dazu.";return}
+  const mitInfo=$("fbInfo")&&$("fbInfo").checked;
+  const p={art:FB.k||"idee",text:n.tx,version:VERSION,info:mitInfo?`Bereich ${TAB} · Abo ${TIERN[tierNow()]} · Daten ${settings.apiKey?"Sportuhr":settings.noWatch?"ohne Uhr":"Beispiel"} · ${navigator.userAgent.replace(/\s+/g," ").slice(0,200)}`:""};
+  btn.disabled=true;btn.textContent="Wird gesendet …";$("fbMsg").textContent="";
+  const inp=$("fbImg"),files=inp&&inp.files?[...inp.files].slice(0,3):[],bilder=[];let kaputt=0;
+  for(const f of files){const b=await fb89Bild(f);if(b)bilder.push({blob:b});else kaputt++}
+  const L=store.get("imFeedback",[]);L.push({t:Date.now(),k:FB.k,tx:n.tx,img:bilder.length,an:"server"});store.set("imFeedback",L.slice(-30));
+  const r=navigator.onLine===false?{netz:true,rest:bilder}:await fb89Schicken(p,bilder);
+  if(r.f){btn.disabled=false;btn.textContent="Senden";$("fbMsg").textContent=r.f;L.pop();store.set("imFeedback",L.slice(-30));return}
+  if(r.netz){await fb89Merken(p,r.rest,r.id);fb89Danke("Danke. Gerade gibt es keine Verbindung. Die App schickt dein Feedback, sobald du wieder online bist.");return}
+  fb89Danke("Danke, ist angekommen. Wir lesen jede Rückmeldung."+(kaputt?" Ein Bild ließ sich nicht öffnen und fehlt.":""));try{t89Karte()}catch(err){}});
+
+/* 6.12 Zugangscode im Einstieg eintragen: neue Tester bekommen ihr Konto, wer schon gesichert hat, bekommt die Daten zurück */
+function t89Modal(){if(!$("mCode89")){document.body.insertAdjacentHTML("beforeend",`<div class="modal" id="mCode89"><div class="sheet">
+  <h3>Zugangscode eintragen</h3><p class="hint">Den Code bekommst du vom Team. Er ist dein Konto für KI und Sicherung. Gib ihn nicht weiter. Hast du schon eine Sicherung, holt die App deine Daten zurück.</p>
+  <label class="f" for="c89Code">Zugangscode</label><input type="password" id="c89Code" autocomplete="off" placeholder="Code vom Team">
+  <div class="err" id="c89Err"></div><div class="actions"><button class="btn" type="button" id="c89Ab">Abbrechen</button><button class="btn blue" type="button" id="c89Los">Weiter</button></div></div></div>`);
+    const m=$("mCode89");m.addEventListener("click",e=>{if(e.target===m)close("mCode89")});$("c89Ab").onclick=()=>close("mCode89");
+    $("c89Los").onclick=async()=>{const b=$("c89Los");b.disabled=true;$("c89Err").textContent="";b.textContent="Wird geprüft …";
+      const r=await syncHolen($("c89Code").value);b.disabled=false;b.textContent="Weiter";
+      if(r.f){$("c89Err").textContent=r.f;return}
+      if(r.leer){close("mCode89");try{srvCheck()}catch(e){}t89Karte();toast("Dein Zugangscode ist gespeichert.");if(!konsensOk())setTimeout(()=>{KONSENS_GEZEIGT=true;konsensZeigen()},400);return}
+      location.reload()}}
+  $("c89Code").value="";$("c89Err").textContent="";open("mCode89");setTimeout(()=>{try{$("c89Code").focus()}catch(e){}},80)}
+obDraw=(f=>function(){const r=f.apply(this,arguments);try{const l=$("obRest");if(l&&!l.dataset.v89){l.dataset.v89="1";l.textContent="Zugangscode vom Team? Hier eintragen";l.onclick=t89Modal}}catch(e){}return r})(obDraw);
+
+/* 6.12 Anleitung und Liste „Ausprobieren“ */
+const T89_ANL=`<h3>So läuft die Testphase</h3><p class="hint">Danke, dass du mittestest. Die App ist noch in Arbeit. Wenn etwas hakt, sag uns Bescheid.</p>
+<h4>1. Zugangscode eintragen</h4><p>Den Code bekommst du vom Team. Er ist dein Konto. Gib ihn nicht weiter.</p>
+<h4>2. Einwilligung geben</h4><p>Erst dann wertet die KI deine Daten aus. Ohne Einwilligung läuft die App nur auf deinem Gerät.</p>
+<h4>3. Daten verbinden</h4><p>Liegen die Einheiten deiner Uhr bei intervals.icu, trag in den Einstellungen deinen intervals.icu-Schlüssel ein. Ohne Uhr trägst du dein Training selbst ein.</p>
+<h4>4. Sicherung einschalten</h4><p>Unter Einstellungen, Konto und Sicherung. Dann öffnest du die App auf einem zweiten Gerät mit demselben Code und hast dort deine Daten.</p>
+<h4>5. Ausprobieren und Rückmeldung geben</h4><p>Die Liste auf „Heute“ zeigt, was wir gern getestet hätten. Feedback schickst du über die Sprechblase oben. Bildschirmfotos helfen uns sehr.</p>
+<h4>Gut zu wissen</h4><p>In deinem intervals.icu-Kalender ändert die App nur etwas, wenn du es antippst, zum Beispiel einen Plan übernehmen. Die App ersetzt keine ärztliche Beratung.</p>`;
+function t89Anleitung(){dsModal("mAnl89",T89_ANL)}
+function t89Liste(){const L=store.get("imTestListe",{})||{};L.ok=L.ok||{};return L}
+function t89Punkte(){const fb=(store.get("imFeedback",[])||[]).some(x=>x.an==="server");
+  return[{k:"code",n:"Zugangscode eintragen",auto:srvOn(),los:t89Modal},
+    {k:"konsens",n:"Einwilligung für die KI geben",auto:konsensOk(),los:konsensZeigen},
+    {k:"daten",n:"Uhr verbinden oder „Ohne Uhr“ wählen",auto:!!(settings.apiKey||settings.noWatch),los:()=>openSettings()},
+    {k:"sicherung",n:"Automatisch sichern einschalten",auto:!!store.get("imSyncOk",0)&&srvOn(),los:()=>openSettings()},
+    {k:"plan",n:"Einen Trainingsplan erstellen lassen"},
+    {k:"tag",n:"Die Tagesempfehlung lesen"},
+    {k:"coach",n:"Dem Coach eine Frage stellen"},
+    {k:"bewertung",n:"Eine Einheit bewerten lassen"},
+    {k:"geraet",n:"Die App auf einem zweiten Gerät öffnen"},
+    {k:"feedback",n:"Feedback schicken",auto:fb,los:openFb}]}
+function t89Karte(){const sec=document.querySelector('section[data-tab="heute"] .grid');if(!sec)return;let c=$("test89");
+  const L=t89Liste();if(!srvOn()||L.aus||(typeof TPRUN!=="undefined"&&TPRUN)){if(c)c.remove();return}
+  if(!c){c=document.createElement("div");c.className="card t89";c.id="test89";sec.prepend(c)}
+  const P=t89Punkte(),fertig=x=>x.auto||!!L.ok[x.k],n=P.filter(fertig).length;
+  c.innerHTML=`<h2>Testphase: das probierst du aus</h2><div class="sub">${n} von ${P.length} erledigt${n===P.length?". Danke fürs Testen!":""}</div>
+  <div class="t89bar"><i style="width:${Math.round(n/P.length*100)}%"></i></div>
+  <div class="t89l">${P.map(x=>`<button type="button" class="t89p${fertig(x)?" ok":""}" data-t89="${x.k}"><span class="t89c" aria-hidden="true"></span><span>${esc(x.n)}</span></button>`).join("")}</div>
+  <div class="t89f"><button class="lnk" type="button" data-t89a="anl">Anleitung</button><button class="lnk" type="button" data-t89a="fb">Feedback geben</button><button class="lnk" type="button" data-t89a="aus">Ausblenden</button></div>`}
+document.addEventListener("click",e=>{const p=e.target.closest&&e.target.closest("[data-t89]"),a=e.target.closest&&e.target.closest("[data-t89a]");if(!p&&!a)return;
+  if(a){const w=a.dataset.t89a;if(w==="anl")t89Anleitung();else if(w==="fb")openFb();else{const L=t89Liste();L.aus=Date.now();store.set("imTestListe",L);t89Karte();toast("Ausgeblendet. Unter Einstellungen, Konto und Sicherung holst du die Liste zurück.")}return}
+  const x=t89Punkte().find(y=>y.k===p.dataset.t89);if(!x)return;
+  if(x.los&&!x.auto){x.los();return}
+  if(x.auto)return;const L=t89Liste();if(L.ok[x.k])delete L.ok[x.k];else L.ok[x.k]=Date.now();store.set("imTestListe",L);t89Karte()});
+renderV14=(f=>function(D){const r=f.apply(this,arguments);try{t89Karte()}catch(e){}return r})(renderV14);
+store.set=(f=>function(k,v){const r=f.apply(this,arguments);if(["imKonsens","imSyncOk","imSettings","imFeedback"].includes(k)){clearTimeout(t89Karte._h);t89Karte._h=setTimeout(()=>{try{t89Karte()}catch(e){}},50)}return r})(store.set);
+setTimeout(()=>{try{t89Karte()}catch(e){}},0);
+/* Einstellungen: Anleitung und Liste zurückholen */
+(function(){try{const g=$("sgAcc"),l=g&&g.querySelector(".setlinks");if(!l||$("t89Set"))return;
+  l.insertAdjacentHTML("beforeend",'<button class="lnk" type="button" id="t89Set">Anleitung für die Testphase</button>');
+  $("t89Set").onclick=()=>{const L=t89Liste();if(L.aus){delete L.aus;store.set("imTestListe",L)}close("mSet");t89Anleitung();t89Karte()}}catch(e){}})();
 
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
