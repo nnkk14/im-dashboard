@@ -1010,6 +1010,8 @@ h3>.tag,.cx-h>.tag{display:table;margin:8px 0 2px;font-size:12px}
 .lockbar{border-color:var(--hrv)}.lockbar .px82{margin-top:0}
 .chk82{display:flex;gap:10px;align-items:flex-start;margin:12px 0 4px;font-size:14px;line-height:1.35;cursor:pointer}.chk82 input{margin-top:3px;flex:none;width:18px;height:18px}
 #sKx{margin-top:10px}.tth{margin:6px 0 0}
+/* v84 */
+.btn.lim84d{opacity:.45;cursor:not-allowed}
 </style>
 </head>
 <body>
@@ -1192,7 +1194,7 @@ applyTheme();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("ch
 delete settings.demo;
 let DATA=null,TAB=store.get("imTab","heute");if(TAB==="gesundheit")TAB="wiki";
 const isLive=()=>(!!settings.apiKey||!!settings.noWatch)&&!settings.forceDemo;
-const VERSION="83";
+const VERSION="84";
 const hasPlan=()=>!!settings.planStart&&+settings.planWeeks>0;let lastLoad=0;
 
 /* ---------- Hilfsfunktionen ---------- */
@@ -6308,6 +6310,80 @@ drawDev=(f=>function(){f.apply(this,arguments);try{if(!settings.dev)return;const
   const t=!settings.aiKey?"keine KI eingetragen":!srvOn()?"eigener Schlüssel, direkt zum KI-Dienst":!srvUrl()?"über den Server, Adresse fehlt":s.ok?`über den Server, Stufe ${esc(s.stufe)}, Monatskontingent zu ${Math.round((s.anteil||0)*100)} % genutzt`:`über den Server, Zugang ${s.code?"abgelehnt ("+esc(s.code)+")":"noch nicht geprüft"}`;
   const h=[...d.querySelectorAll("h4.cx-sh")].find(x=>x.textContent==="Verbrauch");const div=document.createElement("div");div.className="hint";div.id="srvDev";div.textContent="KI-Zugang: "+t;
   if(h&&h.nextElementSibling)h.nextElementSibling.after(div);else d.appendChild(div)}catch(e){}})(drawDev);
+
+/* ---------- v84 ---------- */
+/* 1.3 KI-Kosten schützen, Teil in der App (Entscheidung Noah 24.11.): Grenzen je Funktion mit Hinweis, ab wann es wieder geht.
+   Der Server (6.1) hat zusätzlich eigene Grenzen als Sicherheitsnetz. Entwickleroptionen und der Plan-Prüfstand sind ausgenommen.
+   Plan von Hand höchstens 2-mal in 7 Tagen (nur erfolgreiche zählen), Tagesauswertung von Hand höchstens 2 Versuche am Tag,
+   Bewertung nur für Einheiten der letzten 7 Tage und nur einmal, Coach-Fragen Plus 10 und Max 20 am Tag,
+   Plan anpassen nach Rückmeldungen 1-mal am Tag, Wettkampf-Infos von Hand 1-mal je Wettkampf und Tag. */
+var KIOK=0;
+const LIM={plan:2,planTage:7,tag:2,bewertTage:7,frage:{plus:10,max:20},anpassen:1,wettkampf:1};
+function limFrei(){return!!(settings.dev||(typeof TPRUN!=="undefined"&&TPRUN))}
+function limGet(){const L=store.get("imLim",{})||{},t=today();if(L.d!==t){L.d=t;L.n={}}if(!Array.isArray(L.plan))L.plan=[];L.plan=L.plan.filter(x=>Date.now()-x<LIM.planTage*864e5);return L}
+function limSet(L){store.set("imLim",L)}
+function limN(k){return(limGet().n||{})[k]||0}
+function limAdd(k){const L=limGet();L.n[k]=(L.n[k]||0)+1;limSet(L)}
+function limTag(ms){return new Date(ms).toLocaleDateString("de-DE",{weekday:"short",day:"2-digit",month:"2-digit"})}
+function planWieder(){if(limFrei())return null;const L=limGet();if(L.plan.length<LIM.plan)return null;return Math.min.apply(null,L.plan)+LIM.planTage*864e5}
+function planText(w){return"Einen neuen Plan kannst du höchstens "+LIM.plan+"-mal pro Woche erstellen. Wieder möglich ab "+limTag(w).replace(/\.$/,"")+"."}
+claude=(f=>function(){const p=f.apply(this,arguments);Promise.resolve(p).then(()=>{KIOK++},()=>{});return p})(claude);
+claudeX=(f=>function(){const p=f.apply(this,arguments);Promise.resolve(p).then(()=>{KIOK++},()=>{});return p})(claudeX);
+
+/* Plan von Hand */
+aiPlan=(f=>async function(manual){
+  if(manual){const w=planWieder();if(w){const m=planText(w);if($("coachHint"))$("coachHint").textContent=m;toast(m);return}}
+  const k0=KIOK,r=await f.apply(this,arguments);
+  if(manual&&!limFrei()&&KIOK>k0){const L=limGet();L.plan.push(Date.now());limSet(L)}
+  return r})(aiPlan);
+function planKnopf(){try{const b=$("btnAiPlan"),w=planWieder();if(!b||!w)return;b.disabled=true;b.classList.add("lim84d");b.title=planText(w);
+  if(!b.parentNode.querySelector(".lim84")){const h=document.createElement("div");h.className="hint lim84";h.textContent=planText(w);(b.closest(".btnrow")||b).after(h)}}catch(e){}}
+
+/* Tagesauswertung von Hand */
+aiDaily=(f=>async function(manual){
+  if(manual&&!limFrei()){if(limN("tag")>=LIM.tag){const m="Du hast die Tagesauswertung heute schon "+LIM.tag+"-mal gestartet. Morgen früh startet sie wieder von selbst.";if($("aiErr"))$("aiErr").textContent=m;toast(m);return}limAdd("tag")}
+  return f.apply(this,arguments)})(aiDaily);
+
+/* Bewertung einer Einheit */
+aiActivity=(f=>async function(a,manual){
+  if(manual&&!limFrei()&&a&&a.date<addDays(today(),-(LIM.bewertTage-1)))throw new Error("Bewerten lassen geht nur für Einheiten der letzten "+LIM.bewertTage+" Tage.");
+  return f.apply(this,arguments)})(aiActivity);
+actInfo=(f=>function(a){f.apply(this,arguments);try{const b=$("iAct");if(!b||limFrei()||!a)return;
+  const alt=a.date<addDays(today(),-(LIM.bewertTage-1)),schon=a.id&&noteBy("Coach Einheit "+a.id);
+  if(schon){b.remove();return}
+  if(alt){const h=document.createElement("p");h.className="hint";h.textContent="Bewerten lassen geht für Einheiten der letzten "+LIM.bewertTage+" Tage.";b.replaceWith(h)}}catch(e){}})(actInfo);
+
+/* Coach-Fragen je Stufe. ASK_MAX ist eine Konstante (15), deshalb wird der Zähler für die interne Prüfung kurz angepasst. */
+function askMax(){const t=tierNow();return LIM.frage[t]||LIM.frage.plus}
+ask=(f=>function(){
+  if(limFrei())return f.apply(this,arguments);
+  const AQ=store.get("imAskN",{})||{},t=today(),n=AQ.d===t?AQ.n||0:0,M=askMax();
+  if(n>=M){if($("qErr"))$("qErr").textContent="Für heute sind alle Fragen aufgebraucht. Morgen geht es weiter.";return Promise.resolve()}
+  if(n>=ASK_MAX){store.set("imAskN",{d:t,n:ASK_MAX-1});const r=f.apply(this,arguments);store.set("imAskN",{d:t,n:n+1});return r}
+  return f.apply(this,arguments)})(ask);
+
+/* Plan anpassen nach Rückmeldungen */
+aiFbAdjust=(f=>async function(){
+  if(!limFrei()&&limN("anpassen")>=LIM.anpassen){const m="Den Plan hast du heute schon nach deinen Rückmeldungen angepasst. Morgen geht es wieder.";if($("faErr"))$("faErr").textContent=m;const b=$("faBtn");if(b){b.disabled=true}return}
+  const k0=KIOK,r=await f.apply(this,arguments);if(!limFrei()&&KIOK>k0)limAdd("anpassen");return r})(aiFbAdjust);
+function faKnopf(){try{const b=$("faBtn");if(!b||limFrei()||limN("anpassen")<LIM.anpassen||(typeof FAR!=="undefined"&&FAR))return;b.disabled=true;
+  if(!$("faLim")){const h=document.createElement("p");h.className="hint";h.id="faLim";h.textContent="Heute schon angepasst. Morgen geht es wieder.";(b.closest(".btnrow")||b).after(h)}}catch(e){}}
+
+/* Wettkampf-Infos von Hand */
+function raceKey(){try{const g=goalInfo(DATA),r=g&&g.race;return"wettkampf"+(r&&r.id?":"+r.id:"")}catch(e){return"wettkampf"}}
+document.addEventListener("click",e=>{const b=e.target.closest&&e.target.closest("#btnRaceInfo");if(!b||limFrei())return;const k=raceKey();
+  if(limN(k)>=LIM.wettkampf){e.preventDefault();e.stopImmediatePropagation();b.disabled=true;b.textContent="Heute schon gesucht. Morgen geht es wieder.";return}
+  limAdd(k)},true);
+function raceKnopf(){try{const b=$("btnRaceInfo");if(!b||limFrei()||limN(raceKey())<LIM.wettkampf||RACEBUSY)return;b.disabled=true;b.textContent="Heute schon gesucht. Morgen geht es wieder."}catch(e){}}
+
+render=(f=>function(){const r=f.apply(this,arguments);planKnopf();faKnopf();raceKnopf();return r})(render);
+renderFbAdj=(f=>function(){const r=f.apply(this,arguments);faKnopf();return r})(renderFbAdj);
+
+/* Entwickleroptionen: Grenzen zurücksetzen */
+drawDev=(f=>function(){f.apply(this,arguments);try{if(!settings.dev)return;const d=$("sgDevDyn");if(!d||d.querySelector("#limDev"))return;const L=limGet();
+  const p=document.createElement("div");p.className="hint";p.id="limDev";p.textContent="Grenzen der App (gelten nicht in den Entwickleroptionen): Pläne in 7 Tagen "+L.plan.length+" von "+LIM.plan+", Tagesauswertung von Hand heute "+(L.n.tag||0)+" von "+LIM.tag+", Plan anpassen heute "+(L.n.anpassen||0)+" von "+LIM.anpassen+".";
+  const b=document.createElement("button");b.className="btn sm";b.textContent="Grenzen zurücksetzen";b.style.marginTop="6px";b.onclick=()=>{store.set("imLim",{});b.textContent="Zurückgesetzt"};
+  const s=$("srvDev")||d.lastElementChild;(s||d).after(p);p.after(b)}catch(e){}})(drawDev);
 
 /* ---------- Wettkämpfe ---------- */
 function openRace(pre){$("rSport").value=pre&&pre.sport?pre.sport:"Triathlon";$("rName").value=pre?pre.name:"";$("rDate").value=pre?pre.date:"";$("rPrio").value=pre?pre.prio:"A";$("rErr").textContent="";open("mRace")}
